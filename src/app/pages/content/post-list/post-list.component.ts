@@ -122,11 +122,56 @@ export class PostListComponent implements OnInit {
   ];
   search = '';
 
+
+   MyData: Post[] = [
+    {
+      id: '1',
+      title: 'Java Course',
+      author: {
+        id: '1',
+        username: 'john_doe',
+        name: 'John Doe',
+        email: 'john@example.com',
+        avatarUrl: 'https://example.com/avatar1.png'
+      },
+      status: 'published',
+      createdAt: new Date('2025-01-01T10:00:00Z'),
+      publishedAt: new Date('2025-01-02T10:00:00Z')
+    },
+    {
+      id: '2',
+      title: 'Angular Course',
+      author: {
+        id: '2',
+        username: 'jane_doe',
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+        avatarUrl: 'https://example.com/avatar2.png'
+      },
+      status: 'draft',
+      createdAt: new Date('2025-02-01T10:00:00Z')
+    },
+    {
+      id: '3',
+      title: 'UML course',
+      author: {
+        id: '3',
+        username: 'alice_smith',
+        name: 'Alice Smith',
+        email: 'alice@example.com',
+        avatarUrl: 'https://example.com/avatar3.png'
+      },
+      status: 'published',
+      createdAt: new Date('2025-03-01T10:00:00Z'),
+      publishedAt: new Date('2025-03-02T10:00:00Z')
+    }
+  ];
+
   ngOnInit() {
     this._httpClient
       .get<Post[]>('/assets/mockdata/content-post-list.json')
       .subscribe(data => {
-        this.data = data;
+        this.data = this.MyData;
       })
     ;
   }
