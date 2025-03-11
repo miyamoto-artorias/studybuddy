@@ -46,3 +46,8 @@ src/environments/environment.prod.ts
 
 publish-library.sh
 create-schematics.sh
+
+# Firebase
+.firebase
+*-debug.log
+.runtimeconfig.json

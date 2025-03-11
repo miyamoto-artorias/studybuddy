@@ -83,7 +83,7 @@ export class KanbanBoardComponent {
       color: '#06b6d4',
       items: [
         {
-          name: 'HINT: Check Dark Theme',
+          name: 'JAVA cour heritage',
           position: 1,
           reporter: {
             id: 1,
@@ -95,97 +95,7 @@ export class KanbanBoardComponent {
           },
           priority: this.priorities[1]
         },
-        {
-          name: 'Fix UI bug',
-          position: 1,
-          reporter: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          assignee: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          priority: this.priorities[2]
-        },
-        {
-          name: 'Fix UI bug',
-          position: 1,
-          reporter: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          assignee: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          priority: this.priorities[2]
-        },
-        {
-          name: 'Fix UI bug',
-          position: 1,
-          reporter: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          assignee: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          priority: this.priorities[2]
-        },
-        {
-          name: 'Fix UI bug',
-          position: 1,
-          reporter: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          assignee: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          priority: this.priorities[2]
-        },
-        {
-          name: 'Fix UI bug',
-          position: 1,
-          reporter: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          assignee: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          priority: this.priorities[2]
-        },
-        {
-          name: 'Fix UI bug',
-          position: 1,
-          reporter: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          assignee: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          priority: this.priorities[2]
-        },
-        {
-          name: 'Fix UI bug',
-          position: 1,
-          reporter: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          assignee: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          priority: this.priorities[2]
-        }
+        
       ]
     },
     {
@@ -194,7 +104,7 @@ export class KanbanBoardComponent {
       color: '#a855f7',
       items: [
         {
-          name: 'Urgent Issue',
+          name: 'DIAGRAM UML',
           position: 1,
           reporter: {
             id: 1,
@@ -226,58 +136,7 @@ export class KanbanBoardComponent {
           },
           priority: this.priorities[2]
         },
-        {
-          name: 'Fix UI bug',
-          position: 1,
-          reporter: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          assignee: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          priority: this.priorities[2]
-        },
-        {
-          name: 'Fix UI bug',
-          position: 1,
-          reporter: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          assignee: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          priority: this.priorities[2]
-        },
-        {
-          name: 'Fix UI bug',
-          position: 1,
-          reporter: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          assignee: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          priority: this.priorities[2]
-        },
-        {
-          name: 'Fix UI bug',
-          position: 1,
-          reporter: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          assignee: {
-            id: 1,
-            name: 'Pavel Salauyou'
-          },
-          priority: this.priorities[2]
-        }
+        
       ]
     },
     {
