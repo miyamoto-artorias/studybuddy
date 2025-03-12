@@ -19,58 +19,7 @@ const routes: Routes = [
         path: 'customization',
         loadChildren: () => import('./customization/customization.module').then(m => m.CustomizationModule)
       },
-      {
-        path: 'forms/password-strength',
-        loadChildren: () => import('./forms/password-strength/password-strength.module').then(m => m.PasswordStrengthModule)
-      },
-      {
-        path: 'forms/autocomplete',
-        loadChildren: () => import('./forms/autocomplete/autocomplete.module').then(m => m.AutocompleteModule)
-      },
-      {
-        path: 'forms/buttons',
-        loadChildren: () => import('./forms/buttons/buttons.module').then(m => m.ButtonsModule)
-      },
-      {
-        path: 'forms/input',
-        loadChildren: () => import('./forms/input/input.module').then(m => m.InputModule)
-      },
-      {
-        path: 'forms/phone-input',
-        loadChildren: () => import('./forms/phone-input/phone-input.module').then(m => m.PhoneInputModule)
-      },
-      {
-        path: 'forms/slide-toggle',
-        loadChildren: () => import('./forms/slide-toggle/slide-toggle.module').then(m => m.SlideToggleModule)
-      },
-      {
-        path: 'forms/checkbox',
-        loadChildren: () => import('./forms/checkbox/checkbox.module').then(m => m.CheckboxModule)
-      },
-      {
-        path: 'forms/radio',
-        loadChildren: () => import('./forms/radio/radio.module').then(m => m.RadioModule)
-      },
-      {
-        path: 'forms/select',
-        loadChildren: () => import('./forms/select/select.module').then(m => m.SelectModule)
-      },
-      {
-        path: 'forms/segmented',
-        loadChildren: () => import('./forms/segmented/segmented.module').then(m => m.SegmentedModule)
-      },
-      {
-        path: 'forms/pin-input',
-        loadChildren: () => import('./forms/pin-input/pin-input.module').then(m => m.PinInputModule)
-      },
-      {
-        path: 'forms/button-toggle',
-        loadChildren: () => import('./forms/button-toggle/button-toggle.module').then(m => m.ButtonToggleModule)
-      },
-      {
-        path: 'forms/number-input',
-        loadChildren: () => import('./forms/number-input/number-input.module').then(m => m.NumberInputModule)
-      },
+    
       {
         path: 'components/action-required',
         loadChildren: () => import('./components/action-required/action-required.module').then(m => m.ActionRequiredModule)
@@ -311,22 +260,12 @@ const routes: Routes = [
         path: 'user-profile',
         loadChildren: () => import('./user-profile/user-profile.module').then(m => m.UserProfileModule)
       },
-      {
-        path: 'account/notifications',
-        loadComponent: () => import('./account/notifications/notifications.component').then(m => m.NotificationsComponent)
-      },
-      {
-        path: 'account/settings',
-        loadChildren: () => import('./account/settings/settings.module').then(m => m.SettingsModule)
-      },
+
       {
         path: 'store',
         loadChildren: () => import('./store/store.module').then(m => m.StoreModule)
       },
-      {
-        path: 'pricing',
-        loadChildren: () => import('./pricing/pricing.module').then(m => m.PricingModule)
-      },
+    
       {
         path: 'applications',
         loadChildren: () => import('./applications/applications.module').then(m => m.ApplicationsModule)
@@ -338,10 +277,6 @@ const routes: Routes = [
       {
         path: 'content',
         loadChildren: () => import('./content/content.module').then(m => m.ContentModule)
-      },
-      {
-        path: 'service-pages',
-        loadChildren: () => import('./service-pages/service-pages.module').then(m => m.ServicePagesModule)
       }
     ]
   }

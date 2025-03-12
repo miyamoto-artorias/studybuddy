@@ -42,12 +42,7 @@ interface TaskItem extends KanbanItem {
     PanelComponent,
     PanelHeaderComponent,
     PanelBodyComponent,
-    AvatarComponent,
-    AvatarGroupComponent,
-    AvatarTotalComponent,
-    MatButton,
-    SegmentedButtonComponent,
-    SegmentedComponent,
+
     KanbanBoard,
     KanbanItemDefDirective,
     DicebearComponent
