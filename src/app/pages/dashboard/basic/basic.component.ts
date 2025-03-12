@@ -3,7 +3,6 @@ import { DashboardComponent, Widget, WidgetConfig } from '@elementar-ui/componen
 
 @Component({
   imports: [
-    DashboardComponent
   ],
   templateUrl: './basic.component.html',
   styleUrl: './basic.component.scss'

@@ -48,7 +48,7 @@ export class AppComponent implements OnInit {
           setTimeout(() => {
             this._screenLoader.hide();
             this.pageLoaded.set(true);
-          }, 3000);
+          }, 1500);
         })
       ;
 
@@ -67,8 +67,8 @@ export class AppComponent implements OnInit {
 
     if (isPlatformBrowser(this._platformId)) {
       setTimeout(() => {
-        this.loadingText.set('Initializing Modules');
-      }, 1500);
+        this.loadingText.set('STUDDYBUDDY');
+      }, 1000);
     }
 
     this._seoService.trackCanonicalChanges(this._envService.getValue('siteUrl'));

@@ -11,21 +11,6 @@ const routes: Routes = [
     path: 'basic',
     title: 'Basic Dashboard',
     loadComponent: () => import('./basic/basic.component').then(c => c.BasicComponent)
-  },
-  {
-    path: 'ecommerce',
-    title: 'Ecommerce Dashboard',
-    loadComponent: () => import('./ecommerce/ecommerce.component').then(c => c.EcommerceComponent)
-  },
-  {
-    path: 'finance',
-    title: 'Finance Dashboard',
-    loadComponent: () => import('./finance/finance.component').then(c => c.FinanceComponent)
-  },
-  {
-    path: 'explore',
-    title: 'Explore Dashboard',
-    loadComponent: () => import('./explore/explore.component').then(c => c.ExploreComponent)
   }
 ];
 
