@@ -15,6 +15,7 @@ import { FileGridLayoutComponent } from '../_layout/file-grid-layout/file-grid-l
 import { File, FileSelectedEvent } from '../types';
 import { MenuOptionGroupDirective } from '@elementar-ui/components';
 import { AvatarComponent } from '@elementar-ui/components';
+import { FileService } from '../../../../services/file.service';
 
 @Component({
   imports: [
@@ -44,6 +45,44 @@ import { AvatarComponent } from '@elementar-ui/components';
 })
 export class OverviewComponent {
   private _fb = inject(FormBuilder);
+  private file = inject(FileService);
+  selectedFile: globalThis.File | null = null;
+
+  onFileSelected(event: any) {
+    this.selectedFile = event.target.files[0]; 
+    this.upload(); 
+  }
+  
+  upload() {
+    if (this.selectedFile) {
+      this.file.uploadFile(this.selectedFile).subscribe(response => {
+        console.log('Upload successful', response);
+      });
+    }
+  }
+  
+  
+
+  // onFileSelected(event: any) {
+  //   const file: globalThis.File = event.target.files[0];
+  //   if (file) {
+  //     this.file.uploadFile(file).subscribe(response => {
+  //       console.log('Upload successful', response);
+  //     });
+  //   }
+  // }
+
+  onDownload(filename: string) {
+    this.file.downloadFile(filename).subscribe(blob => {
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    });
+  }
+
+
+
 
   settingsForm = this._fb.group({
     layout: ['grid'],

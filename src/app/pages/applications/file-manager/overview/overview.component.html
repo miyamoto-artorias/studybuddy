@@ -7,13 +7,15 @@
         <div class="text-sm mt-2.5">Create</div>
       </button>
     </div>
-    <div class="col-span-1">
+    <div class="col-span-1 relative">
       <button matRipple class="w-full h-20 cursor-pointer border border-default items-center hover:bg-neutral-200 dark:hover:bg-neutral-700
                                rounded-md p-3 flex flex-col justify-center">
         <mat-icon>upload</mat-icon>
         <div class="text-sm mt-2.5">Upload</div>
+        <input type="file" #fileInput (change)="onFileSelected($event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
       </button>
     </div>
+    
     <div class="col-span-1">
       <button matRipple class="w-full h-20 cursor-pointer border border-default items-center hover:bg-neutral-200 dark:hover:bg-neutral-700
                                rounded-md p-3 flex flex-col justify-center">
