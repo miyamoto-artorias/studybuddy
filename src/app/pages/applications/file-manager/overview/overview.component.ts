@@ -44,9 +44,33 @@ import { FileService } from '../../../../services/file.service';
   styleUrl: './overview.component.scss'
 })
 export class OverviewComponent {
+
+  ngOnInit() {
+    this.fetchFiles();
+    this.files.forEach((file,index) => {
+      file.name=this.files1[index].fileName;
+    });
+
+  }
+
   private _fb = inject(FormBuilder);
   private file = inject(FileService);
   selectedFile: globalThis.File | null = null;
+  files1: any[] = []; // Array to store the files data
+
+
+  fetchFiles() {
+    this.file.getAllFiles().subscribe(
+      (data) => {
+        this.files1 = data; // Store the fetched files
+        console.log(data);
+      },
+      (error) => {
+        console.error("failed to get all data for /all");
+      }
+    );
+  }
+  
 
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0]; 
@@ -63,24 +87,22 @@ export class OverviewComponent {
   
   
 
-  // onFileSelected(event: any) {
-  //   const file: globalThis.File = event.target.files[0];
-  //   if (file) {
-  //     this.file.uploadFile(file).subscribe(response => {
-  //       console.log('Upload successful', response);
-  //     });
-  //   }
-  // }
 
   onDownload(filename: string) {
     this.file.downloadFile(filename).subscribe(blob => {
-      const link = document.createElement('a');
-      link.href = window.URL.createObjectURL(blob);
-      link.download = filename;
-      link.click();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename; // Set filename
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url); // Clean up memory
+    }, error => {
+      console.error('Download failed:', error);
     });
   }
-
+  
 
 
 
