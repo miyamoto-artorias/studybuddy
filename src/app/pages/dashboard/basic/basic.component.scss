@@ -1,0 +1,23 @@
+.emr-tab-panel {
+    width: 100%; /* Ensures it takes the full width of its container */
+    max-width: none; /* Removes any max-width restrictions */
+    margin-right: 0; /* Ensures no right margin limits the extension */
+    border-right: none; /* Optional: removes right border if you want it flush */
+  }
+  
+  /* If the parent container has padding or margins restricting it, override those */
+  .emr-tab-panel-container { /* Adjust this selector based on your actual parent */
+    padding-right: 0;
+    margin-right: 0;
+  }
+  
+  /* Ensure the body and aside content also stretch fully */
+  .emr-tab-panel-body,
+  .emr-tab-panel-aside {
+    width: 100%;
+  }
+  
+  /* Optional: Adjust the flex properties if needed */
+  .emr-tab-panel-body .flex {
+    width: 100%;
+  }

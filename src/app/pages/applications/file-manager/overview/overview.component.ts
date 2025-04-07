@@ -47,10 +47,11 @@ export class OverviewComponent {
 
   ngOnInit() {
     this.fetchFiles();
-    this.files.forEach((file,index) => {
-      file.name=this.files1[index].fileName;
+    this.files1.forEach((file, index) => {
+      const newFile = { ...this.fileTemplate }; 
+      newFile.name = this.files1[index].fileName; 
+      this.files.push(newFile); 
     });
-
   }
 
   private _fb = inject(FormBuilder);
@@ -111,51 +112,67 @@ export class OverviewComponent {
     filePreview: ['fullscreen']
   });
   starredIds: string[] = ['4'];
-  files: File[] = [
-    {
-      id: '1',
-      type: 'folder',
-      size: 1000000,
-      name: 'My folder',
-      isShared: true,
-      itemsCount: 38
-    },
-    {
-      id: '2',
-      type: 'folder',
-      size: 1000000,
-      name: 'Work',
-      isShared: false,
-      itemsCount: 12
-    },
-    {
-      id: '3',
-      type: 'folder',
-      size: 1000000,
-      name: 'Photos',
-      isShared: false,
-      itemsCount: 299
-    },
-    {
-      id: '4',
-      type: 'image',
-      size: 500000,
-      name: 'My Image',
-      thumbnailUrl: 'https://placehold.co/200x200/FFFFFF/000000/png',
-      extension: 'jpg',
-      isShared: false,
-      itemsCount: 1
-    },
-    {
-      id: '5',
-      type: 'archive',
-      size: 23000,
-      name: 'New Archive',
-      extension: 'zip',
-      isShared: false,
-      itemsCount: 22
-    }
-  ];
+
+  fileTemplate: File =     {
+    id: '1',
+    type: 'image',
+    size: 1000000,
+    name: 'My folder',
+    isShared: true,
+    itemsCount: 38,
+         thumbnailUrl: 'https://cdn-icons-png.freepik.com/512/9061/9061169.png',
+
+  };
+
+  files: File[]=[];
+
+  // files: File[] = [
+  //   {
+  //     id: '1',
+  //     type: 'folder',
+  //     size: 1000000,
+  //     name: 'My folder',
+  //     isShared: true,
+  //     itemsCount: 38
+  //   },
+  //   {
+  //     id: '2',
+  //     type: 'folder',
+  //     size: 1000000,
+  //     name: 'Work',
+  //     isShared: false,
+  //     itemsCount: 12
+  //   },
+  //   {
+  //     id: '3',
+  //     type: 'folder',
+  //     size: 1000000,
+  //     name: 'Photos',
+  //     isShared: false,
+  //     itemsCount: 299
+  //   },
+  //   {
+  //     id: '4',
+  //     type: 'image',
+  //     size: 500000,
+  //     name: 'My Image',
+  //     thumbnailUrl: 'https://cdn-icons-png.flaticon.com/256/1091/1091107.png',
+  //     extension: 'jpg',
+  //     isShared: false,
+  //     itemsCount: 1
+  //   },
+  //   {
+  //     id: '5',
+  //     type: 'archive',
+  //     size: 23000,
+  //     name: 'New Archive',
+  //     extension: 'zip',
+  //     isShared: false,
+  //     itemsCount: 22
+  //   }
+  // ];
+
+
   selectedFiles: File[] = [];
 
   get indeterminate(): boolean {

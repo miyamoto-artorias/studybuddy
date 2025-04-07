@@ -146,7 +146,7 @@
       @case ('grid') {
         @defer {
           <app-file-grid-layout [files]="files" [starredIds]="starredIds"
-                                (fileSelected)="fileSelected($event)"></app-file-grid-layout>
+                                (fileSelected)="fileSelected($event)" ></app-file-grid-layout>
         } @placeholder (minimum 500ms) {
           Loading...
         }

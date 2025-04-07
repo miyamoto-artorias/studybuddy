@@ -11,6 +11,7 @@ import { MatRipple } from '@angular/material/core';
 import { MatTooltip } from '@angular/material/tooltip';
 import { SelectionModel } from '@angular/cdk/collections';
 import { FormatFileSizePipe, MenuOptionGroupDirective } from '@elementar-ui/components';
+import { FileService } from '../../../../../services/file.service';
 
 @Component({
   selector: 'app-file-grid-layout',
@@ -34,6 +35,22 @@ import { FormatFileSizePipe, MenuOptionGroupDirective } from '@elementar-ui/comp
 })
 export class FileGridLayoutComponent implements OnInit {
   private _fb = inject(FormBuilder);
+  private file = inject(FileService);
+
+  onDownload(filename: string) {
+    this.file.downloadFile(filename).subscribe(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename; // Set filename
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url); // Clean up memory
+    }, error => {
+      console.error('Download failed:', error);
+    });
+  }
 
   starredIds= input<string[]>([]);
   files: InputSignal<File[]> = input.required<File[]>();
