@@ -78,6 +78,7 @@
     "libphonenumber-js": "^1.11.15",
     "marked": "^15.0.2",
     "material-symbols": "^0.27.1",
+    "ng2-pdf-viewer": "^10.4.0",
     "ngx-markdown": "^19.0.0",
     "postcss": "^8.5.2",
     "prismjs": "^1.29.0",
