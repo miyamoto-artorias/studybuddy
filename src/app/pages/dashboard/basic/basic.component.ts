@@ -13,7 +13,7 @@ import {
 } from '@elementar-ui/components';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { PlaygroundComponent } from '@meta/playground/playground.component';
-import { NavigationWithNestedMenuExampleComponent } from '../../../MyBucket/navigation-with-nested-menu-example/navigation-with-nested-menu-example.component';
+import { NavigationWithNestedMenuExampleComponent } from '../../applications/navigation-with-nested-menu-example/navigation-with-nested-menu-example.component';
 import {
   NavigationComponent,
   NavigationGroupComponent, NavigationGroupMenuComponent, NavigationGroupToggleComponent,

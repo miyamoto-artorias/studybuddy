@@ -11,6 +11,11 @@ const routes: Routes = [
     path: 'basic',
     title: 'Basic Dashboard',
     loadComponent: () => import('./basic/basic.component').then(c => c.BasicComponent)
+  },
+  {
+    path: 'playground',
+    title: 'playground Dashboard',
+    loadComponent: () => import('./playground/playground.component').then(c => c.PlaygroundComponent)
   }
 ];
 
