@@ -26,6 +26,14 @@ export class LoginComponent {
     });
   }
 
+  ngOnInit(): void {
+  this.getCurrentUser();}
+
+  getCurrentUser(): any {
+    const user = this.authService.getCurrentUser();
+    console.log('Current user is:', user);
+    return user;
+  }
   onSubmit(): void {
     this.loginForm.markAllAsTouched();
 

@@ -17,10 +17,11 @@ import { LoginComponent } from './MyBucket/login/login.component';
 @Component({
   selector: 'app-root',
   imports: [
-    RouterOutlet,LoginComponent,
+    RouterOutlet, LoginComponent,
     ScreenLoaderComponent,
-    PageLoadingBarComponent
-  ],
+    PageLoadingBarComponent,
+    AddcourseComponent
+],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

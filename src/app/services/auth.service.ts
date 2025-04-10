@@ -30,4 +30,18 @@ export class AuthService {
     console.log('Login status check:', loggedIn);
     return loggedIn;
   }
+  getCurrentUser(): any {
+    return JSON.parse(localStorage.getItem('currentUser') || '{}');
+  }
+
+  isTeacher(): boolean {
+    const user = this.getCurrentUser();
+    return user.userType === 'TEACHER';
+  }
+
+  getUserId(): number {
+    const user = this.getCurrentUser();
+    return user.id || 0;
+  }
+
 }
