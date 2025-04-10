@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { CourseService } from '../../services/course.service';
+import { AuthService } from '../../services/auth.service'; // Add this
 import { Router } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+
 @Component({
   selector: 'app-addcourse',
   standalone: true,
@@ -17,17 +19,29 @@ export class AddcourseComponent {
     picture: '',
     price: 0
   };
-  teacherId = 5;  //make sure the userID is of a teacher !!!
+  teacherId = 0;
   isLoading = false;
   errorMessage = '';
-  successMessage = ''; // New property for success message
+  successMessage = '';
+  isAuthorized = true;
 
   constructor(
     private courseService: CourseService,
+    private authService: AuthService, // Add this
     private router: Router
-  ) {}
+  ) {
+    // Check authorization on component initialization
+    if (!this.authService.isLoggedIn() || !this.authService.isTeacher()) {
+      this.isAuthorized = false;
+      setTimeout(() => this.router.navigate(['/dashboard']), 3000);
+    } else {
+      this.teacherId = this.authService.getUserId();
+    }
+  }
 
   onSubmit(form: NgForm): void {
+    if (!this.isAuthorized) return;
+
     if (form.invalid) {
       this.errorMessage = 'Please fill all required fields';
       return;
@@ -35,15 +49,14 @@ export class AddcourseComponent {
 
     this.isLoading = true;
     this.errorMessage = '';
-    this.successMessage = ''; // Reset success message
+    this.successMessage = '';
 
     this.courseService.createCourse(this.teacherId, this.course).subscribe({
       next: (response) => {
         this.isLoading = false;
         this.successMessage = 'Course created successfully!';
-        console.log('Course creation response:', response);
+        console.log('Course created by teacher ID:', this.teacherId, response);
         
-        // Optional: Auto-clear success message after 5 seconds
         setTimeout(() => {
           this.successMessage = '';
           this.router.navigate(['/courses']);
@@ -56,5 +69,4 @@ export class AddcourseComponent {
       }
     });
   }
-
 }

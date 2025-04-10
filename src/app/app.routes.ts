@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { AddcourseComponent } from './MyBucket/addcourse/addcourse.component';
+import { AddCourseContentComponent } from './MyBucket/add-course-content/add-course-content.component';
 
 export const routes: Routes = [
   {
@@ -18,9 +20,10 @@ export const routes: Routes = [
     path: 'error',
     loadChildren: () => import('./error/error.module').then(m => m.ErrorModule)
   },
+  {path:'addcourse',component:AddcourseComponent}
+,
   {
     path: '**',
     title: 'Page Not Found',
     loadComponent: () => import('./error/not-found/not-found.component').then(c => c.NotFoundComponent)
-  }
-];
+  }];
