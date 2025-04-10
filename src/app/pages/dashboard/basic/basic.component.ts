@@ -1,51 +1,27 @@
 import { Component } from '@angular/core';
-import { DashboardComponent, Widget, WidgetConfig } from '@elementar-ui/components';
 import { MatTooltip } from '@angular/material/tooltip';
 import { IconComponent } from '@elementar-ui/components';
-import { HorizontalDividerComponent } from '@elementar-ui/components';
-import { AvatarComponent } from '@elementar-ui/components';
 import {
   TabPanelAsideComponent,
-  TabPanelAsideContentDirective, TabPanelBodyComponent, TabPanelComponent,
-  TabPanelCustomItemComponent, TabPanelFooterComponent, TabPanelHeaderComponent,
+  TabPanelAsideContentDirective, TabPanelComponent,
+   TabPanelHeaderComponent,
   TabPanelItemComponent,
   TabPanelItemIconDirective, TabPanelNavComponent
 } from '@elementar-ui/components';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
-import { PlaygroundComponent } from '@meta/playground/playground.component';
-import { NavigationWithNestedMenuExampleComponent } from '../../applications/navigation-with-nested-menu-example/navigation-with-nested-menu-example.component';
-import {
-  NavigationComponent,
-  NavigationGroupComponent, NavigationGroupMenuComponent, NavigationGroupToggleComponent,
-  NavigationGroupToggleIconDirective,
-  NavigationItemComponent
-} from '@elementar-ui/components';
-import { MatIcon } from '@angular/material/icon';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 
 @Component({
   imports: [IconComponent,
     MatTooltip,
-    HorizontalDividerComponent,
-    AvatarComponent,
     TabPanelItemIconDirective,
     TabPanelItemComponent,
-    TabPanelCustomItemComponent,
     TabPanelAsideContentDirective,
     TabPanelAsideComponent,
     TabPanelNavComponent,
-    TabPanelFooterComponent,
-    TabPanelBodyComponent,
     TabPanelHeaderComponent,
-    TabPanelComponent,PdfViewerModule,NavigationWithNestedMenuExampleComponent,PlaygroundComponent,
-    MatIcon,
-    NavigationItemComponent,
-    NavigationGroupComponent,
-    NavigationGroupToggleIconDirective,
-    NavigationComponent,
-    NavigationGroupToggleComponent,
-    NavigationGroupMenuComponent
+    TabPanelComponent,PdfViewerModule,
 
   ],
   templateUrl: './basic.component.html',
