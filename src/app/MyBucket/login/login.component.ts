@@ -27,31 +27,32 @@ export class LoginComponent {
   }
 
   onSubmit(): void {
-    // Mark all fields as touched to trigger validation messages
     this.loginForm.markAllAsTouched();
 
     if (this.loginForm.invalid) {
+      console.warn('Form invalid, preventing submission');
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
-
     const { username, password } = this.loginForm.value;
 
+    console.log('Starting login process...');
     this.authService.login(username, password).subscribe({
       next: (response) => {
-        this.isLoading = false;
-        // Store user data
-        localStorage.setItem('currentUser', JSON.stringify(response.user));
-        // Redirect to appropriate page
+        console.log('Login successful, response:', response);
+        localStorage.setItem('currentUser', JSON.stringify(response));
         this.router.navigate(['/dashboard']);
+        this.isLoading = false;
       },
       error: (error) => {
+        console.error('Login failed:', error);
+        this.errorMessage = error.error || 'Login failed. Please check your credentials.';
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Login failed. Please check your credentials.';
-        console.error('Login error:', error);
-      }
+      },
+      complete: () => console.log('Login request completed')
     });
   }
+
 }
