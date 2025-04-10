@@ -20,7 +20,7 @@ const routes: Routes = [
   {
     path: 'addcourse',
     title: 'addcourse Dashboard',
-    loadComponent: () => import('./addcourse/addcourse.component').then(c => c.AddcourseComponent)
+    loadComponent: () => import('../../MyBucket/addcourse/addcourse.component').then(c => c.AddcourseComponent)
   }
 ];
 

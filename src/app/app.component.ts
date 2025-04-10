@@ -9,11 +9,13 @@ import {
   ScreenLoaderService, SeoService,
   ThemeManagerService
 } from '@elementar-ui/components';
+import { AddCourseContentComponent } from './MyBucket/add-course-content/add-course-content.component';
+import { AddcourseComponent } from './MyBucket/addcourse/addcourse.component';
 
 @Component({
   selector: 'app-root',
   imports: [
-    RouterOutlet,
+    RouterOutlet,AddcourseComponent,
     ScreenLoaderComponent,
     PageLoadingBarComponent
   ],

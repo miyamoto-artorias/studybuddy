@@ -7,9 +7,26 @@ import { tap, catchError } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class CourseService {
-  private baseUrl = 'http://localhost:8081/api/course-content';
-
   constructor(private http: HttpClient) {}
+
+  private baseUrl = 'http://localhost:8081/api/course-content';
+  private coursesbaseUrl = 'http://localhost:8081/api/courses';
+
+  createCourse(teacherId: number, courseData: any): Observable<any> {
+    const url = `${this.coursesbaseUrl}/${teacherId}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(url, courseData, { headers }).pipe(
+      tap(response => console.log('Course created successfully:', response)),
+      catchError(error => {
+        console.error('Course creation failed:', error);
+        throw error;
+      })
+    );
+  }
+
 
   uploadContent(courseId: number, chapterId: number, content: { title: string; type: string }, file: File): Observable<any> {
     const formData = new FormData();

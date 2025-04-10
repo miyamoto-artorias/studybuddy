@@ -1,17 +1,16 @@
 import { Component } from '@angular/core';
-import { CourseService } from '../../../services/course.service';
+import { CourseService } from '../../services/course.service';
 import { Router } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-
 @Component({
-  selector: 'app-playground',
+  selector: 'app-addcourse',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './playground.component.html',
-  styleUrls: ['./playground.component.scss']
+  templateUrl: './addcourse.component.html',
+  styleUrls: ['./addcourse.component.scss']
 })
-export class PlaygroundComponent {
+export class AddcourseComponent {
   course = {
     title: '',
     description: '',
@@ -57,4 +56,5 @@ export class PlaygroundComponent {
       }
     });
   }
+
 }

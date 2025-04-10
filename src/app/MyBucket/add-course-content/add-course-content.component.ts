@@ -1,16 +1,14 @@
 import { Component } from '@angular/core';
-import { CourseService } from '../../../services/course.service';
+import { CourseService } from '../../services/course.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 @Component({
-  selector: 'app-addcourse',
-  standalone: true,
+  selector: 'app-add-course-content',
   imports: [CommonModule, FormsModule],
-  templateUrl: './addcourse.component.html',
-  styleUrls: ['./addcourse.component.scss']
+  templateUrl: './add-course-content.component.html',
+  styleUrl: './add-course-content.component.scss'
 })
-export class AddcourseComponent {
+export class AddCourseContentComponent {
   courseId = 1;
   chapterId = 1;
   title = '';
@@ -51,4 +49,5 @@ export class AddcourseComponent {
         complete: () => console.log('Request completed')
       });
   }
+
 }
