@@ -12,6 +12,9 @@ export class CourseService {
   private baseUrl = 'http://localhost:8081/api/course-content';
   private coursesbaseUrl = 'http://localhost:8081/api/courses';
 
+
+  
+
   createCourse(teacherId: number, courseData: any): Observable<any> {
     const url = `${this.coursesbaseUrl}/${teacherId}`;
     const headers = new HttpHeaders({

@@ -11,11 +11,12 @@ import {
 } from '@elementar-ui/components';
 import { AddCourseContentComponent } from './MyBucket/add-course-content/add-course-content.component';
 import { AddcourseComponent } from './MyBucket/addcourse/addcourse.component';
+import { AddChapterComponent } from './MyBucket/add-chapter/add-chapter.component';
 
 @Component({
   selector: 'app-root',
   imports: [
-    RouterOutlet,AddcourseComponent,
+    RouterOutlet,AddChapterComponent,
     ScreenLoaderComponent,
     PageLoadingBarComponent
   ],
