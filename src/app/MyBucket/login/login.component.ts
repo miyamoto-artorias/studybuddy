@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  imports: [FormsModule,CommonModule,ReactiveFormsModule],
+  imports: [FormsModule, CommonModule, ReactiveFormsModule],
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
@@ -27,13 +27,15 @@ export class LoginComponent {
   }
 
   ngOnInit(): void {
-  this.getCurrentUser();}
+    this.getCurrentUser();
+  }
 
   getCurrentUser(): any {
     const user = this.authService.getCurrentUser();
     console.log('Current user is:', user);
     return user;
   }
+
   onSubmit(): void {
     this.loginForm.markAllAsTouched();
 
@@ -50,7 +52,6 @@ export class LoginComponent {
     this.authService.login(username, password).subscribe({
       next: (response) => {
         console.log('Login successful, response:', response);
-        localStorage.setItem('currentUser', JSON.stringify(response));
         this.router.navigate(['/dashboard']);
         this.isLoading = false;
       },
@@ -61,6 +62,15 @@ export class LoginComponent {
       },
       complete: () => console.log('Login request completed')
     });
+    //storing 
+    this.authService.getTeacherCourses().subscribe({
+      next: (courses) => {  
+        console.log('Courses fetched successfully:', courses);
+      }
+      , error: (error) => {
+        console.error('Error fetching courses:', error);
+      }
+      , complete: () => console.log('Course fetching request completed')
+    });
   }
-
 }
