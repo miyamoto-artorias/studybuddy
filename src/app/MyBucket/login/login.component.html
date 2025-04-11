@@ -34,10 +34,10 @@
             Password is required
           </div>
         </div>
-  
+<!--   
         <div *ngIf="errorMessage" class="alert alert-danger">
           {{ errorMessage }}
-        </div>
+        </div> -->
   
         <button 
           type="submit" 
@@ -46,6 +46,13 @@
         >
           <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
           {{ isLoading ? 'Logging in...' : 'Login' }}
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          (click)="logout()"
+        >
+          LOG out
         </button>
       </form>
     </div>
