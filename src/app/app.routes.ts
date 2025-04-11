@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { AddcourseComponent } from './MyBucket/addcourse/addcourse.component';
 import { AddCourseContentComponent } from './MyBucket/add-course-content/add-course-content.component';
+import { EnrolledCoursesComponent } from './MyBucket/enrolled-courses/enrolled-courses.component';
+import { CourseDetailComponent } from './MyBucket/course-detail/course-detail.component';
 
 export const routes: Routes = [
   {
@@ -20,8 +22,10 @@ export const routes: Routes = [
     path: 'error',
     loadChildren: () => import('./error/error.module').then(m => m.ErrorModule)
   },
-  {path:'addcourse',component:AddcourseComponent}
-,
+  {path:'addcourse',component:AddcourseComponent},
+  {path:'enrolled',component:EnrolledCoursesComponent},
+  { path: 'course/:id', component: CourseDetailComponent },
+
   {
     path: '**',
     title: 'Page Not Found',

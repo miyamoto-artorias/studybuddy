@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap, switchMap, catchError, map } from 'rxjs/operators';
-import { Observable, of, throwError } from 'rxjs';
+import { forkJoin, Observable, of, throwError } from 'rxjs';
 
 
 @Injectable({
@@ -25,7 +25,14 @@ export class AuthService {
       })
     );
   }
-
+  getEnrolledCourses(): Observable<any[]> {
+    const enrollments = JSON.parse(localStorage.getItem('userEnrollments') || '[]');
+    const courseRequests = enrollments.map((enr: any) =>
+      this.http.get(`${this.baseUrl}/courses/${enr.courseId}`)
+    );
+    return courseRequests.length ? forkJoin(courseRequests) as Observable<any[]> : of([]);
+  }
+  
   private storeUserData(user: any): void {
     console.log('Storing user data:', user);
     localStorage.setItem('currentUser', JSON.stringify(user));

@@ -1,0 +1,14 @@
+<h1>{{ course?.title }}</h1>
+<div *ngFor="let chapter of course?.chapters">
+  <h2>{{ chapter.title }}</h2>
+  <p>{{ chapter.description }}</p>
+
+  <div *ngFor="let content of chapter.contents">
+    <ng-container [ngSwitch]="content.type">
+      <video *ngSwitchCase="'video'" controls [src]="content.content" width="500"></video>
+      <a *ngSwitchCase="'pdf'" [href]="convertPdfPath(content.content)" target="_blank">
+        View PDF: {{ content.title }}
+      </a>
+    </ng-container>
+  </div>
+</div>
