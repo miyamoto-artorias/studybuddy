@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { tap, switchMap, catchError, map } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -17,19 +16,28 @@ export class AuthService {
     console.log('Initiating login for:', username);
 
     return this.http.post<any>(`${this.baseUrl}/auth/login`, { username, password }).pipe(
-      tap(response => this.storeUserData(response)), // decoupled user storage
-      switchMap(response => {
-        if (response.userType === 'TEACHER') {
-          return this.getTeacherCourses(response.id).pipe(
-            map(courses => ({ ...response, courses })),
-            catchError(error => {
-              console.error('Courses fetch failed:', error);
-              return of(response); // Continue even if courses fail
-            })
-          );
-        }
-        return of(response);
-      }),
+      tap(response => this.storeUserData(response)),
+      switchMap(response =>
+        this.getUserEnrollments(response.id).pipe(
+          map(enrollments => ({ ...response, enrollments })),
+          switchMap(userWithEnrollments => {
+            if (userWithEnrollments.userType === 'TEACHER') {
+              return this.getTeacherCourses(userWithEnrollments.id).pipe(
+                map(courses => ({ ...userWithEnrollments, courses })),
+                catchError(error => {
+                  console.error('Courses fetch failed:', error);
+                  return of(userWithEnrollments); // continue without courses
+                })
+              );
+            }
+            return of(userWithEnrollments);
+          }),
+          catchError(error => {
+            console.error('Enrollment fetch failed:', error);
+            return of(response); // continue without enrollments
+          })
+        )
+      ),
       catchError(error => {
         console.error('Login failed:', error);
         return throwError(() => error);
@@ -40,7 +48,6 @@ export class AuthService {
   storeUserData(user: any): void {
     console.log('Storing user data:', user);
     localStorage.setItem('currentUser', JSON.stringify(user));
-    // You can store more types of user data here if needed
   }
 
   getTeacherCourses(teacherId?: number): Observable<any> {
@@ -51,6 +58,15 @@ export class AuthService {
       tap(courses => {
         console.log('Storing teacher courses:', courses);
         localStorage.setItem('teacherCourses', JSON.stringify(courses));
+      })
+    );
+  }
+
+  getUserEnrollments(userId: number): Observable<any> {
+    return this.http.get(`${this.baseUrl}/enrollments/user/${userId}`).pipe(
+      tap(enrollments => {
+        console.log('Storing user enrollments:', enrollments);
+        localStorage.setItem('userEnrollments', JSON.stringify(enrollments));
       })
     );
   }
