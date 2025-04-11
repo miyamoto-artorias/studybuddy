@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { tap, switchMap, catchError, map } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 
+
 @Injectable({
   providedIn: 'root'
 })
@@ -12,23 +13,14 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-
-
   login(username: string, password: string): Observable<any> {
     console.log('Initiating login for:', username);
+
     return this.http.post<any>(`${this.baseUrl}/auth/login`, { username, password }).pipe(
-      tap(response => {
-        console.log('Login successful, storing user:', response);
-        localStorage.setItem('currentUser', JSON.stringify(response));
-      }),
+      tap(response => this.storeUserData(response)), // decoupled user storage
       switchMap(response => {
         if (response.userType === 'TEACHER') {
-          console.log('Detected teacher user, fetching courses...');
-          return this.http.get(`${this.baseUrl}/courses/teacher/${response.id}`).pipe(
-            tap(courses => {
-              console.log('Storing teacher courses:', courses);
-              localStorage.setItem('teacherCourses', JSON.stringify(courses));
-            }),
+          return this.getTeacherCourses(response.id).pipe(
             map(courses => ({ ...response, courses })),
             catchError(error => {
               console.error('Courses fetch failed:', error);
@@ -45,12 +37,29 @@ export class AuthService {
     );
   }
 
+  storeUserData(user: any): void {
+    console.log('Storing user data:', user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    // You can store more types of user data here if needed
+  }
+
+  getTeacherCourses(teacherId?: number): Observable<any> {
+    const id = teacherId || this.getUserId();
+    if (!id) return of(null);
+
+    return this.http.get(`${this.baseUrl}/courses/teacher/${id}`).pipe(
+      tap(courses => {
+        console.log('Storing teacher courses:', courses);
+        localStorage.setItem('teacherCourses', JSON.stringify(courses));
+      })
+    );
+  }
+
   logout() {
     console.log('Performing full logout');
     localStorage.clear();
     this.router.navigate(['/login']);
   }
-
 
   isLoggedIn(): boolean {
     const loggedIn = !!localStorage.getItem('currentUser');
@@ -70,18 +79,5 @@ export class AuthService {
   getUserId(): number {
     const user = this.getCurrentUser();
     return user.id || 0;
-  }
-
-  getTeacherCourses(): Observable<any> {
-    if (this.isTeacher()) {
-      const teacherId = this.getUserId();
-      return this.http.get(`${this.baseUrl}/courses/teacher/${teacherId}`).pipe(
-        tap(courses => {
-          localStorage.setItem('teacherCourses', JSON.stringify(courses));
-        })
-      );
-    } else {
-      return of(null);
-    }
   }
 }
