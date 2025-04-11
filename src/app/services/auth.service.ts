@@ -13,37 +13,40 @@ export class AuthService {
   constructor(private http: HttpClient, private router: Router) {}
 
   login(username: string, password: string): Observable<any> {
-    console.log('Initiating login for:', username);
-
     return this.http.post<any>(`${this.baseUrl}/auth/login`, { username, password }).pipe(
-      tap(response => this.storeUserData(response)),
-      switchMap(response =>
-        this.getUserEnrollments(response.id).pipe(
-          map(enrollments => ({ ...response, enrollments })),
-          switchMap(userWithEnrollments => {
-            if (userWithEnrollments.userType === 'TEACHER') {
-              return this.getTeacherCourses(userWithEnrollments.id).pipe(
-                map(courses => ({ ...userWithEnrollments, courses })),
-                catchError(error => {
-                  console.error('Courses fetch failed:', error);
-                  return of(userWithEnrollments); // continue without courses
-                })
-              );
-            }
-            return of(userWithEnrollments);
-          }),
-          catchError(error => {
-            console.error('Enrollment fetch failed:', error);
-            return of(response); // continue without enrollments
-          })
-        )
-      ),
+      tap(user => this.storeUserData(user)),
+      switchMap(user => this.enrichUserWithEnrollments(user)),
+      switchMap(user => this.enrichUserWithCoursesIfTeacher(user)),
       catchError(error => {
         console.error('Login failed:', error);
         return throwError(() => error);
       })
     );
   }
+  
+  private enrichUserWithEnrollments(user: any): Observable<any> {
+    return this.getUserEnrollments(user.id).pipe(
+      map(enrollments => ({ ...user, enrollments })),
+      catchError(error => {
+        console.error('Enrollment fetch failed:', error);
+        return of({ ...user }); // continue without enrollments
+      })
+    );
+  }
+  
+  private enrichUserWithCoursesIfTeacher(user: any): Observable<any> {
+    if (user.userType === 'TEACHER') {
+      return this.getTeacherCourses(user.id).pipe(
+        map(courses => ({ ...user, courses })),
+        catchError(error => {
+          console.error('Courses fetch failed:', error);
+          return of({ ...user }); // continue without courses
+        })
+      );
+    }
+    return of(user);
+  }
+  
 
   storeUserData(user: any): void {
     console.log('Storing user data:', user);
