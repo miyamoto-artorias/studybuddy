@@ -1,63 +1,68 @@
-import {
-  Component,
-  OnInit,
-  ViewChild,
-  ViewContainerRef,
-  ComponentFactoryResolver,
-  Input,
-  Inject,
-  PLATFORM_ID
+import { 
+  Component, OnInit, OnChanges, SimpleChanges, 
+  ViewChild, ViewContainerRef, ComponentFactoryResolver,
+  Inject, PLATFORM_ID, Input 
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { PdfViewerComponent } from 'ng2-pdf-viewer';
 
 @Component({
   selector: 'app-pdf-viewer-wrapper',
   template: `<ng-container #pdfContainer></ng-container>`
 })
-export class PdfViewerWrapperComponent implements OnInit {
-  @ViewChild('pdfContainer', { read: ViewContainerRef, static: true })
+export class PdfViewerWrapperComponent implements OnInit, OnChanges {
+  @ViewChild('pdfContainer', { read: ViewContainerRef, static: true }) 
   container!: ViewContainerRef;
 
-  // Inputs to pass to the PDF viewer
-  @Input() src!: string;
-  @Input() renderText: boolean = true;
-  @Input() originalSize: boolean = false;
-  @Input() customStyle: string = '';
+  @Input() src!: string | ArrayBuffer;
+  @Input() renderText = true;
+  @Input() originalSize = false;
+  @Input() customStyle = '';
 
+  private pdfViewerRef: any;
   private isBrowser: boolean;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private cfr: ComponentFactoryResolver
   ) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
+    this.isBrowser = isPlatformBrowser(platformId);
   }
 
   async ngOnInit() {
-    if (this.isBrowser) {
-      console.log('PdfViewerWrapperComponent: Loading PDF viewer dynamically.');
-      try {
-        const module = await import('ng2-pdf-viewer');
-        const PdfViewerComponent = module.PdfViewerComponent;
-        const factory = this.cfr.resolveComponentFactory(PdfViewerComponent);
-        const componentRef = this.container.createComponent(factory);
-        
-        // Set the inputs for the PDF viewer component
-        componentRef.instance.src = this.src;
-        componentRef.instance.renderText = this.renderText;
-        componentRef.instance.originalSize = this.originalSize;
-        
-        if (this.customStyle) {
-          (componentRef.location.nativeElement as HTMLElement).setAttribute('style', this.customStyle);
-        }
-        
-        console.log('PdfViewerWrapperComponent: PDF viewer loaded successfully.');
-      } catch (error) {
-        console.error('Error loading PDF viewer:', error);
-      }
-    } else {
-      console.log('PdfViewerWrapperComponent: Not running in the browser.');
+    if (!this.isBrowser) return;
+    
+    await this.loadPdfViewer();
+    this.updateViewerSettings();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (this.pdfViewerRef && changes['src']) {
+      this.updateViewerSettings();
     }
   }
-  
+
+  private async loadPdfViewer() {
+    try {
+      const { PdfViewerComponent } = await import('ng2-pdf-viewer');
+      const factory = this.cfr.resolveComponentFactory(PdfViewerComponent);
+      this.pdfViewerRef = this.container.createComponent(factory).instance;
+    } catch (error) {
+      console.error('PDF viewer load error:', error);
+    }
+  }
+
+  private updateViewerSettings() {
+    if (!this.pdfViewerRef) return;
+
+    // Update PDF source
+    this.pdfViewerRef.src = this.src;
+    
+    // Update other properties
+    this.pdfViewerRef.renderText = this.renderText;
+    this.pdfViewerRef.originalSize = this.originalSize;
+    
+    // Trigger change detection
+    this.pdfViewerRef.changeDetectorRef.detectChanges();
+  }
 }

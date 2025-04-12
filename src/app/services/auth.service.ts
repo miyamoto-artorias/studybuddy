@@ -138,4 +138,5 @@ export class AuthService {
     const user = this.getCurrentUser();
     return user.id || 0;
   }
+
 }

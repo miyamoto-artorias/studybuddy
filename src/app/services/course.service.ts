@@ -12,7 +12,11 @@ export class CourseService {
   private baseUrl = 'http://localhost:8081/api/course-content';
   private coursesbaseUrl = 'http://localhost:8081/api/courses';
 
-
+  // In AuthService
+  downloadContent(courseId: number, chapterId: number, contentId: number): Observable<Blob> {
+    const url = `${this.baseUrl}/course/${courseId}/chapter/${chapterId}/download/${contentId}`;
+    return this.http.get(url, { responseType: 'blob' });
+  }
   
 
   createCourse(teacherId: number, courseData: any): Observable<any> {

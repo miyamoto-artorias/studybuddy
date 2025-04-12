@@ -15,7 +15,7 @@ import {
 } from '@elementar-ui/components';
 import { CommonModule } from '@angular/common';
 import { PdfViewerWrapperComponent } from '../../../pdf-viewer-wrapper/pdf-viewer-wrapper.component';
-
+import { CourseService } from '../../../services/course.service';
 @Component({
   selector: 'app-basic',
   // Do not import PdfViewerModule here; we use our wrapper component instead.
@@ -40,7 +40,7 @@ export class BasicComponent implements OnInit {
   selectedChapter: any = null;
   selectedContent: any = null;
 
-  constructor(private sanitizer: DomSanitizer) {}
+  constructor(private sanitizer: DomSanitizer, private courseService: CourseService) {}
 
   ngOnInit(): void {
     // Load enrolled courses from localStorage
@@ -117,10 +117,7 @@ export class BasicComponent implements OnInit {
     }
   }
 
-  selectContent(content: any): void {
-    console.log('Content selected:', content);
-    this.selectedContent = content;
-  }
+
 
   isYoutubeLink(url: string): boolean {
     return url.includes('youtube.com') || url.includes('youtu.be');
@@ -132,6 +129,35 @@ export class BasicComponent implements OnInit {
       url = `https://www.youtube.com/embed/${videoId}`;
     }
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  selectContent(content: any): void {
+    console.log('Content selected:', content);
+    this.selectedContent = { ...content };
+  
+    if (content.type === 'pdf') {
+      const { id: courseId } = this.selectedCourse;
+      const { id: chapterId } = this.selectedChapter;
+      const { id: contentId } = content;
+  
+      this.courseService.downloadContent(courseId, chapterId, contentId)
+        .subscribe({
+          next: blob => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              this.selectedContent = {
+                ...this.selectedContent,
+                downloadUrl: reader.result as ArrayBuffer
+              };
+            };
+            reader.readAsArrayBuffer(blob);
+          },
+          error: err => {
+            console.error('PDF load failed:', err);
+            this.selectedContent = { ...this.selectedContent, error: true };
+          }
+        });
+    }
   }
 
 }
