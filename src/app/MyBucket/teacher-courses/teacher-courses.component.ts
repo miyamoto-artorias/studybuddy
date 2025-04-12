@@ -4,9 +4,10 @@ import { CourseService } from '../../services/course.service';
 import { AuthService } from '../../services/auth.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { IconComponent } from "../../../../projects/components/src/icon/icon/icon.component";
 
 @Component({
-  imports: [CommonModule,ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent],
   selector: 'app-teacher-courses',
   templateUrl: './teacher-courses.component.html',
   styleUrls: ['./teacher-courses.component.scss']
@@ -15,7 +16,8 @@ export class TeacherCoursesComponent implements OnInit {
   teacherCourses: any[] = [];
   selectedCourse: any = null;
   selectedChapter: any = null;
-  
+  showContentForm = false;
+
   // Chapter Form
   chapterForm: FormGroup;
   showChapterForm = false;
@@ -59,7 +61,18 @@ export class TeacherCoursesComponent implements OnInit {
 
   selectChapter(chapter: any): void {
     this.selectedChapter = { ...chapter };
+    this.showContentForm = false; // Reset content form when selecting new chapter
+    this.contentForm.reset(); // Clear previous form entries
+    this.fileToUpload = null; // Clear any selected files
   }
+// Add method to show content form
+showAddContentForm(): void {
+  this.showContentForm = true;
+  // Reset form when opening
+  this.contentForm.reset();
+  this.fileToUpload = null;
+}
+  
 
   showAddChapterForm(): void {
     this.showChapterForm = true;
@@ -90,7 +103,7 @@ export class TeacherCoursesComponent implements OnInit {
 
   addContent(): void {
     if (this.contentForm.invalid || !this.selectedChapter) return;
-
+  
     const contentData = {
       title: this.contentForm.value.title,
       type: this.contentForm.value.type,
@@ -98,15 +111,15 @@ export class TeacherCoursesComponent implements OnInit {
         content: this.contentForm.value.videoUrl 
       } : {})
     };
-
+  
     const formData = new FormData();
     const contentBlob = new Blob([JSON.stringify(contentData)], { type: 'application/json' });
     formData.append('content', contentBlob, 'content.json');
-
+  
     if (this.contentForm.value.type === 'pdf' && this.fileToUpload) {
       formData.append('file', this.fileToUpload, this.fileToUpload.name);
     }
-
+  
     this.courseService.uploadContent(
       this.selectedCourse.id,
       this.selectedChapter.id,
@@ -117,12 +130,14 @@ export class TeacherCoursesComponent implements OnInit {
         this.selectedChapter.contents = this.selectedChapter.contents || [];
         this.selectedChapter.contents.push(newContent);
         this.updateLocalCourses();
+        this.showContentForm = false; // Close form after success
         this.contentForm.reset();
         this.fileToUpload = null;
       },
       error: (err) => {
         console.error('Error adding content:', err);
         alert('Failed to add content');
+        // Keep form open to allow corrections
       }
     });
   }
