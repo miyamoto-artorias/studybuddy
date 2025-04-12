@@ -12,21 +12,54 @@
   </aside>
 
   <!-- Center Panel: Chapters List (for the selected course) -->
-  <section class="chapters-section" *ngIf="selectedCourse">
-    <header>
-      <h2>{{ selectedCourse.title }}</h2>
-      <button class="btn-secondary" (click)="showAddChapterForm()">
-        <emr-icon name="ph:plus"></emr-icon> Add Chapter
-      </button>
-    </header>
-    <ul>
-      <li *ngFor="let chapter of selectedCourse.chapters"
-          [class.active]="selectedChapter && selectedChapter.id === chapter.id"
-          (click)="selectChapter(chapter)">
-        {{ chapter.title }}
-      </li>
-    </ul>
-  </section>
+<!-- Center Panel: Chapters List (for the selected course) -->
+<section class="chapters-section" *ngIf="selectedCourse">
+  <header>
+    <h2>{{ selectedCourse.title }}</h2>
+    <button class="btn-secondary" (click)="showAddChapterForm()">
+      <emr-icon name="ph:plus"></emr-icon> Add Chapter
+    </button>
+  </header>
+  
+  <!-- Chapter Form (visible when showChapterForm is true) -->
+  <div class="chapter-form" *ngIf="showChapterForm">
+    <form [formGroup]="chapterForm" (ngSubmit)="addChapter()">
+      <div class="form-group">
+        <label for="chapterTitle">Title</label>
+        <input id="chapterTitle" type="text" formControlName="title" placeholder="Chapter Title">
+      </div>
+      
+      <div class="form-group">
+        <label for="chapterDescription">Description</label>
+        <input id="chapterDescription" type="text" formControlName="description" placeholder="Chapter Description">
+      </div>
+      
+      <div class="form-group">
+        <label for="chapterType">Type</label>
+        <input id="chapterType" type="text" formControlName="type" placeholder="Chapter Type">
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn-outline" (click)="showChapterForm = false">
+          Cancel
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="chapterForm.invalid">
+          Add Chapter
+        </button>
+      </div>
+    </form>
+  </div>
+  
+  <!-- List of existing chapters -->
+  <ul>
+    <li *ngFor="let chapter of selectedCourse.chapters"
+        [class.active]="selectedChapter && selectedChapter.id === chapter.id"
+        (click)="selectChapter(chapter)">
+      {{ chapter.title }}
+    </li>
+  </ul>
+</section>
+
 
   <!-- Right Panel: Content Section (for the selected chapter) -->
   <section class="content-section" *ngIf="selectedChapter">
