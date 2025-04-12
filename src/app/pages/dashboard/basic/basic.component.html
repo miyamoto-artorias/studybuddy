@@ -1,95 +1,75 @@
-<emr-tab-panel [activeItemId]="activeTabId" compact class="full-panel">
-  <!-- Header: One tab for courses -->
-  <emr-tab-panel-header>
-    <emr-tab-panel-nav>
-      <emr-tab-panel-item [for]="'courses'" matTooltip="Courses" matTooltipPosition="after">
-        <emr-icon name="ph:book-duotone" emrTabPanelItemIcon></emr-icon>
-      </emr-tab-panel-item>
-    </emr-tab-panel-nav>
-  </emr-tab-panel-header>
+<!-- Remove the tab panel wrapper so the layout is directly rendered -->
+<div class="four-panel-container">
+  <!-- Panel 1: Courses List -->
+  <div class="panel courses-panel">
+    <h3>Courses</h3>
+    <ul>
+      <li *ngFor="let course of courses"
+          [class.active]="selectedCourse?.id === course.id"
+          (click)="selectCourse(course)">
+        {{ course.title }}
+      </li>
+    </ul>
+  </div>
 
-  <!-- Aside: Content for the "courses" tab -->
-  <emr-tab-panel-aside>
-    <ng-template [emrTabPanelAsideContent]="'courses'">
-      <!-- Triple-panel layout -->
-      <div class="container-flex">
-        <!-- Left panel: Course List -->
-        <div class="panel courses-panel">
-          <h3>My Courses</h3>
-          <ul>
-            <li *ngFor="let course of courses"
-                [class.active]="selectedCourse?.id === course.id"
-                (click)="selectCourse(course)">
-              {{ course.title }}
-            </li>
-          </ul>
-        </div>
+  <!-- Panel 2: Chapters List for the selected course -->
+  <div class="panel chapters-panel" *ngIf="selectedCourse">
+    <h3>Chapters</h3>
+    <ul>
+      <li *ngFor="let chapter of selectedCourse.chapters"
+          [class.active]="selectedChapter?.id === chapter.id"
+          (click)="selectChapter(chapter)">
+        {{ chapter.title }}
+      </li>
+    </ul>
+  </div>
 
-        <!-- Middle panel: Chapters List -->
-        <div class="panel chapters-panel" *ngIf="selectedCourse">
-          <h3>Chapters</h3>
-          <ul>
-            <li *ngFor="let chapter of selectedCourse.chapters"
-                [class.active]="selectedChapter?.id === chapter.id"
-                (click)="selectChapter(chapter)">
-              {{ chapter.title }}
-            </li>
-          </ul>
-        </div>
+  <!-- Panel 3: Content List for the selected chapter -->
+  <div class="panel content-list-panel" *ngIf="selectedChapter">
+    <h3>Contents</h3>
+    <ul>
+      <li *ngFor="let content of selectedChapter.contents"
+          [class.active]="selectedContent?.id === content.id"
+          (click)="selectContent(content)">
+        {{ content.title }}
+      </li>
+    </ul>
+  </div>
 
-        <!-- Right panel: Content Display -->
-        <div class="panel content-panel">
-          <div *ngIf="selectedChapter && selectedChapter.contents?.length; else noContent">
-            <h3>Chapter Contents</h3>
-            <!-- Horizontal list of content items -->
-            <ul class="content-list">
-              <li *ngFor="let content of selectedChapter.contents"
-                  [class.active]="selectedContent?.id === content.id"
-                  (click)="selectContent(content)">
-                {{ content.title }}
-              </li>
-            </ul>
-            <!-- Display the selected content -->
-            <div class="display-area">
-              <ng-container [ngSwitch]="selectedContent?.type">
-                <!-- Use PDF viewer wrapper for PDFs -->
-                <div *ngSwitchCase="'pdf'">
-                  <app-pdf-viewer-wrapper
-                    [src]="selectedContent.content"
-                    [renderText]="true"
-                    [originalSize]="false"
-                    customStyle="width: 100%; height: 700px;">
-                  </app-pdf-viewer-wrapper>
-                </div>
-                <!-- Video display -->
-                <div *ngSwitchCase="'video'" class="video-container">
-                  <ng-container *ngIf="isYoutubeLink(selectedContent.content); else localVideo">
-                    <iframe width="100%" height="100%"
-                            [src]="getSafeYoutubeUrl(selectedContent.content)"
-                            frameborder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen>
-                    </iframe>
-                  </ng-container>
-                  <ng-template #localVideo>
-                    <video controls style="width: 100%; height: 100%;">
-                      <source [src]="selectedContent.content" type="video/mp4">
-                      Your browser does not support the video tag.
-                    </video>
-                  </ng-template>
-                </div>
-                <!-- Fallback -->
-                <div *ngSwitchDefault class="empty-content">
-                  No display available for this content type.
-                </div>
-              </ng-container>
-            </div>
-          </div>
-          <ng-template #noContent>
-            <div class="empty-content">Select a chapter and content to display.</div>
-          </ng-template>
-        </div>
+  <!-- Panel 4: Content Display (PDF or Video) -->
+  <div class="panel content-display-panel" *ngIf="selectedContent">
+    <h3>Display</h3>
+    <ng-container [ngSwitch]="selectedContent?.type">
+      <!-- PDF content via our PDF viewer wrapper -->
+      <div *ngSwitchCase="'pdf'">
+        <app-pdf-viewer-wrapper
+          [src]="selectedContent.content"
+          [renderText]="true"
+          [originalSize]="false"
+          customStyle="width: 100%; height: 700px;">
+        </app-pdf-viewer-wrapper>
       </div>
-    </ng-template>
-  </emr-tab-panel-aside>
-</emr-tab-panel>
+      <!-- Video content: Use iframe for YouTube links or native <video> for others -->
+      <div *ngSwitchCase="'video'" class="video-container">
+        <ng-container *ngIf="isYoutubeLink(selectedContent.content); else localVideo">
+          <iframe width="100%" height="100%"
+                  [src]="getSafeYoutubeUrl(selectedContent.content)"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen>
+          </iframe>
+        </ng-container>
+        <ng-template #localVideo>
+          <video controls style="width: 100%; height: 100%;">
+            <source [src]="selectedContent.content" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </ng-template>
+      </div>
+      <!-- Fallback if type not recognized -->
+      <div *ngSwitchDefault>
+        <p>No display available for this content type.</p>
+      </div>
+    </ng-container>
+  </div>
+</div>

@@ -1,32 +1,33 @@
-.full-panel {
-  height: 100vh; // full viewport height
-}
-
-.container-flex {
+.four-panel-container {
   display: flex;
-  height: calc(100% - 50px); // reduce height based on header, adjust as needed
+  height: 100vh; /* Occupies full viewport height */
 }
 
 .panel {
-  overflow-y: auto;
   padding: 1rem;
+  overflow-y: auto;
+  border-right: 1px solid #ccc;
 }
 
 .courses-panel {
-  flex: 0 0 25%; // 25% width for courses
-  border-right: 1px solid #ccc;
-  min-width: 200px;
+  flex: 0 0 20%; /* 20% width for courses */
+  min-width: 150px;
 }
 
 .chapters-panel {
-  flex: 0 0 25%; // 25% width for chapters
-  border-right: 1px solid #ccc;
-  min-width: 200px;
+  flex: 0 0 20%; /* 20% width for chapters */
+  min-width: 150px;
 }
 
-.content-panel {
-  flex: 1; // takes the remaining width (approx 50%)
+.content-list-panel {
+  flex: 0 0 20%; /* 20% width for content list */
+  min-width: 150px;
+}
+
+.content-display-panel {
+  flex: 1; /* Takes the remaining width */
   min-width: 300px;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,9 +41,9 @@ ul {
 }
 
 li {
-  cursor: pointer;
   padding: 8px;
   border-bottom: 1px solid #ddd;
+  cursor: pointer;
 }
 
 li.active {
@@ -50,30 +51,23 @@ li.active {
   font-weight: bold;
 }
 
-.content-list {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+/* Optional: Improve the appearance of the content display area */
+.content-display-panel > h3 {
   margin-bottom: 1rem;
-  padding: 0;
-}
-
-.display-area {
-  width: 100%;
-  height: 100%;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  padding: 10px;
 }
 
 .video-container {
   width: 100%;
-  height: 500px; // adjust as needed
+  height: 500px; /* Adjust as needed */
 }
 
-.empty-content {
-  text-align: center;
-  color: #888;
-  font-size: 1.2rem;
-  padding: 20px;
+@media (max-width: 768px) {
+  /* For smaller screens you may want to stack panels vertically */
+  .four-panel-container {
+    flex-direction: column;
+  }
+  .panel {
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+  }
 }
