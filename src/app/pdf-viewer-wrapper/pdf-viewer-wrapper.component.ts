@@ -46,23 +46,28 @@ export class PdfViewerWrapperComponent implements OnInit, OnChanges {
     try {
       const { PdfViewerComponent } = await import('ng2-pdf-viewer');
       const factory = this.cfr.resolveComponentFactory(PdfViewerComponent);
-      this.pdfViewerRef = this.container.createComponent(factory).instance;
+      const componentRef = this.container.createComponent(factory);
+      // Store the full componentRef so that you can later access changeDetectorRef
+      this.pdfViewerRef = componentRef;
     } catch (error) {
       console.error('PDF viewer load error:', error);
     }
   }
+  
 
   private updateViewerSettings() {
     if (!this.pdfViewerRef) return;
-
-    // Update PDF source
-    this.pdfViewerRef.src = this.src;
-    
-    // Update other properties
-    this.pdfViewerRef.renderText = this.renderText;
-    this.pdfViewerRef.originalSize = this.originalSize;
-    
-    // Trigger change detection
+  
+    // Get the instance from the full component reference.
+    const pdfComponentInstance = this.pdfViewerRef.instance;
+  
+    // Update PDF source and other properties.
+    pdfComponentInstance.src = this.src;
+    pdfComponentInstance.renderText = this.renderText;
+    pdfComponentInstance.originalSize = this.originalSize;
+  
+    // Trigger change detection using the componentRef's changeDetectorRef.
     this.pdfViewerRef.changeDetectorRef.detectChanges();
   }
+  
 }

@@ -71,3 +71,12 @@ li.active {
     border-bottom: 1px solid #ccc;
   }
 }
+.content-display-panel {
+  flex: 1;
+  min-width: 300px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;    /* Let children take full width */
+  justify-content: flex-start; /* Start from the top */
+}

@@ -16,6 +16,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { PdfViewerWrapperComponent } from '../../../pdf-viewer-wrapper/pdf-viewer-wrapper.component';
 import { CourseService } from '../../../services/course.service';
+import { take } from 'rxjs';
 @Component({
   selector: 'app-basic',
   // Do not import PdfViewerModule here; we use our wrapper component instead.
@@ -141,22 +142,22 @@ export class BasicComponent implements OnInit {
       const { id: contentId } = content;
   
       this.courseService.downloadContent(courseId, chapterId, contentId)
-        .subscribe({
-          next: blob => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              this.selectedContent = {
-                ...this.selectedContent,
-                downloadUrl: reader.result as ArrayBuffer
-              };
-            };
-            reader.readAsArrayBuffer(blob);
-          },
-          error: err => {
-            console.error('PDF load failed:', err);
-            this.selectedContent = { ...this.selectedContent, error: true };
-          }
-        });
+      .pipe(take(1))
+      .subscribe({
+        next: blob => {
+          const blobUrl = URL.createObjectURL(blob);
+          console.log('PDF blob URL:', blobUrl);
+          this.selectedContent = {
+            ...this.selectedContent,
+            downloadUrl: blobUrl
+          };
+        },
+        error: err => {
+          console.error('PDF load failed:', err);
+          this.selectedContent = { ...this.selectedContent, error: true };
+        }
+      });
+    
     }
   }
 
