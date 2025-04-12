@@ -14,12 +14,13 @@ import { AddcourseComponent } from './MyBucket/addcourse/addcourse.component';
 import { AddChapterComponent } from './MyBucket/add-chapter/add-chapter.component';
 import { LoginComponent } from './MyBucket/login/login.component';
 import { BasicComponent } from './pages/dashboard/basic/basic.component';
+import { TeacherCoursesComponent } from './MyBucket/teacher-courses/teacher-courses.component';
 
 @Component({
   selector: 'app-root',
   imports: [
     RouterOutlet, LoginComponent,BasicComponent,
-    ScreenLoaderComponent,
+    ScreenLoaderComponent,TeacherCoursesComponent,
     PageLoadingBarComponent,
     AddcourseComponent
 ],

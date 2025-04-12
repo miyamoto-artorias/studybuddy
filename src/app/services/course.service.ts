@@ -73,4 +73,17 @@ export class CourseService {
       })
     );
   }
+
+  // Add to CourseService
+createChapter(courseId: number, chapterData: any): Observable<any> {
+  return this.http.post(
+    `http://localhost:8081/api/course-chapters/course/${courseId}`,
+    chapterData
+  ).pipe(
+    catchError(error => {
+      console.error('Chapter creation failed:', error);
+      throw error;
+    })
+  );
+}
 }

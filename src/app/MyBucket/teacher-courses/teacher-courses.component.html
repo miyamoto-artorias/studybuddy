@@ -1,0 +1,69 @@
+<!-- teacher-courses.component.html -->
+<div class="course-management-container">
+    <!-- Course List -->
+    <div class="course-list">
+      <h2>Your Courses</h2>
+      <div class="course-item" 
+           *ngFor="let course of teacherCourses"
+           [class.selected]="course.id === selectedCourse?.id"
+           (click)="selectCourse(course)">
+        {{ course.title }}
+      </div>
+    </div>
+  
+    <!-- Chapter Management -->
+    <div class="chapter-management" *ngIf="selectedCourse">
+      <div class="chapter-list">
+        <h3>Chapters in {{ selectedCourse.title }}</h3>
+        <button (click)="addChapter()">Add New Chapter</button>
+        
+        <div class="chapter-form" *ngIf="addChapterForm.controls['title'].value">
+          <input formControlName="title" placeholder="Chapter Title">
+          <textarea formControlName="description" placeholder="Chapter Description"></textarea>
+          <select formControlName="type">
+            <option value="">Select Type</option>
+            <option value="lesson">Lesson</option>
+            <option value="practice">Practice</option>
+          </select>
+          <button (click)="addChapter()">Save Chapter</button>
+        </div>
+  
+        <div class="chapter-item" 
+             *ngFor="let chapter of selectedCourse.chapters"
+             [class.selected]="chapter.id === selectedChapter?.id"
+             (click)="selectChapter(chapter)">
+          {{ chapter.title }}
+        </div>
+      </div>
+  
+      <!-- Content Management -->
+      <div class="content-management" *ngIf="selectedChapter">
+        <h4>Content for {{ selectedChapter.title }}</h4>
+        <div class="content-form">
+          <select formControlName="type" (change)="addContentForm.controls['content'].reset()">
+            <option value="">Select Content Type</option>
+            <option value="video">Video</option>
+            <option value="pdf">PDF</option>
+          </select>
+  
+          <input formControlName="title" placeholder="Content Title">
+  
+          <div *ngIf="addContentForm.value.type === 'video'">
+            <input formControlName="content" placeholder="Video URL">
+          </div>
+  
+          <div *ngIf="addContentForm.value.type === 'pdf'">
+            <input type="file" (change)="handleFileInput($event)">
+          </div>
+  
+          <button (click)="addContent()">Add Content</button>
+        </div>
+  
+        <div class="content-item" *ngFor="let content of selectedChapter.contents">
+          <h5>{{ content.title }}</h5>
+          <p>Type: {{ content.type | uppercase }}</p>
+          <p *ngIf="content.type === 'video'">URL: {{ content.content }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
