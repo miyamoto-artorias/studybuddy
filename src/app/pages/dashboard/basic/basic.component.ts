@@ -1,10 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { take } from 'rxjs';
 import {
-  IconComponent
-} from '@elementar-ui/components';
-import { MatTooltip } from '@angular/material/tooltip';
-import {
+  IconComponent,
   TabPanelAsideContentDirective,
   TabPanelAsideComponent,
   TabPanelComponent,
@@ -13,16 +11,19 @@ import {
   TabPanelItemIconDirective,
   TabPanelNavComponent
 } from '@elementar-ui/components';
+import { MatTooltip } from '@angular/material/tooltip';
 import { CommonModule } from '@angular/common';
 import { PdfViewerWrapperComponent } from '../../../pdf-viewer-wrapper/pdf-viewer-wrapper.component';
 import { CourseService } from '../../../services/course.service';
-import { take } from 'rxjs';
+
 @Component({
   selector: 'app-basic',
-  // Do not import PdfViewerModule here; we use our wrapper component instead.
+  standalone: true,
   imports: [
+    CommonModule,
     IconComponent,
-    MatTooltip,CommonModule,PdfViewerWrapperComponent,
+    MatTooltip,
+    PdfViewerWrapperComponent,
     TabPanelItemIconDirective,
     TabPanelItemComponent,
     TabPanelAsideContentDirective,
@@ -34,8 +35,8 @@ import { take } from 'rxjs';
   templateUrl: './basic.component.html',
   styleUrls: ['./basic.component.scss']
 })
-export class BasicComponent implements OnInit {
-  activeTabId = 'courses';
+export class BasicComponent implements OnInit, OnDestroy {
+  activeTabId = 'course-1'; // Default to first course
   courses: any[] = [];
   selectedCourse: any = null;
   selectedChapter: any = null;
@@ -49,8 +50,7 @@ export class BasicComponent implements OnInit {
     if (stored) {
       this.courses = JSON.parse(stored);
     } else {
-      console.warn('No enrolledCourses in localStorage, using dummy data for testing.');
-      // Dummy data for testing
+      console.warn('No enrolledCourses in localStorage, using dummy data.');
       this.courses = [
         {
           id: 1,
@@ -95,30 +95,61 @@ export class BasicComponent implements OnInit {
     }
   }
 
-
-  
-
-  ////////////////////////////
   selectCourse(course: any): void {
     console.log('Course selected:', course);
     this.selectedCourse = course;
-    // Clear previous selections.
+    this.activeTabId = `course-${course.id}`;
     this.selectedChapter = null;
     this.selectedContent = null;
+    // Clean up any existing Blob URL
+    this.revokeBlobUrl();
   }
 
   selectChapter(chapter: any): void {
     console.log('Chapter selected:', chapter);
     this.selectedChapter = chapter;
-    // Automatically select the first content item if available.
     if (chapter.contents && chapter.contents.length) {
       this.selectContent(chapter.contents[0]);
     } else {
       this.selectedContent = null;
+      this.revokeBlobUrl();
     }
   }
 
+  selectContent(content: any): void {
+    console.log('Content selected:', content);
+    this.revokeBlobUrl();
+    this.selectedContent = { ...content };
 
+    if (content.type === 'pdf') {
+      const { id: courseId } = this.selectedCourse;
+      const { id: chapterId } = this.selectedChapter;
+      const { id: contentId } = content;
+
+      this.courseService.downloadContent(courseId, chapterId, contentId)
+        .pipe(take(1))
+        .subscribe({
+          next: (blob) => {
+            if (blob instanceof Blob) {
+              const blobUrl = URL.createObjectURL(blob);
+              console.log('PDF blob URL:', blobUrl);
+              this.selectedContent = {
+                ...this.selectedContent,
+                downloadUrl: blobUrl,
+                error: false
+              };
+            } else {
+              console.error('Invalid blob response:', blob);
+              this.selectedContent = { ...this.selectedContent, error: true };
+            }
+          },
+          error: (err) => {
+            console.error('PDF load failed:', err);
+            this.selectedContent = { ...this.selectedContent, error: true };
+          }
+        });
+    }
+  }
 
   isYoutubeLink(url: string): boolean {
     return url.includes('youtube.com') || url.includes('youtu.be');
@@ -126,39 +157,20 @@ export class BasicComponent implements OnInit {
 
   getSafeYoutubeUrl(url: string): SafeResourceUrl {
     if (url.includes('youtube.com/watch')) {
-      const videoId = url.split('v=')[1].split('&')[0];
+      const videoId = url.split('v=')[1]?.split('&')[0];
       url = `https://www.youtube.com/embed/${videoId}`;
     }
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
-  selectContent(content: any): void {
-    console.log('Content selected:', content);
-    this.selectedContent = { ...content };
-  
-    if (content.type === 'pdf') {
-      const { id: courseId } = this.selectedCourse;
-      const { id: chapterId } = this.selectedChapter;
-      const { id: contentId } = content;
-  
-      this.courseService.downloadContent(courseId, chapterId, contentId)
-      .pipe(take(1))
-      .subscribe({
-        next: blob => {
-          const blobUrl = URL.createObjectURL(blob);
-          console.log('PDF blob URL:', blobUrl);
-          this.selectedContent = {
-            ...this.selectedContent,
-            downloadUrl: blobUrl
-          };
-        },
-        error: err => {
-          console.error('PDF load failed:', err);
-          this.selectedContent = { ...this.selectedContent, error: true };
-        }
-      });
-    
+  private revokeBlobUrl(): void {
+    if (this.selectedContent?.downloadUrl) {
+      URL.revokeObjectURL(this.selectedContent.downloadUrl);
+      this.selectedContent.downloadUrl = null;
     }
   }
 
+  ngOnDestroy(): void {
+    this.revokeBlobUrl();
+  }
 }

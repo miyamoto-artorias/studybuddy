@@ -1,91 +1,93 @@
-.four-panel-container {
+.emr-tab-panel {
+  width: 100%;
+  max-width: none;
+  margin-right: 0;
+  border-right: none;
+}
+
+.emr-tab-panel-body,
+.emr-tab-panel-aside {
+  width: 100%;
+}
+
+.emr-tab-panel-body .flex {
+  width: 100%;
+}
+
+/* Content container to hold list and display side by side */
+.content-container {
   display: flex;
-  height: 100vh; /* Occupies full viewport height */
+  height: 100%;
+  width: 100%;
 }
 
-.panel {
-  padding: 1rem;
-  overflow-y: auto;
-  border-right: 1px solid #ccc;
+/* Content list styling */
+.content-list {
+  width: 300px;
+  padding: 16px;
+  border-right: 1px solid #e0e0e0;
+  background: #f9f9f9;
+
+  h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #e0e0e0;
+    }
+
+    &.active {
+      background: #007bff;
+      color: white;
+    }
+  }
 }
 
-.courses-panel {
-  flex: 0 0 20%; /* 20% width for courses */
-  min-width: 150px;
+/* Content display styling */
+.content-display {
+  flex: 1;
+  padding: 16px;
+  overflow: auto;
+
+  .loading-message {
+    padding: 16px;
+    color: #666;
+  }
+
+  .empty-content {
+    padding: 16px;
+    color: #666;
+    font-style: italic;
+  }
 }
 
-.chapters-panel {
-  flex: 0 0 20%; /* 20% width for chapters */
-  min-width: 150px;
-}
-
-.content-list-panel {
-  flex: 0 0 20%; /* 20% width for content list */
-  min-width: 150px;
-}
-
-.content-display-panel {
-  flex: 1; /* Takes the remaining width */
-  min-width: 300px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-li {
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-  cursor: pointer;
-}
-
-li.active {
-  background-color: #e0e0e0;
-  font-weight: bold;
-}
-
-/* Optional: Improve the appearance of the content display area */
-.content-display-panel > h3 {
-  margin-bottom: 1rem;
+/* Ensure PDF viewer and video take appropriate space */
+app-pdf-viewer-wrapper {
+  display: block;
 }
 
 .video-container {
-  width: 100%;
-  height: 500px; /* Adjust as needed */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-@media (max-width: 768px) {
-  /* For smaller screens you may want to stack panels vertically */
-  .four-panel-container {
-    flex-direction: column;
-  }
-  .panel {
-    border-right: none;
-    border-bottom: 1px solid #ccc;
-  }
-}
-.content-display-panel {
-  flex: 1;
-  min-width: 300px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;    /* Let children take full width */
-  justify-content: flex-start; /* Start from the top */
-}
-.content-display-panel {
-  flex: 1;
-  min-width: 300px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;     /* Allow full width for children */
-  justify-content: flex-start;  /* Start at the top */
+/* Fix for iframe and video responsiveness */
+iframe,
+video {
+  max-width: 100%;
 }
