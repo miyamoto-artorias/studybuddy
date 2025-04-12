@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { tap, switchMap, catchError, map } from 'rxjs/operators';
 import { forkJoin, Observable, of, throwError } from 'rxjs';
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -19,12 +18,14 @@ export class AuthService {
       switchMap(user => this.enrichUserWithEnrollments(user)),
       switchMap(user => this.enrichUserWithCoursesIfTeacher(user)),
       switchMap(user => this.enrichUserWithCards(user)),
+      switchMap(user => this.enrichUserWithEnrolledCourses(user)),
       catchError(error => {
         console.error('Login failed:', error);
         return throwError(() => error);
       })
     );
   }
+
   getEnrolledCourses(): Observable<any[]> {
     const enrollments = JSON.parse(localStorage.getItem('userEnrollments') || '[]');
     const courseRequests = enrollments.map((enr: any) =>
@@ -66,6 +67,20 @@ export class AuthService {
       map(cards => ({ ...user, cards })),
       catchError(error => {
         console.error('User cards fetch failed:', error);
+        return of({ ...user });
+      })
+    );
+  }
+
+  private enrichUserWithEnrolledCourses(user: any): Observable<any> {
+    return this.getEnrolledCourses().pipe(
+      map(courses => {
+        console.log('Storing enrolled courses:', courses);
+        localStorage.setItem('enrolledCourses', JSON.stringify(courses));
+        return { ...user, enrolledCourses: courses };
+      }),
+      catchError(error => {
+        console.error('Enrolled courses fetch failed:', error);
         return of({ ...user });
       })
     );
