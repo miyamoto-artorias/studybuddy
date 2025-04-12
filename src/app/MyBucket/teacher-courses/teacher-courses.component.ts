@@ -2,11 +2,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CourseService } from '../../services/course.service';
 import { AuthService } from '../../services/auth.service';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  imports: [CommonModule],
+  imports: [CommonModule,ReactiveFormsModule],
   selector: 'app-teacher-courses',
   templateUrl: './teacher-courses.component.html',
   styleUrls: ['./teacher-courses.component.scss']
@@ -15,8 +15,13 @@ export class TeacherCoursesComponent implements OnInit {
   teacherCourses: any[] = [];
   selectedCourse: any = null;
   selectedChapter: any = null;
-  addChapterForm: FormGroup;
-  addContentForm: FormGroup;
+  
+  // Chapter Form
+  chapterForm: FormGroup;
+  showChapterForm = false;
+  
+  // Content Form
+  contentForm: FormGroup;
   fileToUpload: File | null = null;
 
   constructor(
@@ -24,16 +29,16 @@ export class TeacherCoursesComponent implements OnInit {
     private authService: AuthService,
     private fb: FormBuilder
   ) {
-    this.addChapterForm = this.fb.group({
+    this.chapterForm = this.fb.group({
       title: ['', Validators.required],
       description: ['', Validators.required],
       type: ['', Validators.required]
     });
 
-    this.addContentForm = this.fb.group({
+    this.contentForm = this.fb.group({
       title: ['', Validators.required],
       type: ['', Validators.required],
-      content: ['']
+      videoUrl: ['']
     });
   }
 
@@ -47,50 +52,58 @@ export class TeacherCoursesComponent implements OnInit {
   }
 
   selectCourse(course: any): void {
-    this.selectedCourse = course;
+    this.selectedCourse = { ...course };
     this.selectedChapter = null;
+    this.showChapterForm = false;
   }
 
   selectChapter(chapter: any): void {
-    this.selectedChapter = chapter;
+    this.selectedChapter = { ...chapter };
+  }
+
+  showAddChapterForm(): void {
+    this.showChapterForm = true;
   }
 
   handleFileInput(event: any): void {
-    this.fileToUpload = event.target.files.item(0);
+    this.fileToUpload = event.target.files[0];
   }
 
   addChapter(): void {
-    if (this.addChapterForm.invalid || !this.selectedCourse) return;
+    if (this.chapterForm.invalid || !this.selectedCourse) return;
 
-    const chapterData = this.addChapterForm.value;
-    this.courseService.createChapter(this.selectedCourse.id, chapterData)
+    this.courseService.createChapter(this.selectedCourse.id, this.chapterForm.value)
       .subscribe({
         next: (newChapter) => {
-          if (!this.selectedCourse.chapters) this.selectedCourse.chapters = [];
+          this.selectedCourse.chapters = this.selectedCourse.chapters || [];
           this.selectedCourse.chapters.push(newChapter);
-          this.updateLocalStorage();
-          this.addChapterForm.reset();
+          this.updateLocalCourses();
+          this.chapterForm.reset();
+          this.showChapterForm = false;
         },
-        error: (err) => console.error('Error adding chapter:', err)
+        error: (err) => {
+          console.error('Error adding chapter:', err);
+          alert('Failed to add chapter');
+        }
       });
   }
 
   addContent(): void {
-    if (this.addContentForm.invalid || !this.selectedChapter) return;
+    if (this.contentForm.invalid || !this.selectedChapter) return;
 
-    const contentData = this.addContentForm.value;
+    const contentData = {
+      title: this.contentForm.value.title,
+      type: this.contentForm.value.type,
+      ...(this.contentForm.value.type === 'video' ? { 
+        content: this.contentForm.value.videoUrl 
+      } : {})
+    };
+
     const formData = new FormData();
-    
-    // Create content JSON blob
-    const contentBlob = new Blob([JSON.stringify({
-      title: contentData.title,
-      type: contentData.type,
-      ...(contentData.type === 'video' ? { content: contentData.content } : {})
-    })], { type: 'application/json' });
-
+    const contentBlob = new Blob([JSON.stringify(contentData)], { type: 'application/json' });
     formData.append('content', contentBlob, 'content.json');
 
-    if (contentData.type === 'pdf' && this.fileToUpload) {
+    if (this.contentForm.value.type === 'pdf' && this.fileToUpload) {
       formData.append('file', this.fileToUpload, this.fileToUpload.name);
     }
 
@@ -98,22 +111,26 @@ export class TeacherCoursesComponent implements OnInit {
       this.selectedCourse.id,
       this.selectedChapter.id,
       contentData,
-      this.fileToUpload!
+      this.fileToUpload as File
     ).subscribe({
       next: (newContent) => {
-        if (!this.selectedChapter.contents) this.selectedChapter.contents = [];
+        this.selectedChapter.contents = this.selectedChapter.contents || [];
         this.selectedChapter.contents.push(newContent);
-        this.updateLocalStorage();
-        this.addContentForm.reset();
+        this.updateLocalCourses();
+        this.contentForm.reset();
         this.fileToUpload = null;
       },
-      error: (err) => console.error('Error adding content:', err)
+      error: (err) => {
+        console.error('Error adding content:', err);
+        alert('Failed to add content');
+      }
     });
   }
 
-  private updateLocalStorage(): void {
+  private updateLocalCourses(): void {
     const index = this.teacherCourses.findIndex(c => c.id === this.selectedCourse.id);
     this.teacherCourses[index] = this.selectedCourse;
     localStorage.setItem('teacherCourses', JSON.stringify(this.teacherCourses));
+    this.loadTeacherCourses();
   }
 }

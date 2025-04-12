@@ -1,46 +1,53 @@
 <!-- teacher-courses.component.html -->
-<div class="course-management-container">
+<div class="management-container">
     <!-- Course List -->
     <div class="course-list">
       <h2>Your Courses</h2>
       <div class="course-item" 
            *ngFor="let course of teacherCourses"
-           [class.selected]="course.id === selectedCourse?.id"
+           [class.active]="course.id === selectedCourse?.id"
            (click)="selectCourse(course)">
         {{ course.title }}
       </div>
     </div>
   
-    <!-- Chapter Management -->
-    <div class="chapter-management" *ngIf="selectedCourse">
-      <div class="chapter-list">
-        <h3>Chapters in {{ selectedCourse.title }}</h3>
-        <button (click)="addChapter()">Add New Chapter</button>
-        
-        <div class="chapter-form" *ngIf="addChapterForm.controls['title'].value">
+    <!-- Selected Course Section -->
+    <div class="course-details" *ngIf="selectedCourse">
+      <div class="chapter-section">
+        <h3>{{ selectedCourse.title }} Chapters</h3>
+        <button (click)="showAddChapterForm()">Add Chapter</button>
+  
+        <!-- Add Chapter Form -->
+        <form *ngIf="showChapterForm" [formGroup]="chapterForm" (ngSubmit)="addChapter()">
           <input formControlName="title" placeholder="Chapter Title">
-          <textarea formControlName="description" placeholder="Chapter Description"></textarea>
+          <textarea formControlName="description" placeholder="Description"></textarea>
           <select formControlName="type">
             <option value="">Select Type</option>
             <option value="lesson">Lesson</option>
             <option value="practice">Practice</option>
           </select>
-          <button (click)="addChapter()">Save Chapter</button>
-        </div>
+          <button type="submit">Save Chapter</button>
+          <button type="button" (click)="showChapterForm = false">Cancel</button>
+        </form>
   
-        <div class="chapter-item" 
-             *ngFor="let chapter of selectedCourse.chapters"
-             [class.selected]="chapter.id === selectedChapter?.id"
-             (click)="selectChapter(chapter)">
-          {{ chapter.title }}
+        <!-- Chapters List -->
+        <div class="chapter-list">
+          <div class="chapter-item" 
+               *ngFor="let chapter of selectedCourse.chapters"
+               [class.active]="chapter.id === selectedChapter?.id"
+               (click)="selectChapter(chapter)">
+            {{ chapter.title }}
+          </div>
         </div>
       </div>
   
-      <!-- Content Management -->
-      <div class="content-management" *ngIf="selectedChapter">
-        <h4>Content for {{ selectedChapter.title }}</h4>
-        <div class="content-form">
-          <select formControlName="type" (change)="addContentForm.controls['content'].reset()">
+      <!-- Selected Chapter Content -->
+      <div class="content-section" *ngIf="selectedChapter">
+        <h4>{{ selectedChapter.title }} Content</h4>
+        
+        <!-- Add Content Form -->
+        <form [formGroup]="contentForm" (ngSubmit)="addContent()">
+          <select formControlName="type" (change)="contentForm.controls['videoUrl'].reset()">
             <option value="">Select Content Type</option>
             <option value="video">Video</option>
             <option value="pdf">PDF</option>
@@ -48,21 +55,24 @@
   
           <input formControlName="title" placeholder="Content Title">
   
-          <div *ngIf="addContentForm.value.type === 'video'">
-            <input formControlName="content" placeholder="Video URL">
+          <div *ngIf="contentForm.value.type === 'video'">
+            <input formControlName="videoUrl" placeholder="YouTube URL">
           </div>
   
-          <div *ngIf="addContentForm.value.type === 'pdf'">
-            <input type="file" (change)="handleFileInput($event)">
+          <div *ngIf="contentForm.value.type === 'pdf'">
+            <input type="file" (change)="handleFileInput($event)" accept=".pdf">
           </div>
   
-          <button (click)="addContent()">Add Content</button>
-        </div>
+          <button type="submit">Add Content</button>
+        </form>
   
-        <div class="content-item" *ngFor="let content of selectedChapter.contents">
-          <h5>{{ content.title }}</h5>
-          <p>Type: {{ content.type | uppercase }}</p>
-          <p *ngIf="content.type === 'video'">URL: {{ content.content }}</p>
+        <!-- Content List -->
+        <div class="content-list">
+          <div class="content-item" *ngFor="let content of selectedChapter.contents">
+            <h5>{{ content.title }}</h5>
+            <p>Type: {{ content.type | uppercase }}</p>
+            <p *ngIf="content.type === 'video'">URL: {{ content.content }}</p>
+          </div>
         </div>
       </div>
     </div>
