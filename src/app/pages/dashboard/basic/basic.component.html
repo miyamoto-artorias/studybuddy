@@ -42,7 +42,8 @@
     <ng-container [ngSwitch]="selectedContent?.type">
       <!-- PDF content via our PDF viewer wrapper -->
       <div *ngSwitchCase="'pdf'">
-        <div style="width: 100%; height: 700px;">
+        <div style="width: 100%; height: 700px; border: 1px solid #f00;"> 
+          <!-- Added a border to help see the container -->
           <app-pdf-viewer-wrapper
             *ngIf="selectedContent.downloadUrl"
             [src]="selectedContent.downloadUrl"
@@ -55,6 +56,7 @@
           {{ selectedContent.error ? 'Error loading content' : 'Loading PDF...' }}
         </div>
       </div>
+          
       
       <!-- Video content: Use iframe for YouTube links or native <video> for others -->
       <div *ngSwitchCase="'video'" class="video-container">

@@ -80,3 +80,12 @@ li.active {
   align-items: stretch;    /* Let children take full width */
   justify-content: flex-start; /* Start from the top */
 }
+.content-display-panel {
+  flex: 1;
+  min-width: 300px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;     /* Allow full width for children */
+  justify-content: flex-start;  /* Start at the top */
+}

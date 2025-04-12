@@ -1,25 +1,33 @@
 import { 
-  Component, OnInit, OnChanges, SimpleChanges, 
-  ViewChild, ViewContainerRef, ComponentFactoryResolver,
-  Inject, PLATFORM_ID, Input 
+  Component, 
+  OnInit, 
+  OnChanges, 
+  SimpleChanges, 
+  ViewChild, 
+  ViewContainerRef, 
+  ComponentFactoryResolver,
+  Inject, 
+  PLATFORM_ID, 
+  Input 
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { PdfViewerComponent } from 'ng2-pdf-viewer';
 
 @Component({
   selector: 'app-pdf-viewer-wrapper',
   template: `<ng-container #pdfContainer></ng-container>`
 })
 export class PdfViewerWrapperComponent implements OnInit, OnChanges {
-  @ViewChild('pdfContainer', { read: ViewContainerRef, static: true }) 
+  @ViewChild('pdfContainer', { read: ViewContainerRef, static: true })
   container!: ViewContainerRef;
 
-  @Input() src!: string | ArrayBuffer;
+  // Expect a string blob URL for src
+  @Input() src!: string;
   @Input() renderText = true;
   @Input() originalSize = false;
   @Input() customStyle = '';
 
-  private pdfViewerRef: any;
+  // Store the ComponentRef of PdfViewerComponent
+  private pdfViewerComponentRef: any = null; 
   private isBrowser: boolean;
 
   constructor(
@@ -37,37 +45,44 @@ export class PdfViewerWrapperComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (this.pdfViewerRef && changes['src']) {
+    // Only update viewer if the PDF component has been loaded
+    if (this.pdfViewerComponentRef && changes['src']) {
       this.updateViewerSettings();
     }
   }
 
   private async loadPdfViewer() {
     try {
+      // Dynamically import the PDF viewer from ng2-pdf-viewer
       const { PdfViewerComponent } = await import('ng2-pdf-viewer');
       const factory = this.cfr.resolveComponentFactory(PdfViewerComponent);
-      const componentRef = this.container.createComponent(factory);
-      // Store the full componentRef so that you can later access changeDetectorRef
-      this.pdfViewerRef = componentRef;
+      this.pdfViewerComponentRef = this.container.createComponent(factory);
+      console.log('PDF viewer component loaded', this.pdfViewerComponentRef);
     } catch (error) {
       console.error('PDF viewer load error:', error);
     }
   }
-  
 
   private updateViewerSettings() {
-    if (!this.pdfViewerRef) return;
-  
-    // Get the instance from the full component reference.
-    const pdfComponentInstance = this.pdfViewerRef.instance;
-  
-    // Update PDF source and other properties.
+    if (!this.pdfViewerComponentRef) return;
+    
+    const pdfComponentInstance = this.pdfViewerComponentRef.instance;
+    console.log('Updating PDF viewer settings with src:', this.src);
+    
     pdfComponentInstance.src = this.src;
     pdfComponentInstance.renderText = this.renderText;
     pdfComponentInstance.originalSize = this.originalSize;
-  
-    // Trigger change detection using the componentRef's changeDetectorRef.
-    this.pdfViewerRef.changeDetectorRef.detectChanges();
+    
+    // Apply any custom styles to the host element if provided
+    if (this.customStyle) {
+      this.pdfViewerComponentRef.location.nativeElement.setAttribute('style', this.customStyle);
+    }
+    
+    // Only invoke detectChanges() if changeDetectorRef is defined
+    if (this.pdfViewerComponentRef.changeDetectorRef) {
+      this.pdfViewerComponentRef.changeDetectorRef.detectChanges();
+    } else {
+      console.warn('pdfViewerComponentRef.changeDetectorRef is undefined.');
+    }
   }
-  
 }
