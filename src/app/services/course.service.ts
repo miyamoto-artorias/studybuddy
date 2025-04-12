@@ -24,9 +24,27 @@ export class CourseService {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
-
+  
     return this.http.post(url, courseData, { headers }).pipe(
-      tap(response => console.log('Course created successfully:', response)),
+      tap(response => {
+        console.log('Course created successfully:', response);
+        // Refresh teacher courses after creation
+        this.http.get(`${this.coursesbaseUrl}/teacher/${teacherId}`).pipe(
+          tap(courses => {
+            console.log('Updated teacher courses:', courses);
+            // Update localStorage directly
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            if (currentUser.userType === 'TEACHER') {
+              localStorage.setItem('teacherCourses', JSON.stringify(courses));
+              // Also update the current user object in storage
+              localStorage.setItem('currentUser', JSON.stringify({
+                ...currentUser,
+                courses
+              }));
+            }
+          })
+        ).subscribe();
+      }),
       catchError(error => {
         console.error('Course creation failed:', error);
         throw error;
