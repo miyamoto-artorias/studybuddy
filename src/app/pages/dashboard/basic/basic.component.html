@@ -2,94 +2,92 @@
   <!-- Header remains unchanged -->
   <emr-tab-panel-header>
     <emr-tab-panel-nav>
-      @for (tab of tabs; track tab.id) {
-        <emr-tab-panel-item [for]="tab.id" [matTooltip]="tab.tooltip" matTooltipPosition="after">
-          <emr-icon [name]="tab.icon" emrTabPanelItemIcon></emr-icon>
-        </emr-tab-panel-item>
-      }
+      <emr-tab-panel-item for="courses" matTooltip="Courses" matTooltipPosition="after">
+        <emr-icon name="ph:book-duotone" emrTabPanelItemIcon></emr-icon>
+      </emr-tab-panel-item>
     </emr-tab-panel-nav>
   </emr-tab-panel-header>
 
-  <emr-tab-panel-aside>
-    @for (tab of tabs; track tab.id) {
-      <ng-template [emrTabPanelAsideContent]="tab.id">
-        @if (tab.nested) {
-          <!-- Nested tab panel -->
-          <emr-tab-panel [activeItemId]="tab.nestedActiveId" compact class="h-full">
-            <emr-tab-panel-header>
-              <emr-tab-panel-nav>
-                @for (nestedTab of tab.nestedTabs; track nestedTab.id) {
-                  <emr-tab-panel-item [for]="nestedTab.id" [matTooltip]="nestedTab.tooltip" matTooltipPosition="after">
-                    <emr-icon [name]="nestedTab.icon" emrTabPanelItemIcon></emr-icon>
-                  </emr-tab-panel-item>
-                }
-              </emr-tab-panel-nav>
-            </emr-tab-panel-header>
-            
-            <emr-tab-panel-aside>
-              @for (nestedTab of tab.nestedTabs; track nestedTab.id) {
-                <ng-template [emrTabPanelAsideContent]="nestedTab.id">
-                  @if (nestedTab.pdfSrc) {
-                    <pdf-viewer [src]="nestedTab.pdfSrc"
-                      [render-text]="true"
-                      [original-size]="false"
-                      style="width: 1100px; height: 700px">
-                    </pdf-viewer>
-                  } @else if (nestedTab.videoSrc) {
-                    <div class="video-container" style="width: 800px; height: 500px">
-                      @if (isYoutubeLink(nestedTab.videoSrc)) {
-                        <iframe width="100%" height="100%" 
-                          [src]="getSafeYoutubeUrl(nestedTab.videoSrc)" 
-                          frameborder="0" 
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                          allowfullscreen>
-                        </iframe>
-                      } @else {
-                        <video controls style="width: 100%; height: 100%">
-                          <source [src]="nestedTab.videoSrc" type="video/mp4">
-                          Your browser does not support the video tag.
-                        </video>
-                      }
-                    </div>
-                  } @else {
-                    <div class="empty-content">No content available</div>
-                  }
-                </ng-template>
-              }
-            </emr-tab-panel-aside>
-          </emr-tab-panel>
-        }
-        
-        @else if (tab.pdfSrc) {
-          <pdf-viewer [src]="tab.pdfSrc"
-            [render-text]="true"
-            [original-size]="false"
-            style="width: 1100px; height: 700px">
-          </pdf-viewer>
-        }
-        
-        @else if (tab.videoSrc) {
-          <div class="video-container" style="width: 900px; height: 500px">
-            @if (isYoutubeLink(tab.videoSrc)) {
-              <iframe width="100%" height="100%" 
-                [src]="getSafeYoutubeUrl(tab.videoSrc)" 
-                frameborder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen>
-              </iframe>
-            } @else {
-              <video controls style="width: 100%; height: 100%">
-                <source [src]="tab.videoSrc" type="video/mp4">
-                Your browser does not support the video tag.
-              </video>
-            }
-          </div>
-        }
-        
-        @else {
-          <div class="empty-content">No content available</div>
-        }
+  <!-- The triple-panel layout -->
+  <div class="flex h-full">
+    <!-- Left panel: Courses List -->
+    <div class="w-1/4 border-r overflow-y-auto p-2">
+      <h3>My Courses</h3>
+      <ul>
+        <li *ngFor="let course of courses"
+            [class.active]="selectedCourse?.id === course.id"
+            (click)="selectCourse(course)"
+            style="cursor: pointer; padding: 4px; border-bottom: 1px solid #ddd;">
+          {{ course.title }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Middle panel: Chapters List -->
+    <div class="w-1/4 border-r overflow-y-auto p-2" *ngIf="selectedCourse">
+      <h3>Chapters</h3>
+      <ul>
+        <li *ngFor="let chapter of selectedCourse.chapters"
+            [class.active]="selectedChapter?.id === chapter.id"
+            (click)="selectChapter(chapter)"
+            style="cursor: pointer; padding: 4px; border-bottom: 1px solid #ddd;">
+          {{ chapter.title }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Right panel: Content Display -->
+    <div class="w-1/2 p-2 flex flex-col items-center justify-center overflow-auto">
+      <div *ngIf="selectedChapter && selectedChapter.contents?.length; else noContent">
+        <h3>Chapter Contents</h3>
+        <!-- Content items list -->
+        <ul style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+          <li *ngFor="let content of selectedChapter.contents"
+              [class.active]="selectedContent?.id === content.id"
+              (click)="selectContent(content)"
+              style="cursor: pointer; padding: 4px; border: 1px solid #ccc;">
+            {{ content.title }}
+          </li>
+        </ul>
+        <!-- Display the selected content -->
+        <div class="content-display" style="width: 100%; height: 100%;">
+          <ng-container [ngSwitch]="selectedContent?.type">
+            <!-- PDF content via the wrapper component -->
+            <div *ngSwitchCase="'pdf'">
+              <app-pdf-viewer-wrapper
+                [src]="selectedContent.content"
+                [renderText]="true"
+                [originalSize]="false"
+                customStyle="width: 100%; height: 700px;">
+              </app-pdf-viewer-wrapper>
+            </div>
+            <!-- Video content -->
+            <div *ngSwitchCase="'video'" class="video-container" style="width: 100%; height: 500px;">
+              <ng-container *ngIf="isYoutubeLink(selectedContent.content); else localVideo">
+                <iframe width="100%" height="100%" 
+                        [src]="getSafeYoutubeUrl(selectedContent.content)" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                </iframe>
+              </ng-container>
+              <ng-template #localVideo>
+                <video controls style="width: 100%; height: 100%;">
+                  <source [src]="selectedContent.content" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </ng-template>
+            </div>
+            <!-- Fallback if type unknown -->
+            <div *ngSwitchDefault class="empty-content">
+              No display available for this content type.
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <ng-template #noContent>
+        <div class="empty-content">Select a chapter and content to display.</div>
       </ng-template>
-    }
-  </emr-tab-panel-aside>
+    </div>
+  </div>
 </emr-tab-panel>

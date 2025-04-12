@@ -1,85 +1,83 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatTooltip } from '@angular/material/tooltip';
 import { IconComponent } from '@elementar-ui/components';
 import {
   TabPanelAsideComponent,
-  TabPanelAsideContentDirective, TabPanelComponent,
-   TabPanelHeaderComponent,
+  TabPanelAsideContentDirective,
+  TabPanelComponent,
+  TabPanelHeaderComponent,
   TabPanelItemComponent,
-  TabPanelItemIconDirective, TabPanelNavComponent
+  TabPanelItemIconDirective,
+  TabPanelNavComponent
 } from '@elementar-ui/components';
-import { PdfViewerModule } from 'ng2-pdf-viewer';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-
+import { CommonModule } from '@angular/common';
+import { PdfViewerWrapperComponent } from '../../../pdf-viewer-wrapper/pdf-viewer-wrapper.component';
 
 @Component({
-  imports: [IconComponent,
-    MatTooltip,
+  selector: 'app-basic',
+  imports: [
+    IconComponent,
+    MatTooltip,CommonModule,PdfViewerWrapperComponent,
     TabPanelItemIconDirective,
     TabPanelItemComponent,
     TabPanelAsideContentDirective,
     TabPanelAsideComponent,
     TabPanelNavComponent,
     TabPanelHeaderComponent,
-    TabPanelComponent,PdfViewerModule,
-
+    TabPanelComponent
+    // Do NOT import PdfViewerModule here
   ],
   templateUrl: './basic.component.html',
-  styleUrl: './basic.component.scss'
+  styleUrls: ['./basic.component.scss']
 })
-export class BasicComponent {
-  pdfSrc = "https://vadimdez.github.io/ng2-pdf-viewer/assets/pdf-test.pdf";
-  activeTabId = 'dashboard';
-  
-  tabs = [
-    {
-      id: 'dashboard',
-      tooltip: 'Dashboard',
-      icon: 'ph:house-duotone',
-      pdfSrc: 'path/to/your/pdf.pdf'
-    },
-    {
-      id: 'nested',
-      tooltip: 'Nested',
-      icon: 'ph:kanban-duotone',
-      nested: true,
-      nestedActiveId: 'nest1',
-      nestedTabs: [
-        {
-          id: 'nest1',
-          tooltip: 'PDF',
-          icon: 'ph:file-pdf',
-          pdfSrc: 'https://vadimdez.github.io/ng2-pdf-viewer/assets/pdf-test.pdf'
-        },
-        {
-          id: 'nest2',
-          tooltip: 'YouTube Video',
-          icon: 'ph:video-camera',
-          videoSrc: 'https://www.youtube.com/embed/dQw4w9WgXcQ' // Example YouTube embed URL
-        }
-      ]
-    },
-    {
-      id: 'videos',
-      tooltip: 'Video Library',
-      icon: 'ph:play-circle',
-      videoSrc: 'https://www.youtube.com/embed/dQw4w9WgXcQ' // Example YouTube embed URL
-    }
-  ];
+export class BasicComponent implements OnInit {
+  activeTabId = 'courses';
+  courses: any[] = [];
+  selectedCourse: any = null;
+  selectedChapter: any = null;
+  selectedContent: any = null;
 
   constructor(private sanitizer: DomSanitizer) {}
+
+  ngOnInit(): void {
+    const stored = localStorage.getItem('enrolledCourses');
+    if (stored) {
+      this.courses = JSON.parse(stored);
+      if (this.courses.length) {
+        this.selectCourse(this.courses[0]);
+      }
+    }
+  }
+
+  selectCourse(course: any): void {
+    this.selectedCourse = course;
+    this.selectedChapter = null;
+    this.selectedContent = null;
+  }
+
+  selectChapter(chapter: any): void {
+    this.selectedChapter = chapter;
+    if (chapter.contents && chapter.contents.length) {
+      this.selectedContent = chapter.contents[0];
+    } else {
+      this.selectedContent = null;
+    }
+  }
+
+  selectContent(content: any): void {
+    this.selectedContent = content;
+  }
 
   isYoutubeLink(url: string): boolean {
     return url.includes('youtube.com') || url.includes('youtu.be');
   }
 
   getSafeYoutubeUrl(url: string): SafeResourceUrl {
-    // Convert YouTube watch URL to embed URL if needed
     if (url.includes('youtube.com/watch')) {
       const videoId = url.split('v=')[1].split('&')[0];
       url = `https://www.youtube.com/embed/${videoId}`;
     }
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
-
 }

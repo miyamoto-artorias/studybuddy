@@ -3,6 +3,7 @@ import { AddcourseComponent } from './MyBucket/addcourse/addcourse.component';
 import { AddCourseContentComponent } from './MyBucket/add-course-content/add-course-content.component';
 import { EnrolledCoursesComponent } from './MyBucket/enrolled-courses/enrolled-courses.component';
 import { CourseDetailComponent } from './MyBucket/course-detail/course-detail.component';
+import { BasicComponent } from './pages/dashboard/basic/basic.component';
 
 export const routes: Routes = [
   {
@@ -25,6 +26,7 @@ export const routes: Routes = [
   {path:'addcourse',component:AddcourseComponent},
   {path:'enrolled',component:EnrolledCoursesComponent},
   { path: 'course/:id', component: CourseDetailComponent },
+  {path:'basic',component:BasicComponent},
 
   {
     path: '**',
