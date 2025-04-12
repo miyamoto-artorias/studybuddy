@@ -94,9 +94,14 @@ export class BasicComponent implements OnInit {
     }
   }
 
+
+  
+
+  ////////////////////////////
   selectCourse(course: any): void {
     console.log('Course selected:', course);
     this.selectedCourse = course;
+    // Clear previous selections.
     this.selectedChapter = null;
     this.selectedContent = null;
   }
@@ -104,6 +109,7 @@ export class BasicComponent implements OnInit {
   selectChapter(chapter: any): void {
     console.log('Chapter selected:', chapter);
     this.selectedChapter = chapter;
+    // Automatically select the first content item if available.
     if (chapter.contents && chapter.contents.length) {
       this.selectContent(chapter.contents[0]);
     } else {
@@ -127,4 +133,5 @@ export class BasicComponent implements OnInit {
     }
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
+
 }

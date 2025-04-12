@@ -35,20 +35,29 @@ export class PdfViewerWrapperComponent implements OnInit {
 
   async ngOnInit() {
     if (this.isBrowser) {
-      // Dynamically import the PdfViewerComponent from ng2-pdf-viewer
-      const module = await import('ng2-pdf-viewer');
-      const PdfViewerComponent = module.PdfViewerComponent;
-      const factory = this.cfr.resolveComponentFactory(PdfViewerComponent);
-      const componentRef = this.container.createComponent(factory);
-
-      // Set the inputs for the PDF viewer component
-      componentRef.instance.src = this.src;
-      componentRef.instance.renderText = this.renderText;
-      componentRef.instance.originalSize = this.originalSize;
-
-      if (this.customStyle) {
-        (componentRef.location.nativeElement as HTMLElement).setAttribute('style', this.customStyle);
+      console.log('PdfViewerWrapperComponent: Loading PDF viewer dynamically.');
+      try {
+        const module = await import('ng2-pdf-viewer');
+        const PdfViewerComponent = module.PdfViewerComponent;
+        const factory = this.cfr.resolveComponentFactory(PdfViewerComponent);
+        const componentRef = this.container.createComponent(factory);
+        
+        // Set the inputs for the PDF viewer component
+        componentRef.instance.src = this.src;
+        componentRef.instance.renderText = this.renderText;
+        componentRef.instance.originalSize = this.originalSize;
+        
+        if (this.customStyle) {
+          (componentRef.location.nativeElement as HTMLElement).setAttribute('style', this.customStyle);
+        }
+        
+        console.log('PdfViewerWrapperComponent: PDF viewer loaded successfully.');
+      } catch (error) {
+        console.error('Error loading PDF viewer:', error);
       }
+    } else {
+      console.log('PdfViewerWrapperComponent: Not running in the browser.');
     }
   }
+  
 }
