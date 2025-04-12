@@ -1,11 +1,48 @@
+.full-panel {
+  height: 100vh; // full viewport height
+}
+
+.container-flex {
+  display: flex;
+  height: calc(100% - 50px); // reduce height based on header, adjust as needed
+}
+
+.panel {
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.courses-panel {
+  flex: 0 0 25%; // 25% width for courses
+  border-right: 1px solid #ccc;
+  min-width: 200px;
+}
+
+.chapters-panel {
+  flex: 0 0 25%; // 25% width for chapters
+  border-right: 1px solid #ccc;
+  min-width: 200px;
+}
+
+.content-panel {
+  flex: 1; // takes the remaining width (approx 50%)
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 li {
+  cursor: pointer;
   padding: 8px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #ddd;
 }
 
 li.active {
@@ -13,15 +50,30 @@ li.active {
   font-weight: bold;
 }
 
+.content-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding: 0;
+}
+
+.display-area {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  padding: 10px;
+}
+
+.video-container {
+  width: 100%;
+  height: 500px; // adjust as needed
+}
+
 .empty-content {
   text-align: center;
   color: #888;
   font-size: 1.2rem;
   padding: 20px;
-}
-
-.content-display {
-  border: 1px solid #ccc;
-  padding: 10px;
-  background-color: #fff;
 }
