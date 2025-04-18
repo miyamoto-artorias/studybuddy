@@ -89,4 +89,14 @@ createChapter(courseId: number, chapterData: any): Observable<any> {
     })
   );
 }
+
+getAllCourses(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.coursesbaseUrl}`).pipe(
+    tap(courses => console.log('Fetched courses:', courses)),
+    catchError(error => {
+      console.error('Error fetching courses:', error);
+      throw error;
+    })
+  );
+}
 }

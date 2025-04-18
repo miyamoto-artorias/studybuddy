@@ -1,0 +1,129 @@
+.course-list-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .page-title {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+    font-size: 2.5rem;
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  }
+
+  .error-container {
+    text-align: center;
+    padding: 2rem;
+    background-color: #ffebee;
+    border-radius: 8px;
+    margin: 2rem 0;
+
+    .error-message {
+      color: #c62828;
+      margin-bottom: 1rem;
+    }
+
+    .retry-button {
+      padding: 0.5rem 1rem;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+
+      &:hover {
+        background-color: #2980b9;
+      }
+    }
+  }
+
+  .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 1rem;
+  }
+
+  .course-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .course-image {
+      height: 200px;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .course-info {
+      padding: 1.5rem;
+
+      .course-title {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.25rem;
+        color: #333;
+      }
+
+      .course-description {
+        color: #666;
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .course-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+
+        .price {
+          font-weight: bold;
+          color: #2ecc71;
+          font-size: 1.1rem;
+        }
+
+        .chapters-count {
+          color: #666;
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}

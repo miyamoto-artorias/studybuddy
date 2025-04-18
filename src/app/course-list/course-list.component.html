@@ -1,0 +1,29 @@
+<div class="course-list-container">
+  <h1 class="page-title">Available Courses</h1>
+  
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading courses...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <p class="error-message">{{ error }}</p>
+    <button (click)="loadCourses()" class="retry-button">Retry</button>
+  </div>
+
+  <div class="courses-grid" *ngIf="!loading && !error">
+    <div class="course-card" *ngFor="let course of courses">
+      <div class="course-image">
+        <img [src]="course.picture || 'assets/default-course.jpg'" [alt]="course.title">
+      </div>
+      <div class="course-info">
+        <h2 class="course-title">{{ course.title }}</h2>
+        <p class="course-description">{{ course.description }}</p>
+        <div class="course-meta">
+          <span class="price">${{ course.price }}</span>
+          <span class="chapters-count">{{ course.chapters?.length || 0 }} Chapters</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

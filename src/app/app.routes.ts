@@ -4,6 +4,7 @@ import { AddCourseContentComponent } from './MyBucket/add-course-content/add-cou
 import { EnrolledCoursesComponent } from './MyBucket/enrolled-courses/enrolled-courses.component';
 import { CourseDetailComponent } from './MyBucket/course-detail/course-detail.component';
 import { BasicComponent } from './pages/dashboard/basic/basic.component';
+import { CourseListComponent } from './course-list/course-list.component';
 
 export const routes: Routes = [
   {
@@ -27,6 +28,7 @@ export const routes: Routes = [
   {path:'enrolled',component:EnrolledCoursesComponent},
   { path: 'course/:id', component: CourseDetailComponent },
   {path:'basic',component:BasicComponent},
+  {path:'courses',component:CourseListComponent},
 
   {
     path: '**',
