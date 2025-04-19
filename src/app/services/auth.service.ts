@@ -76,11 +76,12 @@ export class AuthService {
     );
   }
 
-  private getTeacherCourses(teacherId: number): Observable<any> {
-    return this.http.get(`${this.baseUrl}/courses/teacher/${teacherId}`).pipe(
-      tap(courses => {
-        console.log('Storing teacher courses:', courses);
-        localStorage.setItem('teacherCourses', JSON.stringify(courses));
+  getTeacherCourses(teacherId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/courses/teacher/${teacherId}`).pipe(
+      tap(courses => console.log('Fetched teacher courses:', courses)),
+      catchError(error => {
+        console.error('Error fetching teacher courses:', error);
+        throw error;
       })
     );
   }

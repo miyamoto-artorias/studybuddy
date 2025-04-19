@@ -49,8 +49,18 @@ export class TeacherCoursesComponent implements OnInit {
   }
 
   loadTeacherCourses(): void {
-    const storedCourses = localStorage.getItem('teacherCourses');
-    this.teacherCourses = storedCourses ? JSON.parse(storedCourses) : [];
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser && currentUser.id) {
+      this.authService.getTeacherCourses(currentUser.id).subscribe({
+        next: (courses) => {
+          this.teacherCourses = courses;
+        },
+        error: (err) => {
+          console.error('Error loading teacher courses:', err);
+          this.teacherCourses = [];
+        }
+      });
+    }
   }
 
   selectCourse(course: any): void {
@@ -138,7 +148,6 @@ showAddContentForm(): void {
   private updateLocalCourses(): void {
     const index = this.teacherCourses.findIndex(c => c.id === this.selectedCourse.id);
     this.teacherCourses[index] = this.selectedCourse;
-    localStorage.setItem('teacherCourses', JSON.stringify(this.teacherCourses));
-    this.loadTeacherCourses();
+    this.loadTeacherCourses(); // Refresh the courses list
   }
 }
