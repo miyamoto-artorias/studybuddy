@@ -22,14 +22,36 @@ export class CourseDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private courseService: CourseService
   ) {
-    // Get user card from localStorage
-    const storedCard = localStorage.getItem('userCard');
-    if (storedCard) {
-      try {
-        this.userCard = JSON.parse(storedCard);
-      } catch (error) {
-        console.error('Error parsing user card:', error);
+    // Debug localStorage
+    console.log('Checking localStorage for card...');
+    const allKeys = Object.keys(localStorage);
+    console.log('All localStorage keys:', allKeys);
+    
+    // Try different possible keys for the card
+    const possibleKeys = ['userCard', 'userCards', 'card'];
+    for (const key of possibleKeys) {
+      const value = localStorage.getItem(key);
+      console.log(`Checking key "${key}":`, value);
+      if (value) {
+        try {
+          const parsed = JSON.parse(value);
+          console.log(`Parsed value for key "${key}":`, parsed);
+          if (parsed && typeof parsed === 'object' && parsed.id) {
+            this.userCard = parsed;
+            console.log('Found valid card:', this.userCard);
+            break;
+          }
+        } catch (e) {
+          console.error(`Failed to parse value for key "${key}":`, e);
+        }
       }
+    }
+
+    if (!this.userCard) {
+      console.error('No valid card found in localStorage');
+      this.error = 'No payment card found. Please add a card to make purchases.';
+    } else {
+      console.log('Card successfully loaded:', this.userCard);
     }
   }
 
@@ -64,6 +86,10 @@ export class CourseDetailComponent implements OnInit {
   }
 
   purchaseCourse(): void {
+    console.log('Purchase button clicked');
+    console.log('Current course:', this.course);
+    console.log('User card:', this.userCard);
+
     if (this.isEnrolled) {
       this.error = 'You have already purchased this course.';
       return;
@@ -75,11 +101,14 @@ export class CourseDetailComponent implements OnInit {
     }
 
     if (!this.userCard) {
+      console.error('No user card available');
       this.error = 'Payment card not found. Please add a card to make purchases.';
       return;
     }
 
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    console.log('Current user:', currentUser);
+
     if (!currentUser.id) {
       this.error = 'User information not found';
       return;
@@ -99,6 +128,8 @@ export class CourseDetailComponent implements OnInit {
       courseId: this.course.id,
       cardId: this.userCard.id
     };
+
+    console.log('Sending payment data:', paymentData);
 
     this.courseService.makePayment(paymentData).subscribe({
       next: (response) => {
