@@ -25,7 +25,11 @@
     </div>
 
     <div class="course-actions">
+      <div *ngIf="isEnrolled" class="enrolled-message">
+        <p>You are already enrolled in this course.</p>
+      </div>
       <button 
+        *ngIf="!isEnrolled"
         class="purchase-button" 
         (click)="purchaseCourse()"
         [disabled]="paymentStatus === 'processing'"

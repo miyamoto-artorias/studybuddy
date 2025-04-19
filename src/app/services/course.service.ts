@@ -113,10 +113,10 @@ getCourseById(courseId: number): Observable<any> {
 
 makePayment(paymentData: {
   amount: number;
-  status: string;
-  payer: { id: number };
-  receiver: { id: number };
-  card: { id: number };
+  payerId: number;
+  receiverId: number;
+  courseId: number;
+  cardId: number;
 }): Observable<any> {
   return this.http.post('http://localhost:8081/api/payments', paymentData).pipe(
     tap(response => console.log('Payment successful:', response)),
