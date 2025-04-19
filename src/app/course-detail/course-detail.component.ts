@@ -21,20 +21,32 @@ export class CourseDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private courseService: CourseService
   ) {
-    // Get user card from localStorage
-    const storedCard = localStorage.getItem('userCard');
-    console.log('Stored card from localStorage:', storedCard);
+    // Debug localStorage
+    console.log('Checking localStorage...');
+    const allKeys = Object.keys(localStorage);
+    console.log('All localStorage keys:', allKeys);
     
-    if (storedCard) {
-      try {
-        this.userCard = JSON.parse(storedCard);
-        console.log('User card loaded:', this.userCard);
-      } catch (error) {
-        console.error('Error parsing user card:', error);
-        this.error = 'Error loading payment information. Please try again later.';
+    // Try to get the card with different possible keys
+    const possibleKeys = ['userCard', 'userCards', 'card'];
+    for (const key of possibleKeys) {
+      const value = localStorage.getItem(key);
+      console.log(`Checking key "${key}":`, value);
+      if (value) {
+        try {
+          const parsed = JSON.parse(value);
+          if (parsed && typeof parsed === 'object' && parsed.id) {
+            this.userCard = parsed;
+            console.log('Found valid card:', this.userCard);
+            break;
+          }
+        } catch (e) {
+          console.log(`Failed to parse value for key "${key}"`);
+        }
       }
-    } else {
-      console.error('No userCard found in localStorage');
+    }
+
+    if (!this.userCard) {
+      console.error('No valid card found in localStorage');
       this.error = 'No payment card found. Please add a card to make purchases.';
     }
   }
