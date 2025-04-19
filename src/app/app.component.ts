@@ -9,9 +9,7 @@ import {
   ScreenLoaderService, SeoService,
   ThemeManagerService
 } from '@elementar-ui/components';
-import { AddCourseContentComponent } from './MyBucket/add-course-content/add-course-content.component';
 import { AddcourseComponent } from './MyBucket/addcourse/addcourse.component';
-import { AddChapterComponent } from './MyBucket/add-chapter/add-chapter.component';
 import { LoginComponent } from './MyBucket/login/login.component';
 import { BasicComponent } from './pages/dashboard/basic/basic.component';
 import { TeacherCoursesComponent } from './MyBucket/teacher-courses/teacher-courses.component';

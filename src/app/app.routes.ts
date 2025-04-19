@@ -1,12 +1,10 @@
 import { Routes } from '@angular/router';
 import { AddcourseComponent } from './MyBucket/addcourse/addcourse.component';
-import { AddCourseContentComponent } from './MyBucket/add-course-content/add-course-content.component';
 import { EnrolledCoursesComponent } from './MyBucket/enrolled-courses/enrolled-courses.component';
 import { CourseDetailComponent } from './course-detail/course-detail.component';
 import { BasicComponent } from './pages/dashboard/basic/basic.component';
 import { CourseListComponent } from './course-list/course-list.component';
 import { LoginComponent } from './MyBucket/login/login.component';
-import { AddChapterComponent } from './MyBucket/add-chapter/add-chapter.component';
 import { TeacherCoursesComponent } from './MyBucket/teacher-courses/teacher-courses.component';
 
 export const routes: Routes = [
@@ -33,8 +31,6 @@ export const routes: Routes = [
   { path: 'course/:id', component: CourseDetailComponent },
   { path: 'basic', component: BasicComponent },
   { path: 'login', component: LoginComponent },
-  {path:'addcontent',component:AddCourseContentComponent},
-  {path:'addchapter',component:AddChapterComponent},
   {path:'coursedetail',component:CourseDetailComponent},
   {path:'teachercourses',component:TeacherCoursesComponent},
   {
