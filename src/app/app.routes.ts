@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { AddcourseComponent } from './MyBucket/addcourse/addcourse.component';
 import { AddCourseContentComponent } from './MyBucket/add-course-content/add-course-content.component';
 import { EnrolledCoursesComponent } from './MyBucket/enrolled-courses/enrolled-courses.component';
-import { CourseDetailComponent } from './MyBucket/course-detail/course-detail.component';
+import { CourseDetailComponent } from './course-detail/course-detail.component';
 import { BasicComponent } from './pages/dashboard/basic/basic.component';
 import { CourseListComponent } from './course-list/course-list.component';
 
@@ -24,14 +24,15 @@ export const routes: Routes = [
     path: 'error',
     loadChildren: () => import('./error/error.module').then(m => m.ErrorModule)
   },
-  {path:'addcourse',component:AddcourseComponent},
-  {path:'enrolled',component:EnrolledCoursesComponent},
+  { path: 'addcourse', component: AddcourseComponent },
+  { path: 'enrolled', component: EnrolledCoursesComponent },
+  { path: 'courses', component: CourseListComponent },
   { path: 'course/:id', component: CourseDetailComponent },
-  {path:'basic',component:BasicComponent},
-  {path:'courses',component:CourseListComponent},
+  { path: 'basic', component: BasicComponent },
 
   {
     path: '**',
     title: 'Page Not Found',
     loadComponent: () => import('./error/not-found/not-found.component').then(c => c.NotFoundComponent)
-  }];
+  }
+];

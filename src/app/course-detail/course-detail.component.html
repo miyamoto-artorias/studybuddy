@@ -1,0 +1,63 @@
+<div class="course-detail-container">
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading course details...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <p class="error-message">{{ error }}</p>
+    <button (click)="loadCourse(course.id)" class="retry-button">Retry</button>
+  </div>
+
+  <div *ngIf="!loading && !error && course" class="course-content">
+    <div class="course-header">
+      <div class="course-image">
+        <img [src]="course.picture || 'assets/default-course.jpg'" [alt]="course.title">
+      </div>
+      <div class="course-info">
+        <h1 class="course-title">{{ course.title }}</h1>
+        <div class="teacher-info">
+          <span class="teacher-label">Instructor:</span>
+          <span class="teacher-name">{{ course.teacher?.username || 'Unknown' }}</span>
+        </div>
+        <p class="course-description">{{ course.description }}</p>
+        <div class="course-meta">
+          <span class="price">${{ course.price }}</span>
+          <span class="chapters-count">{{ course.chapters?.length || 0 }} Chapters</span>
+        </div>
+        <div class="purchase-section">
+          <button 
+            class="purchase-button" 
+            (click)="purchaseCourse()"
+            [disabled]="paymentStatus === 'processing'"
+            [ngClass]="{
+              'processing': paymentStatus === 'processing',
+              'success': paymentStatus === 'success',
+              'error': paymentStatus === 'error'
+            }">
+            <span *ngIf="paymentStatus === 'idle'">Purchase Course</span>
+            <span *ngIf="paymentStatus === 'processing'">Processing...</span>
+            <span *ngIf="paymentStatus === 'success'">Purchase Successful!</span>
+            <span *ngIf="paymentStatus === 'error'">Purchase Failed - Try Again</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="course-chapters" *ngIf="course.chapters && course.chapters.length > 0">
+      <h2>Course Chapters</h2>
+      <div class="chapter-list">
+        <div class="chapter-item" *ngFor="let chapter of course.chapters">
+          <h3 class="chapter-title">{{ chapter.title }}</h3>
+          <p class="chapter-description">{{ chapter.description }}</p>
+          <div class="chapter-contents" *ngIf="chapter.contents && chapter.contents.length > 0">
+            <div class="content-item" *ngFor="let content of chapter.contents">
+              <span class="content-type">{{ content.type }}</span>
+              <span class="content-title">{{ content.title }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

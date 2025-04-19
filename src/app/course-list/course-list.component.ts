@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CourseService } from '../services/course.service';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+
 @Component({
-  imports: [CommonModule],
   selector: 'app-course-list',
   templateUrl: './course-list.component.html',
-  styleUrls: ['./course-list.component.scss']
+  styleUrls: ['./course-list.component.scss'],
+  standalone: true,
+  imports: [CommonModule, RouterModule]
 })
 export class CourseListComponent implements OnInit {
   courses: any[] = [];

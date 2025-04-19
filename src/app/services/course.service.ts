@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, switchMap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -96,6 +96,54 @@ getAllCourses(): Observable<any[]> {
     catchError(error => {
       console.error('Error fetching courses:', error);
       throw error;
+    })
+  );
+}
+
+getCourseById(courseId: number): Observable<any> {
+  console.log('Fetching course with ID:', courseId); // Debug log
+  return this.http.get<any>(`${this.coursesbaseUrl}/${courseId}`).pipe(
+    tap(course => console.log('Fetched course:', course)),
+    catchError(error => {
+      console.error('Error fetching course:', error);
+      throw error;
+    })
+  );
+}
+
+makePayment(courseId: number, amount: number): Observable<any> {
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  const currentCard = JSON.parse(localStorage.getItem('currentCard') || '{}');
+  
+  console.log('Current user:', currentUser); // Debug log
+  console.log('Current card:', currentCard); // Debug log
+  
+  // First get the course to get the teacher ID
+  return this.getCourseById(courseId).pipe(
+    switchMap(course => {
+      console.log('Course for payment:', course); // Debug log
+      
+      if (!course.teacher || !course.teacher.id) {
+        throw new Error('Teacher information not found in course data');
+      }
+
+      const paymentData = {
+        amount: amount,
+        status: "completed",
+        payer: { id: currentUser.id },
+        receiver: { id: course.teacher.id },
+        card: { id: currentCard.id }
+      };
+
+      console.log('Sending payment data:', paymentData); // Debug log
+
+      return this.http.post('http://localhost:8081/api/payments', paymentData).pipe(
+        tap(response => console.log('Payment successful:', response)),
+        catchError(error => {
+          console.error('Payment failed:', error);
+          throw error;
+        })
+      );
     })
   );
 }
