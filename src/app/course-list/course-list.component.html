@@ -31,6 +31,9 @@
             <span class="chapters-count">{{ course.chapters?.length || 0 }} Chapters</span>
           </div>
         </div>
+        <div class="enrollment-status" *ngIf="isEnrolled(course.id)">
+          <span class="enrolled-badge">Enrolled</span>
+        </div>
       </div>
     </div>
   </div>

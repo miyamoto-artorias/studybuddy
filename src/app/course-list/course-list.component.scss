@@ -1,11 +1,11 @@
 .course-list-container {
-  padding: 2rem;
+  padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
 
   .page-title {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 30px;
     color: #333;
     font-size: 2.5rem;
   }
@@ -15,7 +15,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 300px;
+    min-height: 200px;
 
     .spinner {
       width: 50px;
@@ -34,10 +34,10 @@
 
   .error-container {
     text-align: center;
-    padding: 2rem;
+    padding: 20px;
     background-color: #ffebee;
-    border-radius: 8px;
-    margin: 2rem 0;
+    border-radius: 4px;
+    margin-bottom: 20px;
 
     .error-message {
       color: #c62828;
@@ -62,20 +62,18 @@
   .courses-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2rem;
-    padding: 1rem;
+    gap: 20px;
   }
 
   .course-card {
     background: white;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
 
     &:hover {
       transform: translateY(-5px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     .course-image {
@@ -90,63 +88,65 @@
     }
 
     .course-info {
-      padding: 1.5rem;
+      padding: 15px;
 
       .course-title {
-        margin: 0 0 0.5rem 0;
-        font-size: 1.25rem;
-        color: #333;
+        margin: 0 0 10px;
+        font-size: 1.2em;
+
+        a {
+          color: #333;
+          text-decoration: none;
+
+          &:hover {
+            color: #007bff;
+          }
+        }
       }
 
       .course-description {
         color: #666;
-        margin-bottom: 1rem;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+        margin-bottom: 15px;
+        font-size: 0.9em;
       }
 
       .course-meta {
         display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9em;
+        color: #666;
+      }
 
-        .teacher-info {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          margin-bottom: 0.5rem;
+      .teacher-info {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
 
-          .teacher-label {
-            color: #666;
-            font-size: 0.9rem;
-          }
+      .course-details {
+        display: flex;
+        gap: 10px;
+      }
 
-          .teacher-name {
-            color: #3498db;
-            font-weight: 500;
-            font-size: 0.95rem;
-          }
-        }
+      .price {
+        color: #28a745;
+        font-weight: bold;
+      }
 
-        .course-details {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 0.5rem;
+      .enrollment-status {
+        margin-top: 10px;
+        text-align: right;
+      }
 
-          .price {
-            font-weight: bold;
-            color: #2ecc71;
-            font-size: 1.1rem;
-          }
-
-          .chapters-count {
-            color: #666;
-            font-size: 0.9rem;
-          }
-        }
+      .enrolled-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        background-color: #28a745;
+        color: white;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-weight: bold;
       }
     }
   }
