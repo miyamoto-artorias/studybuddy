@@ -102,11 +102,12 @@ export class AuthService {
   }
 
 
-  private getUserCards(userId: number): Observable<any> {
+  getUserCards(userId: number): Observable<any> {
     return this.http.get(`${this.baseUrl}/cards/user/${userId}`).pipe(
-      tap(cards => {
-        console.log('Storing user cards:', cards);
-        localStorage.setItem('userCards', JSON.stringify(cards));
+      tap(cards => console.log('Fetched user cards:', cards)),
+      catchError(error => {
+        console.error('Error fetching user cards:', error);
+        throw error;
       })
     );
   }

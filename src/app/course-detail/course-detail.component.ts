@@ -15,57 +15,25 @@ export class CourseDetailComponent implements OnInit {
   course: any = null;
   loading = true;
   error: string | null = null;
-  paymentStatus: 'idle' | 'processing' | 'success' | 'error' = 'idle';
+  paymentStatus: 'pending' | 'processing' | 'completed' | 'failed' = 'pending';
   userCard: any = null;
-  isEnrolled: boolean = false;
+  isEnrolled = false;
+  hasCard = false;
 
   constructor(
     private route: ActivatedRoute,
     private courseService: CourseService,
     private authService: AuthService
-  ) {
-    // Debug localStorage
-    console.log('Checking localStorage for card...');
-    const allKeys = Object.keys(localStorage);
-    console.log('All localStorage keys:', allKeys);
-    
-    // Try different possible keys for the card
-    const possibleKeys = ['userCard', 'userCards', 'card'];
-    for (const key of possibleKeys) {
-      const value = localStorage.getItem(key);
-      console.log(`Checking key "${key}":`, value);
-      if (value) {
-        try {
-          const parsed = JSON.parse(value);
-          console.log(`Parsed value for key "${key}":`, parsed);
-          if (parsed && typeof parsed === 'object' && parsed.id) {
-            this.userCard = parsed;
-            console.log('Found valid card:', this.userCard);
-            break;
-          }
-        } catch (e) {
-          console.error(`Failed to parse value for key "${key}":`, e);
-        }
-      }
-    }
-
-    if (!this.userCard) {
-      console.error('No valid card found in localStorage');
-      this.error = 'No payment card found. Please add a card to make purchases.';
-    } else {
-      console.log('Card successfully loaded:', this.userCard);
-    }
-  }
+  ) {}
 
   ngOnInit(): void {
-    const courseId = this.route.snapshot.paramMap.get('id');
-    if (courseId) {
-      this.loadCourse(parseInt(courseId));
-      this.checkEnrollment(parseInt(courseId));
-    }
+    const courseId = Number(this.route.snapshot.paramMap.get('id'));
+    this.loadCourseDetails(courseId);
+    this.checkEnrollmentStatus(courseId);
+    this.checkCardStatus();
   }
 
-  loadCourse(courseId: number): void {
+  loadCourseDetails(courseId: number): void {
     this.loading = true;
     this.error = null;
     this.courseService.getCourseById(courseId).subscribe({
@@ -82,25 +50,45 @@ export class CourseDetailComponent implements OnInit {
     });
   }
 
-  checkEnrollment(courseId: number): void {
-    const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
-    this.isEnrolled = enrolledCourses.some((course: any) => course.id === courseId);
+  checkEnrollmentStatus(courseId: number): void {
+    this.authService.getEnrolledCourses().subscribe({
+      next: (courses) => {
+        this.isEnrolled = courses.some((course: any) => course.id === courseId);
+      },
+      error: (err) => {
+        console.error('Error checking enrollment status:', err);
+        this.isEnrolled = false;
+      }
+    });
   }
 
-  private updateEnrolledCourses(): void {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    if (currentUser.id) {
-      this.authService.getEnrolledCourses().subscribe({
-        next: (courses) => {
-          console.log('Updated enrolled courses:', courses);
-          localStorage.setItem('enrolledCourses', JSON.stringify(courses));
-          this.isEnrolled = true;
-        },
-        error: (err) => {
-          console.error('Error updating enrolled courses:', err);
+  checkCardStatus(): void {
+    const userId = this.authService.getUserId();
+    this.authService.getUserCards(userId).subscribe({
+      next: (cards) => {
+        console.log('Cards received:', cards);
+        if (Array.isArray(cards)) {
+          this.hasCard = cards.length > 0;
+          if (this.hasCard) {
+            this.userCard = cards[0];
+            console.log('Card selected:', this.userCard);
+          }
+        } else if (cards && typeof cards === 'object') {
+          // Handle case where cards is a single object
+          this.hasCard = true;
+          this.userCard = cards;
+          console.log('Single card received:', this.userCard);
+        } else {
+          this.hasCard = false;
+          this.userCard = null;
         }
-      });
-    }
+      },
+      error: (err) => {
+        console.error('Error checking card status:', err);
+        this.hasCard = false;
+        this.userCard = null;
+      }
+    });
   }
 
   purchaseCourse(): void {
@@ -124,7 +112,7 @@ export class CourseDetailComponent implements OnInit {
       return;
     }
 
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const currentUser = this.authService.getCurrentUser();
     console.log('Current user:', currentUser);
 
     if (!currentUser.id) {
@@ -153,7 +141,7 @@ export class CourseDetailComponent implements OnInit {
       next: (response) => {
         console.log('Payment response:', response);
         if (response.status === 'completed') {
-          this.paymentStatus = 'success';
+          this.paymentStatus = 'completed';
           
           // Create enrollment
           const enrollmentData = {
@@ -164,8 +152,8 @@ export class CourseDetailComponent implements OnInit {
           this.courseService.createEnrollment(enrollmentData).subscribe({
             next: (enrollmentResponse) => {
               console.log('Enrollment created:', enrollmentResponse);
-              // Update enrolled courses using AuthService
-              this.updateEnrolledCourses();
+              // Update enrollment status
+              this.checkEnrollmentStatus(this.course.id);
             },
             error: (enrollmentError) => {
               console.error('Enrollment creation failed:', enrollmentError);
@@ -173,13 +161,13 @@ export class CourseDetailComponent implements OnInit {
             }
           });
         } else {
-          this.paymentStatus = 'error';
+          this.paymentStatus = 'failed';
           this.error = response.message || 'Payment failed. Please try again later.';
         }
       },
       error: (err) => {
         console.error('Payment failed:', err);
-        this.paymentStatus = 'error';
+        this.paymentStatus = 'failed';
         this.error = err.error?.message || 'Payment failed. Please try again later.';
       }
     });

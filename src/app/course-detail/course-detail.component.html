@@ -28,17 +28,27 @@
       <div *ngIf="isEnrolled" class="enrolled-message">
         <p>You are already enrolled in this course.</p>
       </div>
-      <button 
-        *ngIf="!isEnrolled"
-        class="purchase-button" 
-        (click)="purchaseCourse()"
-        [disabled]="paymentStatus === 'processing'"
-      >
-        <span *ngIf="paymentStatus === 'idle'">Purchase Course</span>
-        <span *ngIf="paymentStatus === 'processing'">Processing...</span>
-        <span *ngIf="paymentStatus === 'success'">Purchase Successful!</span>
-        <span *ngIf="paymentStatus === 'error'">Purchase Failed</span>
-      </button>
+
+      <div *ngIf="!isEnrolled">
+        <div *ngIf="!hasCard" class="no-card-message">
+          <p>You need to add a payment card to purchase this course.</p>
+          <a routerLink="/payment" class="btn-primary">Add Payment Card</a>
+        </div>
+
+        <div *ngIf="hasCard">
+          <button 
+            class="purchase-button" 
+            (click)="purchaseCourse()"
+            [disabled]="paymentStatus === 'processing'"
+          >
+            <span *ngIf="paymentStatus === 'pending'">Purchase Course</span>
+            <span *ngIf="paymentStatus === 'processing'">Processing...</span>
+            <span *ngIf="paymentStatus === 'completed'">Purchase Successful!</span>
+            <span *ngIf="paymentStatus === 'failed'">Purchase Failed</span>
+          </button>
+        </div>
+      </div>
+
       <div *ngIf="error" class="error-message">
         {{ error }}
       </div>
