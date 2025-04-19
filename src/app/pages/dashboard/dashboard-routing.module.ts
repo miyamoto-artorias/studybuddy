@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { CourseListComponent } from '../../course-list/course-list.component';
+import { CourseDetailComponent } from '../../course-detail/course-detail.component';
 
 const routes: Routes = [
   {
@@ -27,7 +28,15 @@ const routes: Routes = [
     path: 'teachercourses',
     title: 'teachercourses Dashboard',
     loadComponent: () => import('../../MyBucket/teacher-courses/teacher-courses.component').then(c => c.TeacherCoursesComponent)
-  },{path:'courses',component:CourseListComponent}
+  },
+  {
+    path: 'courses',
+    component: CourseListComponent
+  },
+  {
+    path: 'course/:id',
+    component: CourseDetailComponent
+  }
 ];
 
 @NgModule({
