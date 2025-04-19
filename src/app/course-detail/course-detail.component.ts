@@ -133,13 +133,18 @@ export class CourseDetailComponent implements OnInit {
 
     this.courseService.makePayment(paymentData).subscribe({
       next: (response) => {
-        console.log('Payment successful:', response);
-        this.paymentStatus = 'success';
-        this.isEnrolled = true;
-        // Update enrolled courses in localStorage
-        const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
-        enrolledCourses.push(this.course);
-        localStorage.setItem('enrolledCourses', JSON.stringify(enrolledCourses));
+        console.log('Payment response:', response);
+        if (response.status === 'completed') {
+          this.paymentStatus = 'success';
+          this.isEnrolled = true;
+          // Update enrolled courses in localStorage
+          const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
+          enrolledCourses.push(this.course);
+          localStorage.setItem('enrolledCourses', JSON.stringify(enrolledCourses));
+        } else {
+          this.paymentStatus = 'error';
+          this.error = response.message || 'Payment failed. Please try again later.';
+        }
       },
       error: (err) => {
         console.error('Payment failed:', err);
