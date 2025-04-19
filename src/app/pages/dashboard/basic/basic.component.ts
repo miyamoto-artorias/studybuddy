@@ -15,6 +15,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { CommonModule } from '@angular/common';
 import { PdfViewerWrapperComponent } from '../../../pdf-viewer-wrapper/pdf-viewer-wrapper.component';
 import { CourseService } from '../../../services/course.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-basic',
@@ -41,58 +42,38 @@ export class BasicComponent implements OnInit, OnDestroy {
   selectedCourse: any = null;
   selectedChapter: any = null;
   selectedContent: any = null;
+  loading = true;
+  error: string | null = null;
 
-  constructor(private sanitizer: DomSanitizer, private courseService: CourseService) {}
+  constructor(
+    private sanitizer: DomSanitizer, 
+    private courseService: CourseService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    // Load enrolled courses from localStorage
-    const stored = localStorage.getItem('enrolledCourses');
-    if (stored) {
-      this.courses = JSON.parse(stored);
-    } else {
-      console.warn('No enrolledCourses in localStorage, using dummy data.');
-      this.courses = [
-        {
-          id: 1,
-          title: 'Advanced Java',
-          description: 'A comprehensive course covering advanced Java concepts.',
-          picture: 'https://example.com/course-images/java-advanced.jpg',
-          price: 99.99,
-          chapters: [
-            {
-              id: 1,
-              title: 'Introduction',
-              description: 'Introduction to Advanced Java',
-              contents: [
-                {
-                  id: 101,
-                  title: 'Introduction Video',
-                  content: 'https://www.youtube.com/watch?v=WwrHeB93DVM',
-                  type: 'video'
-                }
-              ]
-            },
-            {
-              id: 2,
-              title: 'Advanced Topics',
-              description: 'Deep dive into advanced Java topics',
-              contents: [
-                {
-                  id: 102,
-                  title: 'Advanced PDF',
-                  content: 'https://vadimdez.github.io/ng2-pdf-viewer/assets/pdf-test.pdf',
-                  type: 'pdf'
-                }
-              ]
-            }
-          ]
+    this.loadEnrolledCourses();
+  }
+
+  loadEnrolledCourses(): void {
+    this.loading = true;
+    this.error = null;
+    
+    this.authService.getEnrolledCourses().subscribe({
+      next: (courses) => {
+        this.courses = courses;
+        if (this.courses.length) {
+          this.selectCourse(this.courses[0]);
         }
-      ];
-    }
-    console.log('Courses loaded:', this.courses);
-    if (this.courses.length) {
-      this.selectCourse(this.courses[0]);
-    }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading enrolled courses:', err);
+        this.error = 'Failed to load enrolled courses';
+        this.loading = false;
+        this.courses = [];
+      }
+    });
   }
 
   selectCourse(course: any): void {

@@ -26,11 +26,26 @@ export class AuthService {
   }
 
   getEnrolledCourses(): Observable<any[]> {
-    const enrollments = JSON.parse(localStorage.getItem('userEnrollments') || '[]');
-    const courseRequests = enrollments.map((enr: any) =>
-      this.http.get(`${this.baseUrl}/courses/${enr.courseId}`)
+    const userId = this.getUserId();
+    if (!userId) {
+      return of([]);
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/enrollments/user/${userId}`).pipe(
+      tap(enrollments => console.log('Fetched enrollments:', enrollments)),
+      switchMap(enrollments => {
+        if (!enrollments.length) {
+          return of([]);
+        }
+        const courseRequests = enrollments.map(enrollment => 
+          this.http.get(`${this.baseUrl}/courses/${enrollment.courseId}`)
+        );
+        return forkJoin(courseRequests);
+      }),
+      catchError(error => {
+        console.error('Error fetching enrolled courses:', error);
+        return of([]);
+      })
     );
-    return courseRequests.length ? forkJoin(courseRequests) as Observable<any[]> : of([]);
   }
   
   private storeUserData(user: any): void {
