@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CourseService } from '../services/course.service';
+import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -20,7 +21,8 @@ export class CourseDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private courseService: CourseService
+    private courseService: CourseService,
+    private authService: AuthService
   ) {
     // Debug localStorage
     console.log('Checking localStorage for card...');
@@ -85,6 +87,22 @@ export class CourseDetailComponent implements OnInit {
     this.isEnrolled = enrolledCourses.some((course: any) => course.id === courseId);
   }
 
+  private updateEnrolledCourses(): void {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    if (currentUser.id) {
+      this.authService.getEnrolledCourses().subscribe({
+        next: (courses) => {
+          console.log('Updated enrolled courses:', courses);
+          localStorage.setItem('enrolledCourses', JSON.stringify(courses));
+          this.isEnrolled = true;
+        },
+        error: (err) => {
+          console.error('Error updating enrolled courses:', err);
+        }
+      });
+    }
+  }
+
   purchaseCourse(): void {
     console.log('Purchase button clicked');
     console.log('Current course:', this.course);
@@ -136,11 +154,24 @@ export class CourseDetailComponent implements OnInit {
         console.log('Payment response:', response);
         if (response.status === 'completed') {
           this.paymentStatus = 'success';
-          this.isEnrolled = true;
-          // Update enrolled courses in localStorage
-          const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
-          enrolledCourses.push(this.course);
-          localStorage.setItem('enrolledCourses', JSON.stringify(enrolledCourses));
+          
+          // Create enrollment
+          const enrollmentData = {
+            userId: currentUser.id,
+            courseId: this.course.id
+          };
+
+          this.courseService.createEnrollment(enrollmentData).subscribe({
+            next: (enrollmentResponse) => {
+              console.log('Enrollment created:', enrollmentResponse);
+              // Update enrolled courses using AuthService
+              this.updateEnrolledCourses();
+            },
+            error: (enrollmentError) => {
+              console.error('Enrollment creation failed:', enrollmentError);
+              this.error = 'Payment successful but enrollment failed. Please contact support.';
+            }
+          });
         } else {
           this.paymentStatus = 'error';
           this.error = response.message || 'Payment failed. Please try again later.';

@@ -112,32 +112,25 @@ showAddContentForm(): void {
       } : {})
     };
   
-    const formData = new FormData();
-    const contentBlob = new Blob([JSON.stringify(contentData)], { type: 'application/json' });
-    formData.append('content', contentBlob, 'content.json');
-  
-    if (this.contentForm.value.type === 'pdf' && this.fileToUpload) {
-      formData.append('file', this.fileToUpload, this.fileToUpload.name);
-    }
+    const fileToUpload = this.contentForm.value.type === 'pdf' && this.fileToUpload ? this.fileToUpload : undefined;
   
     this.courseService.uploadContent(
       this.selectedCourse.id,
       this.selectedChapter.id,
       contentData,
-      this.fileToUpload as File
+      fileToUpload
     ).subscribe({
       next: (newContent) => {
         this.selectedChapter.contents = this.selectedChapter.contents || [];
         this.selectedChapter.contents.push(newContent);
         this.updateLocalCourses();
-        this.showContentForm = false; // Close form after success
+        this.showContentForm = false;
         this.contentForm.reset();
         this.fileToUpload = null;
       },
       error: (err) => {
         console.error('Error adding content:', err);
-        alert('Failed to add content');
-        // Keep form open to allow corrections
+        alert('Failed to add content: ' + (err.error?.message || 'Unknown error'));
       }
     });
   }

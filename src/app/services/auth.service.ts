@@ -15,7 +15,6 @@ export class AuthService {
   login(username: string, password: string): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/auth/login`, { username, password }).pipe(
       tap(user => this.storeUserData(user)),
-      switchMap(user => this.enrichUserWithEnrollments(user)),
       switchMap(user => this.enrichUserWithCoursesIfTeacher(user)),
       switchMap(user => this.enrichUserWithCards(user)),
       switchMap(user => this.enrichUserWithEnrolledCourses(user)),
@@ -39,15 +38,6 @@ export class AuthService {
     localStorage.setItem('currentUser', JSON.stringify(user));
   }
 
-  private enrichUserWithEnrollments(user: any): Observable<any> {
-    return this.getUserEnrollments(user.id).pipe(
-      map(enrollments => ({ ...user, enrollments })),
-      catchError(error => {
-        console.error('Enrollment fetch failed:', error);
-        return of({ ...user });
-      })
-    );
-  }
 
   private enrichUserWithCoursesIfTeacher(user: any): Observable<any> {
     if (user.userType === 'TEACHER') {
@@ -95,14 +85,6 @@ export class AuthService {
     );
   }
 
-  private getUserEnrollments(userId: number): Observable<any> {
-    return this.http.get(`${this.baseUrl}/enrollments/user/${userId}`).pipe(
-      tap(enrollments => {
-        console.log('Storing user enrollments:', enrollments);
-        localStorage.setItem('userEnrollments', JSON.stringify(enrollments));
-      })
-    );
-  }
 
   private getUserCards(userId: number): Observable<any> {
     return this.http.get(`${this.baseUrl}/cards/user/${userId}`).pipe(
