@@ -20,8 +20,14 @@
         <h2 class="course-title">{{ course.title }}</h2>
         <p class="course-description">{{ course.description }}</p>
         <div class="course-meta">
-          <span class="price">${{ course.price }}</span>
-          <span class="chapters-count">{{ course.chapters?.length || 0 }} Chapters</span>
+          <div class="teacher-info">
+            <span class="teacher-label">Teacher:</span>
+            <span class="teacher-name">{{ course.teacher?.username || 'Unknown' }}</span>
+          </div>
+          <div class="course-details">
+            <span class="price">${{ course.price }}</span>
+            <span class="chapters-count">{{ course.chapters?.length || 0 }} Chapters</span>
+          </div>
         </div>
       </div>
     </div>

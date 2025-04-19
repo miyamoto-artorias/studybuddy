@@ -109,19 +109,43 @@
 
       .course-meta {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
 
-        .price {
-          font-weight: bold;
-          color: #2ecc71;
-          font-size: 1.1rem;
+        .teacher-info {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.5rem;
+
+          .teacher-label {
+            color: #666;
+            font-size: 0.9rem;
+          }
+
+          .teacher-name {
+            color: #3498db;
+            font-weight: 500;
+            font-size: 0.95rem;
+          }
         }
 
-        .chapters-count {
-          color: #666;
-          font-size: 0.9rem;
+        .course-details {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 0.5rem;
+
+          .price {
+            font-weight: bold;
+            color: #2ecc71;
+            font-size: 1.1rem;
+          }
+
+          .chapters-count {
+            color: #666;
+            font-size: 0.9rem;
+          }
         }
       }
     }
