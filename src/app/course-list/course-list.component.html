@@ -31,6 +31,14 @@
             <span class="chapters-count">{{ course.chapters?.length || 0 }} Chapters</span>
           </div>
         </div>
+        <div class="course-categories" *ngIf="course.categories && course.categories.length > 0">
+          <span class="categories-label">Categories:</span>
+          <div class="categories-list">
+            <span class="category-badge" *ngFor="let category of course.categories">
+              {{ category.title }}
+            </span>
+          </div>
+        </div>
         <div class="enrollment-status" *ngIf="isEnrolled(course.id)">
           <span class="enrolled-badge">Enrolled</span>
         </div>

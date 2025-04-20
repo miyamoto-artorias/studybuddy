@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { tap, catchError, switchMap } from 'rxjs/operators';
+import { Observable, throwError, forkJoin, of } from 'rxjs';
+import { tap, catchError, switchMap, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -112,6 +112,31 @@ getAllCourses(): Observable<any[]> {
     tap(courses => console.log('Fetched courses:', courses)),
     catchError(error => {
       console.error('Error fetching courses:', error);
+      throw error;
+    })
+  );
+}
+
+getCourseWithCategories(courseId: number): Observable<any> {
+  return this.http.get<any>(`${this.coursesbaseUrl}/${courseId}`).pipe(
+    switchMap(course => {
+      if (course.categoryIds && course.categoryIds.length > 0) {
+        return forkJoin(
+          course.categoryIds.map((categoryId: number) => 
+            this.getCategoryById(categoryId)
+          )
+        ).pipe(
+          map(categories => ({
+            ...course,
+            categories: categories
+          }))
+        );
+      }
+      return of(course);
+    }),
+    tap(course => console.log('Fetched course with categories:', course)),
+    catchError(error => {
+      console.error('Error fetching course with categories:', error);
       throw error;
     })
   );

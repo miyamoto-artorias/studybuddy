@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CourseService } from '../services/course.service';
 import { AuthService } from '../services/auth.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-course-list',
@@ -32,8 +33,22 @@ export class CourseListComponent implements OnInit {
     this.error = null;
     this.courseService.getAllCourses().subscribe({
       next: (courses) => {
-        this.courses = courses;
-        this.loading = false;
+        // Load categories for each course
+        const courseObservables = courses.map(course => 
+          this.courseService.getCourseWithCategories(course.id)
+        );
+        
+        forkJoin(courseObservables).subscribe({
+          next: (coursesWithCategories) => {
+            this.courses = coursesWithCategories;
+            this.loading = false;
+          },
+          error: (err) => {
+            console.error('Error loading courses with categories:', err);
+            this.error = 'Failed to load course categories. Please try again later.';
+            this.loading = false;
+          }
+        });
       },
       error: (err) => {
         console.error('Error loading courses:', err);
