@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CourseService } from '../../services/course.service';
-import { AuthService } from '../../services/auth.service'; // Add this
+import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -12,13 +12,15 @@ import { CommonModule } from '@angular/common';
   templateUrl: './addcourse.component.html',
   styleUrls: ['./addcourse.component.scss']
 })
-export class AddcourseComponent {
+export class AddcourseComponent implements OnInit {
   course = {
     title: '',
     description: '',
     picture: '',
-    price: 0
+    price: 0,
+    categoryIds: [] as number[]
   };
+  categories: any[] = [];
   teacherId = 0;
   isLoading = false;
   errorMessage = '';
@@ -27,10 +29,9 @@ export class AddcourseComponent {
 
   constructor(
     private courseService: CourseService,
-    private authService: AuthService, // Add this
+    private authService: AuthService,
     private router: Router
   ) {
-    // Check authorization on component initialization
     if (!this.authService.isLoggedIn() || !this.authService.isTeacher()) {
       this.isAuthorized = false;
       setTimeout(() => this.router.navigate(['/dashboard']), 3000);
@@ -39,11 +40,41 @@ export class AddcourseComponent {
     }
   }
 
+  ngOnInit() {
+    this.loadCategories();
+  }
+
+  loadCategories() {
+    this.courseService.getAllCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+      },
+      error: (error) => {
+        console.error('Error loading categories:', error);
+        this.errorMessage = 'Failed to load categories';
+      }
+    });
+  }
+
+  toggleCategory(categoryId: number) {
+    const index = this.course.categoryIds.indexOf(categoryId);
+    if (index === -1) {
+      this.course.categoryIds.push(categoryId);
+    } else {
+      this.course.categoryIds.splice(index, 1);
+    }
+  }
+
   onSubmit(form: NgForm): void {
     if (!this.isAuthorized) return;
 
     if (form.invalid) {
       this.errorMessage = 'Please fill all required fields';
+      return;
+    }
+
+    if (this.course.categoryIds.length === 0) {
+      this.errorMessage = 'Please select at least one category';
       return;
     }
 

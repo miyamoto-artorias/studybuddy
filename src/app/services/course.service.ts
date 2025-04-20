@@ -11,6 +11,7 @@ export class CourseService {
 
   private baseUrl = 'http://localhost:8081/api/course-content';
   private coursesbaseUrl = 'http://localhost:8081/api/courses';
+  private categoriesUrl = 'http://localhost:8081/api/categories';
 
   // In AuthService
   downloadContent(courseId: number, chapterId: number, contentId: number): Observable<Blob> {
@@ -151,6 +152,26 @@ createEnrollment(enrollmentData: {
     tap(response => console.log('Enrollment created:', response)),
     catchError(error => {
       console.error('Enrollment creation failed:', error);
+      throw error;
+    })
+  );
+}
+
+getAllCategories(): Observable<any[]> {
+  return this.http.get<any[]>(this.categoriesUrl).pipe(
+    tap(categories => console.log('Fetched categories:', categories)),
+    catchError(error => {
+      console.error('Error fetching categories:', error);
+      throw error;
+    })
+  );
+}
+
+getCategoryById(categoryId: number): Observable<any> {
+  return this.http.get<any>(`${this.categoriesUrl}/${categoryId}`).pipe(
+    tap(category => console.log('Fetched category:', category)),
+    catchError(error => {
+      console.error('Error fetching category:', error);
       throw error;
     })
   );
