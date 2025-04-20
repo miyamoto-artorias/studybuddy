@@ -1,0 +1,73 @@
+<div class="teacher-profile-container">
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading teacher profile...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <p class="error-message">{{ error }}</p>
+  </div>
+
+  <div *ngIf="teacher && !loading" class="profile-content">
+    <div class="profile-header">
+      <div class="teacher-info">
+        <h1 class="teacher-name">{{ teacher.username }}</h1>
+        <p class="teacher-email">{{ teacher.email }}</p>
+        <div class="teacher-stats">
+          <div class="stat-item">
+            <span class="stat-label">Total Earnings</span>
+            <span class="stat-value">${{ formatBalance(teacher.totalEarnings) }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Current Balance</span>
+            <span class="stat-value">${{ formatBalance(teacher.card?.balance || 0) }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Courses</span>
+            <span class="stat-value">{{ teacher.uploadedCourses?.length || 0 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="teacher-bio" *ngIf="teacher.bio">
+      <h2>About</h2>
+      <p>{{ teacher.bio }}</p>
+    </div>
+
+    <div class="expertise-section" *ngIf="teacher.expertise && teacher.expertise.length > 0">
+      <h2>Areas of Expertise</h2>
+      <div class="expertise-list">
+        <span class="expertise-badge" *ngFor="let skill of teacher.expertise">
+          {{ skill }}
+        </span>
+      </div>
+    </div>
+
+    <div class="courses-section">
+      <h2>Published Courses</h2>
+      <div class="courses-grid">
+        <div class="course-card" *ngFor="let course of teacher.uploadedCourses">
+          <div class="course-image">
+            <img [src]="course.picture || 'assets/default-course.jpg'" [alt]="course.title">
+          </div>
+          <div class="course-info">
+            <h3 class="course-title">{{ course.title }}</h3>
+            <p class="course-description">{{ course.description }}</p>
+            <div class="course-meta">
+              <span class="price">${{ course.price }}</span>
+              <span class="chapters-count">{{ course.chapters?.length || 0 }} Chapters</span>
+            </div>
+            <div class="course-categories" *ngIf="course.categories && course.categories.length > 0">
+              <div class="categories-list">
+                <span class="category-badge" *ngFor="let category of course.categories">
+                  {{ category.title }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

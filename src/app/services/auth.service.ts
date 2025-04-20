@@ -138,4 +138,14 @@ export class AuthService {
     return user.id || 0;
   }
 
+  getTeacherDetails(teacherId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/teachers/${teacherId}`).pipe(
+      tap(teacher => console.log('Fetched teacher details:', teacher)),
+      catchError(error => {
+        console.error('Error fetching teacher details:', error);
+        throw error;
+      })
+    );
+  }
+
 }

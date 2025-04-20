@@ -17,6 +17,7 @@ import {
 import { DicebearComponent } from '@elementar-ui/components';
 import { MatIconButton } from '@angular/material/button';
 import { ToolbarComponent } from '@store/sidebar';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -45,6 +46,7 @@ import { ToolbarComponent } from '@store/sidebar';
 export class SidebarComponent implements OnInit {
   router = inject(Router);
   location = inject(Location);
+  authService = inject(AuthService);
   height: string | null = '200px';
   compact = false;
 
@@ -82,6 +84,11 @@ export class SidebarComponent implements OnInit {
           type: 'link',
           name: 'courses',
           link: '/pages/dashboard/courses'
+        },        {
+          key: uuid(),
+          type: 'link',
+          name: 'teacher',
+          link: `/pages/dashboard/teacher/${this.authService.getUserId()}`
         }
     
        
@@ -89,7 +96,6 @@ export class SidebarComponent implements OnInit {
     },
    
 
-    
     
     {
       key: 'headingPages',
