@@ -1,11 +1,10 @@
 import { Routes } from '@angular/router';
-import { AddcourseComponent } from './MyBucket/addcourse/addcourse.component';
 import { EnrolledCoursesComponent } from './MyBucket/enrolled-courses/enrolled-courses.component';
-import { CourseDetailComponent } from './course-detail/course-detail.component';
+import { CourseDetailComponent } from './pages/course/course-detail/course-detail.component';
 import { BasicComponent } from './pages/dashboard/basic/basic.component';
-import { CourseListComponent } from './course-list/course-list.component';
+import { CourseListComponent } from './pages/course/course-list/course-list.component';
 import { LoginComponent } from './MyBucket/login/login.component';
-import { TeacherCoursesComponent } from './MyBucket/teacher-courses/teacher-courses.component';
+import { TeacherCoursesComponent } from './pages/course/teacher-courses/teacher-courses.component';
 
 export const routes: Routes = [
   {
@@ -25,7 +24,6 @@ export const routes: Routes = [
     path: 'error',
     loadChildren: () => import('./error/error.module').then(m => m.ErrorModule)
   },
-  { path: 'addcourse', component: AddcourseComponent },
   { path: 'enrolled', component: EnrolledCoursesComponent },
   { path: 'courses', component: CourseListComponent },
   { path: 'course/:id', component: CourseDetailComponent },

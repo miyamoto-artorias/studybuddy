@@ -63,45 +63,54 @@ export class SidebarComponent implements OnInit {
           key: uuid(),
           type: 'link',
           name: 'Basic',
-          link: '/pages/dashboard/basic'
-        },        {
-          key: uuid(),
-          type: 'link',
-          name: 'playground',
-          link: '/pages/dashboard/playground'
-        },        {
-          key: uuid(),
-          type: 'link',
-          name: 'addcourse',
-          link: '/pages/dashboard/addcourse'
-        },            {
-          key: uuid(),
-          type: 'link',
-          name: 'teachercourses',
-          link: '/pages/dashboard/teachercourses'
-        },        {
-          key: uuid(),
-          type: 'link',
-          name: 'courses',
-          link: '/pages/dashboard/courses'
-        },        {
-          key: uuid(),
-          type: 'link',
-          name: 'teacher',
-          link: `/pages/dashboard/teacher/${this.authService.getUserId()}`
-        }
-    
+          link: '/pages/course/basic'
+        },
        
       ]
     },
    
-
-    
     {
-      key: 'headingPages',
-      type: 'heading',
-      name: 'Pages'
+      key: 'Courses',
+      type: 'group',
+      icon: 'apps',
+      name: 'Courses',
+      children: [
+
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Enrolled_Courses',
+          link: '/pages/course/enrolled-courses'
+        },
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'playground',
+          link: '/pages/course/playground'
+        },        {
+          key: uuid(),
+          type: 'link',
+          name: 'addcourse',
+          link: '/pages/course/addcourse'
+        },            {
+          key: uuid(),
+          type: 'link',
+          name: 'teachercourses',
+          link: '/pages/course/teachercourses'
+        },        {
+          key: uuid(),
+          type: 'link',
+          name: 'courses',
+          link: '/pages/course/courses'
+        },        {
+          key: uuid(),
+          type: 'link',
+          name: 'teacher',
+          link: `/pages/course/teacher/${this.authService.getUserId()}`
+        }
+      ]
     },
+
     {
       key: 'applications',
       type: 'group',

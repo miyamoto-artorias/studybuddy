@@ -1,0 +1,142 @@
+<emr-tab-panel [activeItemId]="activeTabId" compact class="h-full border-t border-t-default border-b border-b-default border-s border-s-default overflow-x-hidden">
+    <!-- Header for courses -->
+    <emr-tab-panel-header>
+      <emr-tab-panel-nav>
+        @for (course of courses; track course.id) {
+          <emr-tab-panel-item 
+            [for]="'course-' + course.id" 
+            [matTooltip]="course.title" 
+            matTooltipPosition="after"
+            (click)="selectCourse(course)">
+            <emr-icon name="ph:book-open" emrTabPanelItemIcon></emr-icon>
+          </emr-tab-panel-item>
+        }
+      </emr-tab-panel-nav>
+    </emr-tab-panel-header>
+  
+    <!-- Aside content for each course -->
+    <emr-tab-panel-aside>
+      @for (course of courses; track course.id) {
+        <ng-template [emrTabPanelAsideContent]="'course-' + course.id">
+          <!-- Nested tab panel for chapters -->
+          <emr-tab-panel [activeItemId]="selectedChapter ? 'chapter-' + selectedChapter.id : ''" compact class="h-full">
+            <emr-tab-panel-header>
+              <emr-tab-panel-nav>
+                @for (chapter of course.chapters; track chapter.id) {
+                  <emr-tab-panel-item 
+                    [for]="'chapter-' + chapter.id" 
+                    [matTooltip]="chapter.title" 
+                    matTooltipPosition="after"
+                    (click)="selectChapter(chapter)">
+                    <emr-icon name="ph:folder-open" emrTabPanelItemIcon></emr-icon>
+                  </emr-tab-panel-item>
+                }
+              </emr-tab-panel-nav>
+            </emr-tab-panel-header>
+  
+            <!-- Aside content for chapters -->
+            <emr-tab-panel-aside>
+              @for (chapter of course.chapters; track chapter.id) {
+                <ng-template [emrTabPanelAsideContent]="'chapter-' + chapter.id">
+                  <!-- Content list and display -->
+                  <div class="content-container">
+                    <!-- Content list -->
+                    <div class="content-list">
+                      <h3>Contents</h3>
+                      <ul>
+                        @for (content of chapter.contents; track content.id) {
+                          <li 
+                            [class.active]="selectedContent?.id === content.id"
+                            (click)="selectContent(content)">
+                            {{ content.title }}
+                          </li>
+                        }
+                      </ul>
+                    </div>
+  
+                    <!-- Content display -->
+                    <div class="content-display">
+                      @if (selectedContent) {
+                        <ng-container [ngSwitch]="selectedContent.type">
+                          <!-- PDF content -->
+                          <div *ngSwitchCase="'pdf'">
+                            <ng-container *ngIf="selectedContent.downloadUrl; else loadingOrError">
+                         <!--     <div class="pdf-info">
+                                <p>Course ID: {{ selectedCourse?.id }}</p>
+                                <p>Chapter ID: {{ selectedChapter?.id }}</p>
+                                <p>Content ID: {{ selectedContent?.id }}</p>
+                                <p>PDF URL: {{ selectedContent.downloadUrl }}</p>
+                                <p>Content Type: {{ selectedContent.type }}</p>
+                              </div> -->
+                              <app-pdf-viewer-wrapper
+                                [src]="selectedContent.downloadUrl"
+                                [renderText]="true"
+                                [originalSize]="false"
+                                customStyle="width: 1100px; height: 700px;">
+                              </app-pdf-viewer-wrapper>
+                            </ng-container>
+                            <ng-template #loadingOrError>
+                              <div class="loading-message">
+                                {{ selectedContent.error ? 'Error loading content' : 'Loading PDF...' }}
+                              </div>
+                            </ng-template>
+                          </div>
+  
+                          <!-- Video content -->
+                          <div *ngSwitchCase="'video'" class="video-container" style="width: 900px; height: 500px;">
+                            <ng-container *ngIf="isYoutubeLink(selectedContent.content); else localVideo">
+                              <iframe 
+                                width="100%" 
+                                height="100%"
+                                [src]="getSafeYoutubeUrl(selectedContent.content)"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                              </iframe>
+                            </ng-container>
+                            <ng-template #localVideo>
+                              <video controls style="width: 100%; height: 100%;">
+                                <source [src]="selectedContent.content" type="video/mp4">
+                                Your browser does not support the video tag.
+                              </video>
+                            </ng-template>
+                          </div>
+  
+                          <!-- Fallback -->
+                          <div *ngSwitchDefault>
+                            <div class="empty-content">No content available</div>
+                          </div>
+                        </ng-container>
+                      } @else {
+                        <div class="empty-content">Select a content item to view</div>
+                      }
+                    </div>
+                  </div>
+                </ng-template>
+              }
+            </emr-tab-panel-aside>
+          </emr-tab-panel>
+        </ng-template>
+      }
+    </emr-tab-panel-aside>
+  </emr-tab-panel>
+  
+  <style>
+    .pdf-info {
+      background-color: #f5f5f5;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .loading-message {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+      font-size: 16px;
+      color: #666;
+    }
+  </style>

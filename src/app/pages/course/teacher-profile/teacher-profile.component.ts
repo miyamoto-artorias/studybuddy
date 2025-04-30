@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { AuthService } from '../services/auth.service';
-import { CourseService } from '../services/course.service';
+import { AuthService } from '../../../services/auth.service';
+import { CourseService } from '../../../services/course.service';
 
 @Component({
   selector: 'app-teacher-profile',

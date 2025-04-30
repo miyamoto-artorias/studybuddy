@@ -1,10 +1,10 @@
 // teacher-courses.component.ts
 import { Component, OnInit } from '@angular/core';
-import { CourseService } from '../../services/course.service';
-import { AuthService } from '../../services/auth.service';
+import { CourseService } from '../../../services/course.service';
+import { AuthService } from '../../../services/auth.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { IconComponent } from "../../../../projects/components/src/icon/icon/icon.component";
+import { IconComponent } from "../../../../../projects/components/src/icon/icon/icon.component";
 
 @Component({
   imports: [CommonModule, ReactiveFormsModule, IconComponent],
