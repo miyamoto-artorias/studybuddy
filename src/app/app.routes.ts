@@ -1,9 +1,8 @@
 import { Routes } from '@angular/router';
-import { EnrolledCoursesComponent } from './MyBucket/enrolled-courses/enrolled-courses.component';
 import { CourseDetailComponent } from './pages/course/course-detail/course-detail.component';
 import { BasicComponent } from './pages/dashboard/basic/basic.component';
 import { CourseListComponent } from './pages/course/course-list/course-list.component';
-import { LoginComponent } from './MyBucket/login/login.component';
+import { LoginComponent } from './auth/login/login.component';
 import { TeacherCoursesComponent } from './pages/course/teacher-courses/teacher-courses.component';
 
 export const routes: Routes = [
@@ -24,7 +23,6 @@ export const routes: Routes = [
     path: 'error',
     loadChildren: () => import('./error/error.module').then(m => m.ErrorModule)
   },
-  { path: 'enrolled', component: EnrolledCoursesComponent },
   { path: 'courses', component: CourseListComponent },
   { path: 'course/:id', component: CourseDetailComponent },
   { path: 'basic', component: BasicComponent },
