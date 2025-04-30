@@ -3,7 +3,11 @@
   <emr-tab-panel-header>
     <emr-tab-panel-nav>
       @for (course of courses; track course.id) {
-        <emr-tab-panel-item [for]="'course-' + course.id" [matTooltip]="course.title" matTooltipPosition="after">
+        <emr-tab-panel-item 
+          [for]="'course-' + course.id" 
+          [matTooltip]="course.title" 
+          matTooltipPosition="after"
+          (click)="selectCourse(course)">
           <emr-icon name="ph:book-open" emrTabPanelItemIcon></emr-icon>
         </emr-tab-panel-item>
       }
@@ -57,6 +61,13 @@
                         <!-- PDF content -->
                         <div *ngSwitchCase="'pdf'">
                           <ng-container *ngIf="selectedContent.downloadUrl; else loadingOrError">
+                            <div class="pdf-info">
+                              <p>Course ID: {{ selectedCourse?.id }}</p>
+                              <p>Chapter ID: {{ selectedChapter?.id }}</p>
+                              <p>Content ID: {{ selectedContent?.id }}</p>
+                              <p>PDF URL: {{ selectedContent.downloadUrl }}</p>
+                              <p>Content Type: {{ selectedContent.type }}</p>
+                            </div>
                             <app-pdf-viewer-wrapper
                               [src]="selectedContent.downloadUrl"
                               [renderText]="true"
@@ -109,3 +120,23 @@
     }
   </emr-tab-panel-aside>
 </emr-tab-panel>
+
+<style>
+  .pdf-info {
+    background-color: #f5f5f5;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .loading-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    font-size: 16px;
+    color: #666;
+  }
+</style>

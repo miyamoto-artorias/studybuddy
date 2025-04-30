@@ -15,7 +15,26 @@ export class CourseService {
 
   // In AuthService
   downloadContent(courseId: number, chapterId: number, contentId: number): Observable<Blob> {
-    const url = `${this.baseUrl}/course/${courseId}/chapter/${chapterId}/download/${contentId}`;
+    console.log('CourseService: Starting content download');
+    console.log('CourseService: Download parameters:', { courseId, chapterId, contentId });
+    const url = `http://localhost:8081/api/course-content/course/${courseId}/chapter/${chapterId}/download/${contentId}`;
+    console.log('CourseService: Download URL:', url);
+    
+    return this.http.get(url, { responseType: 'blob' }).pipe(
+      tap(blob => {
+        console.log('CourseService: Received blob response:', blob);
+        console.log('CourseService: Blob size:', blob.size);
+        console.log('CourseService: Blob type:', blob.type);
+      }),
+      catchError(error => {
+        console.error('CourseService: Download failed:', error);
+        throw error;
+      })
+    );
+  }
+
+  downloadFile(fileName: string): Observable<Blob> {
+    const url = `${this.baseUrl}/download/${fileName}`;
     return this.http.get(url, { responseType: 'blob' });
   }
   

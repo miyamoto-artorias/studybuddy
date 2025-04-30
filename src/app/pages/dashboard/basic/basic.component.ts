@@ -99,33 +99,51 @@ export class BasicComponent implements OnInit, OnDestroy {
 
   selectContent(content: any): void {
     console.log('Content selected:', content);
+    console.log('Selected Course:', this.selectedCourse);
+    console.log('Selected Chapter:', this.selectedChapter);
     this.revokeBlobUrl();
     this.selectedContent = { ...content };
 
     if (content.type === 'pdf') {
-      const { id: courseId } = this.selectedCourse;
-      const { id: chapterId } = this.selectedChapter;
-      const { id: contentId } = content;
+      console.log('Processing PDF content');
+      const courseId = this.selectedCourse?.id;
+      const chapterId = this.selectedChapter?.id;
+      const contentId = content?.id;
+      
+      console.log('Course ID from selectedCourse:', courseId);
+      console.log('Chapter ID from selectedChapter:', chapterId);
+      console.log('Content ID from content:', contentId);
 
+      if (!courseId || !chapterId || !contentId) {
+        console.error('Missing required IDs:', { courseId, chapterId, contentId });
+        this.selectedContent = { ...this.selectedContent, error: true };
+        return;
+      }
+
+      const url = `http://localhost:8081/api/course-content/course/${courseId}/chapter/${chapterId}/download/${contentId}`;
+      console.log('Download URL:', url);
+      
       this.courseService.downloadContent(courseId, chapterId, contentId)
         .pipe(take(1))
         .subscribe({
           next: (blob) => {
+            console.log('Received blob response:', blob);
             if (blob instanceof Blob) {
               const blobUrl = URL.createObjectURL(blob);
-              console.log('PDF blob URL:', blobUrl);
+              console.log('Created blob URL:', blobUrl);
               this.selectedContent = {
                 ...this.selectedContent,
                 downloadUrl: blobUrl,
                 error: false
               };
+              console.log('Updated selectedContent with blob URL:', this.selectedContent);
             } else {
               console.error('Invalid blob response:', blob);
               this.selectedContent = { ...this.selectedContent, error: true };
             }
           },
           error: (err) => {
-            console.error('PDF load failed:', err);
+            console.error('PDF download failed:', err);
             this.selectedContent = { ...this.selectedContent, error: true };
           }
         });
