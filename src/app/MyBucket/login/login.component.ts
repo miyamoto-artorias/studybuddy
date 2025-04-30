@@ -34,7 +34,7 @@ export class LoginComponent {
     const { username, password } = this.loginForm.value;
 
     this.authService.login(username, password).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
+      next: () => this.router.navigate(['pages/dashboard/courses']),
       error: (error) => {
         this.loginForm.reset();
         this.isLoading = false;
