@@ -82,7 +82,18 @@ export class AddcourseComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.courseService.createCourse(this.teacherId, this.course).subscribe({
+    // Format the course data
+    const courseData = {
+      title: this.course.title,
+      description: this.course.description,
+      picture: this.course.picture || 'default-course.png', // Provide a default image if none is specified
+      price: Number(this.course.price), // Ensure price is a number
+      categoryIds: this.course.categoryIds
+    };
+
+    console.log('Submitting course data:', courseData);
+
+    this.courseService.createCourse(this.teacherId, courseData).subscribe({
       next: (response) => {
         this.isLoading = false;
         this.successMessage = 'Course created successfully!';

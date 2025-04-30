@@ -63,9 +63,14 @@ export class SidebarComponent implements OnInit {
           key: uuid(),
           type: 'link',
           name: 'Basic',
-          link: '/pages/course/basic'
-        },
-       
+          link: '/pages/dashboard/basic'
+        },          
+       {
+        key: uuid(),
+        type: 'link',
+        name: 'playground',
+        link: '/pages/dashboard/playground'
+       }
       ]
     },
    
@@ -83,11 +88,6 @@ export class SidebarComponent implements OnInit {
           link: '/pages/course/enrolled-courses'
         },
         {
-          key: uuid(),
-          type: 'link',
-          name: 'playground',
-          link: '/pages/course/playground'
-        },        {
           key: uuid(),
           type: 'link',
           name: 'addcourse',

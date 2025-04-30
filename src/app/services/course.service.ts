@@ -45,7 +45,18 @@ export class CourseService {
       'Content-Type': 'application/json'
     });
   
-    return this.http.post(url, courseData, { headers }).pipe(
+    // Format the course data to match the working Postman request
+    const formattedCourseData = {
+      title: courseData.title,
+      description: courseData.description,
+      picture: courseData.picture,
+      price: courseData.price,
+      categoryIds: courseData.categoryIds
+    };
+
+    console.log('Sending course data:', formattedCourseData);
+  
+    return this.http.post(url, formattedCourseData, { headers }).pipe(
       tap(response => {
         console.log('Course created successfully:', response);
         // Refresh teacher courses after creation

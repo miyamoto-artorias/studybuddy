@@ -16,11 +16,7 @@ const routes: Routes = [
     title: 'Enrolled Courses',
     loadComponent: () => import('./enrolled-courses/enrolled-courses.component').then(c => c.EnrolledCoursesComponent)
   },
-  {
-    path: 'playground',
-    title: 'playground Dashboard',
-    loadComponent: () => import('./playground/playground.component').then(c => c.PlaygroundComponent)
-  },
+
   {
     path: 'addcourse',
     title: 'addcourse Dashboard',
