@@ -61,13 +61,13 @@
                         <!-- PDF content -->
                         <div *ngSwitchCase="'pdf'">
                           <ng-container *ngIf="selectedContent.downloadUrl; else loadingOrError">
-                            <div class="pdf-info">
+                       <!--     <div class="pdf-info">
                               <p>Course ID: {{ selectedCourse?.id }}</p>
                               <p>Chapter ID: {{ selectedChapter?.id }}</p>
                               <p>Content ID: {{ selectedContent?.id }}</p>
                               <p>PDF URL: {{ selectedContent.downloadUrl }}</p>
                               <p>Content Type: {{ selectedContent.type }}</p>
-                            </div>
+                            </div> -->
                             <app-pdf-viewer-wrapper
                               [src]="selectedContent.downloadUrl"
                               [renderText]="true"
