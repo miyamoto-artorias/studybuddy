@@ -9,19 +9,14 @@ import {
   ScreenLoaderService, SeoService,
   ThemeManagerService
 } from '@elementar-ui/components';
-import { AddcourseComponent } from './MyBucket/addcourse/addcourse.component';
-import { LoginComponent } from './MyBucket/login/login.component';
-import { BasicComponent } from './pages/dashboard/basic/basic.component';
-import { TeacherCoursesComponent } from './MyBucket/teacher-courses/teacher-courses.component';
 
 @Component({
   selector: 'app-root',
   imports: [
-    RouterOutlet, LoginComponent,BasicComponent,
-    ScreenLoaderComponent,TeacherCoursesComponent,
-    PageLoadingBarComponent,
-    AddcourseComponent
-],
+    RouterOutlet,
+    ScreenLoaderComponent,
+    PageLoadingBarComponent
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -35,7 +30,7 @@ export class AppComponent implements OnInit {
   private _platformId = inject(PLATFORM_ID);
   private _router = inject(Router);
 
-  loadingText = signal('Application Loading');
+  loadingText = signal('loading StudyBuddy...');
   pageLoaded = signal(false);
 
   constructor() {
@@ -70,11 +65,11 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this._themeManager.setColorScheme(this._themeManager.getPreferredColorScheme());
 
-    if (isPlatformBrowser(this._platformId)) {
-      setTimeout(() => {
-        this.loadingText.set('STUDDYBUDDY');
-      }, 1000);
-    }
+    // if (isPlatformBrowser(this._platformId)) {
+    //   setTimeout(() => {
+    //     this.loadingText.set('second loading...');
+    //   }, 1500);
+    // }
 
     this._seoService.trackCanonicalChanges(this._envService.getValue('siteUrl'));
   }
