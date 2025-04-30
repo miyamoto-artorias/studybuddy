@@ -1,6 +1,6 @@
 {
-  "name": "elementar-admin",
-  "description": "Elementar Admin - Free and open source Angular admin panel based on Material 3 and Tailwind",
+  "name": "study-buddy",
+  "description": "E-learning platform for students and teachers",
   "version": "1.0.0",
   "license": "MIT",
   "bugs": {
