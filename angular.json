@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "elementar-admin": {
+    "studdy-buddy": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
