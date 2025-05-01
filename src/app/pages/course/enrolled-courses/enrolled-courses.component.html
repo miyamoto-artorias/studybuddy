@@ -146,8 +146,8 @@
                                     <input type="radio" 
                                            [id]="'q' + question.questionId + 'opt' + i"
                                            [name]="'question' + question.questionId"
-                                           [value]="i.toString()"
-                                           (change)="updateResponse(question.questionId, i.toString())">
+                                           [value]="option"
+                                           (change)="updateResponse(question.questionId, option)">
                                     <label [for]="'q' + question.questionId + 'opt' + i">{{ option }}</label>
                                   </div>
                                 </div>
@@ -157,8 +157,8 @@
                                   <div *ngFor="let option of question.options; let i = index" class="option">
                                     <input type="checkbox" 
                                            [id]="'q' + question.questionId + 'opt' + i"
-                                           [value]="i.toString()"
-                                           (change)="updateResponse(question.questionId, i.toString())">
+                                           [value]="option"
+                                           (change)="onMultipleChoiceChange($event, question.questionId, option)">
                                     <label [for]="'q' + question.questionId + 'opt' + i">{{ option }}</label>
                                   </div>
                                 </div>

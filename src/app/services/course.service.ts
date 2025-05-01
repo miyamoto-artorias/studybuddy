@@ -258,7 +258,7 @@ getChapterQuizzes(chapterId: number): Observable<any[]> {
 }
 
 // Remove createQuizAttempt method and keep only submitQuizResponses
-submitQuizResponses(chapterId: number, quizId: number, userId: number, responses: { [key: string]: string }): Observable<any> {
+submitQuizResponses(chapterId: number, quizId: number, userId: number, responses: { [key: string]: string | string[] }): Observable<any> {
   const url = `http://localhost:8081/api/chapters/${chapterId}/quizzes/${quizId}/attempt?userId=${userId}`;
   const payload = { responses };
   return this.http.post(url, payload).pipe(

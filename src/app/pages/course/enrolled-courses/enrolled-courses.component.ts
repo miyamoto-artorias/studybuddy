@@ -46,7 +46,7 @@ export class EnrolledCoursesComponent {
   loading = true;
   error: string | null = null;
   // Add new properties for quiz attempts
-  quizResponses: { [key: string]: string } = {};
+  quizResponses: { [key: string]: string | string[] } = {};
   attemptInProgress = false;
   quizSubmitted = false;
   quizResult: any = null;
@@ -228,12 +228,36 @@ export class EnrolledCoursesComponent {
     this.quizResponses = {};
   }
 
-  updateResponse(questionId: number | undefined, response: string): void {
+  updateResponse(questionId: number | undefined, response: string, isMultiple: boolean = false): void {
     if (questionId === undefined) {
       console.error('Question ID is undefined');
       return;
     }
-    this.quizResponses[questionId.toString()] = response;
+
+    const qId = questionId.toString();
+    
+    if (isMultiple) {
+      // Handle multiple choice answers
+      if (!this.quizResponses[qId]) {
+        this.quizResponses[qId] = [];
+      }
+      const responses = this.quizResponses[qId] as string[];
+      const index = responses.indexOf(response);
+      
+      if (index === -1) {
+        responses.push(response);
+      } else {
+        responses.splice(index, 1);
+      }
+      
+      if (responses.length === 0) {
+        delete this.quizResponses[qId];
+      }
+    } else {
+      // Handle single choice or text answers
+      this.quizResponses[qId] = response;
+    }
+    
     console.log('Updated responses:', this.quizResponses);
   }
 
@@ -245,6 +269,17 @@ export class EnrolledCoursesComponent {
     const target = event.target as HTMLInputElement;
     if (target) {
       this.updateResponse(questionId, target.value);
+    }
+  }
+
+  onMultipleChoiceChange(event: Event, questionId: number | undefined, option: string): void {
+    if (questionId === undefined) {
+      console.error('Question ID is undefined');
+      return;
+    }
+    const target = event.target as HTMLInputElement;
+    if (target) {
+      this.updateResponse(questionId, option, true);
     }
   }
 
