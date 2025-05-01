@@ -12,7 +12,7 @@ export class PaymentAndCreditService {
 
 
   getPaymentsByUser(userId: number) {
-    return this.http.post<any[]>('http://localhost:8081/api/payments/byUser', { userId });
+    return this.http.get<any[]>('http://localhost:8081/api/payments/byUser', { params: { userId: userId } });
   }
   
 
