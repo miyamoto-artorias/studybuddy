@@ -95,13 +95,19 @@
         <emr-icon name="ph:plus"></emr-icon> Add Quiz
       </button>
     </header>
-    <ul>
-      <li *ngFor="let quiz of selectedChapter.quizzes">
-        {{ quiz.title }}
-      </li>
-    </ul>
-    <div *ngIf="!selectedChapter.quizzes || !selectedChapter.quizzes.length" class="empty-message">
-      No quizzes available yet.
+    <div class="quiz-grid">
+      <div class="quiz-card" *ngFor="let quiz of selectedChapter.quizzes">
+        <h4>{{ quiz.title }}</h4>
+        <p class="description">{{ quiz.description }}</p>
+        <div class="quiz-details">
+          <span class="detail">Time Limit: {{ quiz.timeLimit }} min</span>
+          <span class="detail">Passing Score: {{ quiz.passingScore }}</span>
+          <span class="detail">Max Attempts: {{ quiz.maxAttempts }}</span>
+        </div>
+      </div>
+      <div *ngIf="!selectedChapter.quizzes || !selectedChapter.quizzes.length" class="empty-message">
+        No quizzes available yet.
+      </div>
     </div>
   </section>
 </div>
