@@ -126,7 +126,69 @@
                             <p>Passing Score: {{ selectedQuiz.passingScore }}</p>
                             <p>Max Attempts: {{ selectedQuiz.maxAttempts }}</p>
                           </div>
-                          <!-- Quiz questions will be displayed here later -->
+
+                          <!-- Quiz attempt section -->
+                          <div class="quiz-attempt" *ngIf="!quizSubmitted">
+                            <button *ngIf="!attemptInProgress" 
+                                    (click)="startQuizAttempt()" 
+                                    class="btn-primary">
+                              Start Quiz
+                            </button>
+
+                            <div *ngIf="attemptInProgress" class="quiz-questions">
+                              <div *ngFor="let question of selectedQuiz.questions" class="question-item">
+                                <h4>{{ question.questionText }}</h4>
+                                <p class="points">Points: {{ question.points }}</p>
+
+                                <!-- Multiple Choice Single Answer -->
+                                <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_SINGLE'" class="options">
+                                  <div *ngFor="let option of question.options; let i = index" class="option">
+                                    <input type="radio" 
+                                           [id]="'q' + question.id + 'opt' + i"
+                                           [name]="'question' + question.id"
+                                           [value]="i.toString()"
+                                           (change)="updateResponse(question.id, i.toString())">
+                                    <label [for]="'q' + question.id + 'opt' + i">{{ option }}</label>
+                                  </div>
+                                </div>
+
+                                <!-- Multiple Choice Multiple Answers -->
+                                <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_MULTIPLE'" class="options">
+                                  <div *ngFor="let option of question.options; let i = index" class="option">
+                                    <input type="checkbox" 
+                                           [id]="'q' + question.id + 'opt' + i"
+                                           [value]="i.toString()"
+                                           (change)="updateResponse(question.id, i.toString())">
+                                    <label [for]="'q' + question.id + 'opt' + i">{{ option }}</label>
+                                  </div>
+                                </div>
+
+                                <!-- Short Text Answer -->
+                                <div *ngIf="question.questionType === 'SHORT_TEXT'" class="text-answer">
+                                  <input type="text" 
+                                         [id]="'q' + question.id"
+                                         (input)="onTextAnswerChange($event, question.id)"
+                                         placeholder="Enter your answer">
+                                </div>
+                              </div>
+
+                              <button (click)="submitQuiz()" 
+                                      class="btn-primary submit-quiz"
+                                      [disabled]="!Object.keys(quizResponses).length">
+                                Submit Quiz
+                              </button>
+                            </div>
+                          </div>
+
+                          <!-- Quiz Results -->
+                          <div *ngIf="quizSubmitted && quizResult" class="quiz-results">
+                            <h4>Quiz Results</h4>
+                            <p>Score: {{ quizResult.score }}</p>
+                            <p>Status: {{ quizResult.passed ? 'Passed' : 'Failed' }}</p>
+                            <button (click)="selectQuiz(selectedQuiz)" class="btn-secondary">
+                              Try Again
+                            </button>
+                          </div>
                         </div>
                       </ng-container>
   

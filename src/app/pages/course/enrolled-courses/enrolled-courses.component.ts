@@ -45,6 +45,13 @@ export class EnrolledCoursesComponent {
   selectedQuiz: any = null;
   loading = true;
   error: string | null = null;
+  // Add new properties for quiz attempts
+  quizResponses: { [key: string]: string } = {};
+  attemptInProgress = false;
+  quizSubmitted = false;
+  quizResult: any = null;
+  // Add Object to component
+  protected readonly Object = Object;
 
   constructor(
     private sanitizer: DomSanitizer, 
@@ -183,6 +190,11 @@ export class EnrolledCoursesComponent {
     this.selectedQuiz = quiz;
     this.selectedContent = null;
     this.revokeBlobUrl();
+    // Reset quiz state
+    this.quizResponses = {};
+    this.attemptInProgress = false;
+    this.quizSubmitted = false;
+    this.quizResult = null;
   }
 
   isYoutubeLink(url: string): boolean {
@@ -208,4 +220,65 @@ export class EnrolledCoursesComponent {
     this.revokeBlobUrl();
   }
 
+  // Add new methods for quiz functionality
+  startQuizAttempt(): void {
+    if (!this.selectedChapter || !this.selectedQuiz) return;
+    
+    const userId = JSON.parse(localStorage.getItem('currentUser') || '{}').id;
+    if (!userId) {
+      console.error('No user ID found');
+      return;
+    }
+
+    this.courseService.createQuizAttempt(this.selectedChapter.id, this.selectedQuiz.quizId, userId).subscribe({
+      next: (response) => {
+        console.log('Quiz attempt created:', response);
+        this.attemptInProgress = true;
+        this.quizResponses = {};
+      },
+      error: (err) => {
+        console.error('Failed to create quiz attempt:', err);
+        // Handle error appropriately
+      }
+    });
+  }
+
+  updateResponse(questionId: number, response: string): void {
+    this.quizResponses[questionId.toString()] = response;
+  }
+
+  onTextAnswerChange(event: Event, questionId: number): void {
+    const target = event.target as HTMLInputElement;
+    if (target) {
+      this.updateResponse(questionId, target.value);
+    }
+  }
+
+  submitQuiz(): void {
+    if (!this.selectedChapter || !this.selectedQuiz || !this.attemptInProgress) return;
+
+    const userId = JSON.parse(localStorage.getItem('currentUser') || '{}').id;
+    if (!userId) {
+      console.error('No user ID found');
+      return;
+    }
+
+    this.courseService.submitQuizResponses(
+      this.selectedChapter.id,
+      this.selectedQuiz.quizId,
+      userId,
+      this.quizResponses
+    ).subscribe({
+      next: (result) => {
+        console.log('Quiz submitted successfully:', result);
+        this.quizSubmitted = true;
+        this.quizResult = result;
+        this.attemptInProgress = false;
+      },
+      error: (err) => {
+        console.error('Failed to submit quiz:', err);
+        // Handle error appropriately
+      }
+    });
+  }
 }
