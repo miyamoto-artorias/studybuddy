@@ -2,7 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from "../../../../../projects/components/src/icon/icon/icon.component";
 
@@ -17,6 +17,7 @@ export class TeacherCoursesComponent implements OnInit {
   selectedCourse: any = null;
   selectedChapter: any = null;
   showContentForm = false;
+  showQuizForm = false;
 
   // Chapter Form
   chapterForm: FormGroup;
@@ -25,6 +26,8 @@ export class TeacherCoursesComponent implements OnInit {
   // Content Form
   contentForm: FormGroup;
   fileToUpload: File | null = null;
+  // Quiz Form
+  quizForm: FormGroup;
 
   constructor(
     private courseService: CourseService,
@@ -41,6 +44,15 @@ export class TeacherCoursesComponent implements OnInit {
       title: ['', Validators.required],
       type: ['', Validators.required],
       videoUrl: ['']
+    });
+    // Initialize quiz form
+    this.quizForm = this.fb.group({
+      title: ['', Validators.required],
+      description: ['', Validators.required],
+      timeLimit: [0, [Validators.required, Validators.min(1)]],
+      passingScore: [0, [Validators.required, Validators.min(0)]],
+      maxAttempts: [0, [Validators.required, Validators.min(1)]],
+      questions: this.fb.array([])
     });
   }
 
@@ -149,5 +161,77 @@ showAddContentForm(): void {
     const index = this.teacherCourses.findIndex(c => c.id === this.selectedCourse.id);
     this.teacherCourses[index] = this.selectedCourse;
     this.loadTeacherCourses(); // Refresh the courses list
+  }
+
+  // Helper to access questions form array
+  get questions(): FormArray {
+    return this.quizForm.get('questions') as FormArray;
+  }
+
+  // Show quiz form and initialize with one question
+  showAddQuizForm(): void {
+    this.showQuizForm = true;
+    this.quizForm.reset();
+    this.questions.clear();
+    this.addQuestion();
+  }
+
+  // Add a question group
+  addQuestion(): void {
+    this.questions.push(this.fb.group({
+      questionText: ['', Validators.required],
+      questionType: ['', Validators.required],
+      points: [0, Validators.required],
+      optionsString: [''],
+      correctAnswersString: ['']
+    }));
+  }
+
+  // Remove a question group
+  removeQuestion(index: number): void {
+    this.questions.removeAt(index);
+  }
+
+  // Submit new quiz
+  addQuiz(): void {
+    if (this.quizForm.invalid || !this.selectedChapter) return;
+    const formVal = this.quizForm.value;
+    const quizData: any = {
+      title: formVal.title,
+      description: formVal.description,
+      timeLimit: formVal.timeLimit,
+      passingScore: formVal.passingScore,
+      maxAttempts: formVal.maxAttempts,
+      questions: formVal.questions.map((q: any) => {
+        const question: any = {
+          questionText: q.questionText,
+          questionType: q.questionType,
+          points: q.points
+        };
+        if (q.optionsString) {
+          question.options = q.optionsString.split(',').map((opt: string) => opt.trim());
+        }
+        if (q.questionType === 'SHORT_TEXT' && q.correctAnswersString) {
+          question.correctAnswer = q.correctAnswersString.trim();
+        } else if (q.questionType.startsWith('MULTIPLE_CHOICE') && q.correctAnswersString) {
+          question.correctAnswers = q.correctAnswersString.split(',').map((ans: string) => ans.trim());
+        }
+        return question;
+      })
+    };
+    this.courseService.createQuiz(this.selectedChapter.id, quizData).subscribe({
+      next: (newQuiz) => {
+        this.selectedChapter.quizzes = this.selectedChapter.quizzes || [];
+        this.selectedChapter.quizzes.push(newQuiz);
+        this.updateLocalCourses();
+        this.showQuizForm = false;
+        this.quizForm.reset();
+        this.questions.clear();
+      },
+      error: (err) => {
+        console.error('Error adding quiz:', err);
+        alert('Failed to add quiz: ' + (err.error?.message || 'Unknown error'));
+      }
+    });
   }
 }

@@ -231,4 +231,17 @@ getCategoryById(categoryId: number): Observable<any> {
     })
   );
 }
+
+// Add a method to create a quiz for a given chapter
+createQuiz(chapterId: number, quizData: any): Observable<any> {
+  const url = `http://localhost:8081/api/chapters/${chapterId}/quizzes`;
+  const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+  return this.http.post(url, quizData, { headers }).pipe(
+    tap(response => console.log('Quiz created:', response)),
+    catchError(error => {
+      console.error('Quiz creation failed:', error);
+      throw error;
+    })
+  );
+}
 }

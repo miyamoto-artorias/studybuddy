@@ -68,6 +68,9 @@
       <button class="btn-secondary" (click)="showAddContentForm()">
         <emr-icon name="ph:plus"></emr-icon> Add Content
       </button>
+      <button class="btn-secondary" (click)="showAddQuizForm()" style="margin-left: 8px;">
+        <emr-icon name="ph:plus"></emr-icon> Add Quiz
+      </button>
     </div>
 
     <!-- Content List rendered as cards -->
@@ -81,6 +84,24 @@
       <div *ngIf="!selectedChapter.contents || !selectedChapter.contents.length" class="empty-message">
         No content available yet.
       </div>
+    </div>
+  </section>
+
+  <!-- Quiz Section -->
+  <section class="quiz-section" *ngIf="selectedChapter">
+    <header class="section-header">
+      <h3>{{ selectedChapter.title }} Quizzes</h3>
+      <button class="btn-secondary" (click)="showAddQuizForm()">
+        <emr-icon name="ph:plus"></emr-icon> Add Quiz
+      </button>
+    </header>
+    <ul>
+      <li *ngFor="let quiz of selectedChapter.quizzes">
+        {{ quiz.title }}
+      </li>
+    </ul>
+    <div *ngIf="!selectedChapter.quizzes || !selectedChapter.quizzes.length" class="empty-message">
+      No quizzes available yet.
     </div>
   </section>
 </div>
@@ -145,6 +166,84 @@
           [disabled]="contentForm.invalid || (contentForm.value.type === 'pdf' && !fileToUpload)"
         >
           Add Content
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Add Quiz Form -->
+<div class="modal-overlay" *ngIf="showQuizForm">
+  <div class="modal">
+    <header class="modal-header">
+      <h3>Add New Quiz</h3>
+      <button class="btn-close" (click)="showQuizForm = false">
+        <emr-icon name="ph:x"></emr-icon>
+      </button>
+    </header>
+    <form [formGroup]="quizForm" (ngSubmit)="addQuiz()">
+      <div class="form-group">
+        <label for="quizTitle">Title</label>
+        <input id="quizTitle" type="text" formControlName="title" placeholder="Quiz Title">
+      </div>
+      <div class="form-group">
+        <label for="quizDescription">Description</label>
+        <input id="quizDescription" type="text" formControlName="description" placeholder="Quiz Description">
+      </div>
+      <div class="form-group">
+        <label for="timeLimit">Time Limit (minutes)</label>
+        <input id="timeLimit" type="number" formControlName="timeLimit" placeholder="Time Limit">
+      </div>
+      <div class="form-group">
+        <label for="passingScore">Passing Score</label>
+        <input id="passingScore" type="number" formControlName="passingScore" placeholder="Passing Score">
+      </div>
+      <div class="form-group">
+        <label for="maxAttempts">Max Attempts</label>
+        <input id="maxAttempts" type="number" formControlName="maxAttempts" placeholder="Max Attempts">
+      </div>
+      <div formArrayName="questions" class="questions-container">
+        <div *ngFor="let question of questions.controls; let i=index" [formGroupName]="i" class="question-group">
+          <h4>Question {{ i + 1 }}</h4>
+          <div class="form-group">
+            <label>Question Text</label>
+            <input type="text" formControlName="questionText" placeholder="Question Text">
+          </div>
+          <div class="form-group">
+            <label>Question Type</label>
+            <select formControlName="questionType">
+              <option value="">Select Type</option>
+              <option value="SHORT_TEXT">Short Text</option>
+              <option value="MULTIPLE_CHOICE_SINGLE">Multiple Choice (Single)</option>
+              <option value="MULTIPLE_CHOICE_MULTIPLE">Multiple Choice (Multiple)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Points</label>
+            <input type="number" formControlName="points" placeholder="Points">
+          </div>
+          <div class="form-group">
+            <label>Options (comma separated)</label>
+            <input type="text" formControlName="optionsString" placeholder="option1, option2">
+          </div>
+          <div class="form-group">
+            <label>Correct Answers (comma separated)</label>
+            <input type="text" formControlName="correctAnswersString" placeholder="answer1, answer2">
+          </div>
+          <button type="button" class="btn-outline" (click)="removeQuestion(i)">
+            Remove Question
+          </button>
+        </div>
+        <button type="button" class="btn-secondary" (click)="addQuestion()">
+          Add Question
+        </button>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-outline" (click)="showQuizForm = false">
+          Cancel
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="quizForm.invalid">
+          Add Quiz
         </button>
       </div>
     </form>
