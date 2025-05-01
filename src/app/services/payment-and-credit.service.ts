@@ -10,6 +10,12 @@ export class PaymentAndCreditService {
 
   constructor(private http: HttpClient) { }
 
+
+  getPaymentsByUser(userId: number) {
+    return this.http.post<any[]>('http://localhost:8081/api/payments/byUser', { userId });
+  }
+  
+
   // Fetch credit card details for a user
   getCardDetails(userId: number): Observable<any> {
     const url = `http://localhost:8081/api/cards/user/${userId}`;
