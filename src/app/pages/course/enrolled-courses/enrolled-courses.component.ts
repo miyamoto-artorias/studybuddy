@@ -46,7 +46,8 @@ export class EnrolledCoursesComponent {
   loading = true;
   error: string | null = null;
   // Add new properties for quiz attempts
-  quizResponses: { [key: string]: string | string[] } = {};
+  quizResponses: { [key: string]: string } = {};
+  multiChoiceSelections: { [key: string]: Set<string> } = {};
   attemptInProgress = false;
   quizSubmitted = false;
   quizResult: any = null;
@@ -223,41 +224,17 @@ export class EnrolledCoursesComponent {
   // Add new methods for quiz functionality
   startQuizAttempt(): void {
     if (!this.selectedChapter || !this.selectedQuiz) return;
-    // Just set the attempt in progress without making API call
     this.attemptInProgress = true;
     this.quizResponses = {};
+    this.multiChoiceSelections = {};
   }
 
-  updateResponse(questionId: number | undefined, response: string, isMultiple: boolean = false): void {
+  updateResponse(questionId: number | undefined, response: string): void {
     if (questionId === undefined) {
       console.error('Question ID is undefined');
       return;
     }
-
-    const qId = questionId.toString();
-    
-    if (isMultiple) {
-      // Handle multiple choice answers
-      if (!this.quizResponses[qId]) {
-        this.quizResponses[qId] = [];
-      }
-      const responses = this.quizResponses[qId] as string[];
-      const index = responses.indexOf(response);
-      
-      if (index === -1) {
-        responses.push(response);
-      } else {
-        responses.splice(index, 1);
-      }
-      
-      if (responses.length === 0) {
-        delete this.quizResponses[qId];
-      }
-    } else {
-      // Handle single choice or text answers
-      this.quizResponses[qId] = response;
-    }
-    
+    this.quizResponses[questionId.toString()] = response;
     console.log('Updated responses:', this.quizResponses);
   }
 
@@ -277,10 +254,27 @@ export class EnrolledCoursesComponent {
       console.error('Question ID is undefined');
       return;
     }
-    const target = event.target as HTMLInputElement;
-    if (target) {
-      this.updateResponse(questionId, option, true);
+
+    const qId = questionId.toString();
+    if (!this.multiChoiceSelections[qId]) {
+      this.multiChoiceSelections[qId] = new Set<string>();
     }
+
+    const target = event.target as HTMLInputElement;
+    if (target.checked) {
+      this.multiChoiceSelections[qId].add(option);
+    } else {
+      this.multiChoiceSelections[qId].delete(option);
+    }
+
+    // Convert Set to comma-separated string
+    if (this.multiChoiceSelections[qId].size > 0) {
+      this.quizResponses[qId] = Array.from(this.multiChoiceSelections[qId]).join(',');
+    } else {
+      delete this.quizResponses[qId];
+    }
+
+    console.log('Updated responses:', this.quizResponses);
   }
 
   submitQuiz(): void {
@@ -292,7 +286,7 @@ export class EnrolledCoursesComponent {
       return;
     }
 
-    // Create attempt and submit responses in one call
+    console.log('Submitting responses:', this.quizResponses);
     this.courseService.submitQuizResponses(
       this.selectedChapter.id,
       this.selectedQuiz.quizId,
