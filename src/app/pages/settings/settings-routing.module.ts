@@ -16,7 +16,10 @@ const routes: Routes = [
     path: 'payment-history',
     title: 'payment history',
     loadComponent: () => import('./payment-history/payment-history.component').then(c => c.PaymentHistoryComponent)
-  },  
+  },
+  {path: 'profile',
+  title: 'profile',
+  loadComponent: () => import('./profile/profile.component').then(c => c.ProfileComponent)}  
  
 ];
 
