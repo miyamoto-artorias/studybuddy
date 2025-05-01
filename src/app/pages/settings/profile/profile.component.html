@@ -1,1 +1,35 @@
-<p>profile works!</p>
+<div class="profile-container">
+  <div class="profile-header">
+    <img *ngIf="profilePictureUrl" src="{{ profilePictureUrl }}" alt="User Profile Picture" class="profile-picture" />
+    <h1>{{ userDetails?.fullName }}</h1>
+    <p>Username: {{ userDetails?.username }}</p>
+  </div>
+  <div class="profile-details">
+    <div class="detail-section">
+      <h2>Personal Information</h2>
+      <p><strong>Email:</strong> {{ userDetails?.email }}</p>
+      <p><strong>User Type:</strong> {{ userDetails?.userType }}</p>
+      <p><strong>ID:</strong> {{ userDetails?.id }}</p>
+    </div>
+    <div class="detail-section">
+      <h2>Bio</h2>
+      <p>{{ userDetails?.bio }}</p>
+    </div>
+    <div class="detail-section">
+      <h2>Location</h2>
+      <p>{{ userDetails?.location }}</p>
+    </div>
+    <div class="detail-section">
+      <h2>Preferred Languages</h2>
+      <ul>
+        <li *ngFor="let language of userDetails?.preferredLanguage">{{ language }}</li>
+      </ul>
+    </div>
+    <div class="detail-section">
+      <h2>Social Links</h2>
+      <ul *ngIf="userDetails && userDetails.socialLinks">
+        <li *ngFor="let key of userDetails.socialLinks | keyvalue"><a href="{{ userDetails.socialLinks[key.key] }}" target="_blank">{{ key.key }}</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
