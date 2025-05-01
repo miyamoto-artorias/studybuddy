@@ -19,6 +19,7 @@ import { MatIcon } from '@angular/material/icon';
 import {  MatButton, MatIconButton } from '@angular/material/button';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { PaymentAndCreditService } from '../../../services/payment-and-credit.service';
+import { AuthService } from '../../../services/auth.service';
 
 export interface Payment {
   id: number;
@@ -64,6 +65,7 @@ export interface Payment {
 })
 export class PaymentHistoryComponent implements OnInit {
   private service = inject(PaymentAndCreditService);
+  private authService = inject(AuthService);
 
   status = 'all';
   search = '';
@@ -87,11 +89,17 @@ export class PaymentHistoryComponent implements OnInit {
   ];
 
   ngOnInit() {
-    const userId = 2;
-    this.service.getPaymentsByUser(userId).subscribe({
-      next: (res) => (this.data = res),
-      error: (err) => console.error('Error fetching payments:', err)
-    });
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser && currentUser.id) {
+      const userId = currentUser.id;
+      this.service.getPaymentsByUser(userId).subscribe({
+        next: (res) => (this.data = res),
+        error: (err) => console.error('Error fetching payments:', err)
+      });
+    } else {
+      console.error('No current user found; redirect or handle accordingly');
+      // Optionally, redirect to login: // this.router.navigate(['/login']);
+    }
   }
 
   rowSelectionChanged(event: DataViewRowSelectionEvent<Payment>) {
