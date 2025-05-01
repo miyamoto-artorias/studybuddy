@@ -19,17 +19,7 @@ const routes: Routes = [
         path: 'dashboard',
         loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule)
       },
-      {
-        path: 'customization',
-        loadChildren: () => import('./customization/customization.module').then(m => m.CustomizationModule)
-      },
-    
-      
-
-      {
-        path: 'store',
-        loadChildren: () => import('./store/store.module').then(m => m.StoreModule)
-      },
+   
     
       {
         path: 'applications',
@@ -39,7 +29,9 @@ const routes: Routes = [
       {
         path: 'content',
         loadChildren: () => import('./content/content.module').then(m => m.ContentModule)
-      }
+      },
+      {path: 'settings',
+      loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule)}
     ]
   }
 ];

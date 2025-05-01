@@ -73,8 +73,28 @@ export class SidebarComponent implements OnInit {
        }
       ]
     },
-   
-    {
+     {
+      key: 'Settings',  
+      type: 'group',
+      name: 'Settings',
+      icon: 'settings',
+      children: [
+        {key: uuid(),
+        type: 'link',
+        name: 'Profile',
+        link: '/pages/settings/profile'
+        },
+        {key: uuid(),
+        type: 'link',
+        name: 'Credit Card',   
+        link: '/pages/settings/credit-card'},
+        {key: uuid(),
+        type: 'link',
+        name: 'Payment History',   
+        link: '/pages/settings/payment-history'}
+      ]
+     }
+    ,{
       key: 'Courses',
       type: 'group',
       icon: 'apps',

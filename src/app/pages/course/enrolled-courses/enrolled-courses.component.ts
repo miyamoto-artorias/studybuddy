@@ -13,7 +13,7 @@ import {
 } from '@elementar-ui/components';
 import { MatTooltip } from '@angular/material/tooltip';
 import { CommonModule } from '@angular/common';
-import { PdfViewerWrapperComponent } from '../../../pdf-viewer-wrapper/pdf-viewer-wrapper.component';
+import { PdfViewerWrapperComponent } from './pdf-viewer-wrapper/pdf-viewer-wrapper.component';
 import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
 
