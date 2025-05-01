@@ -21,18 +21,18 @@
     width: 100%;
   }
   
-  /* Content list styling (right aside, keep as is) */
+  /* Content list styling (right aside) */
   .content-list {
     width: 130px;
     padding: 16px;
-    border-right: 1px solid #444; /* Darker border for dark theme */
-    background: #1a1a1a; /* Dark background to match theme */
+    border-right: 1px solid var(--border-color);
+    background: var(--background-color);
   
     h3 {
-      margin-top: 1rem;
-      margin-bottom: 0.5rem;
-      color: #333;
-      font-size: 1.1rem;
+      margin: 0 0 16px;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text-color);
     }
   
     ul {
@@ -42,28 +42,28 @@
     }
   
     li {
-      padding: 0.5rem 1rem;
+      padding: 8px 12px;
       cursor: pointer;
-      border-bottom: 1px solid #eee;
-      transition: background-color 0.2s;
+      border-radius: 4px;
+      color: var(--text-color);
+      transition: background 0.2s;
   
       &:hover {
-        background-color: #f5f5f5;
+        background: var(--hover-background);
       }
   
       &.active {
-        background-color: #e3f2fd;
-        color: #1976d2;
-        font-weight: 500;
+        background: var(--primary-color);
+        color: var(--primary-text-color);
       }
     }
   
     .no-quizzes {
-      color: #666;
+      color: var(--secondary-text-color);
       font-style: italic;
-      padding: 0.5rem 1rem;
+      padding: 8px 12px;
       margin: 0;
-      font-size: 0.9rem;
+      font-size: 14px;
     }
   }
   
@@ -72,17 +72,17 @@
     flex: 1;
     padding: 16px;
     overflow: auto;
-    background: #1a1a1a; /* Dark background to match theme */
-    color: #fff; /* White text for legibility */
+    background: var(--background-color);
+    color: var(--text-color);
   
     .loading-message {
       padding: 16px;
-      color: #ccc; /* Lighter gray for secondary text */
+      color: var(--secondary-text-color);
     }
   
     .empty-content {
       padding: 16px;
-      color: #ccc; /* Lighter gray for secondary text */
+      color: var(--secondary-text-color);
       font-style: italic;
     }
   }
@@ -90,7 +90,7 @@
   /* Ensure PDF viewer and video take appropriate space */
   app-pdf-viewer-wrapper {
     display: block;
-    background: #1a1a1a; /* Ensure PDF viewer container is dark */
+    background: var(--background-color);
   }
   
   /* Video container */
@@ -98,43 +98,42 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #1a1a1a; /* Dark background for video */
+    background: var(--background-color);
   }
   
   /* Fix for iframe and video responsiveness */
   iframe,
   video {
     max-width: 100%;
-    background: #000; /* Black background for video content */
+    background: var(--background-color);
   }
 
   .quiz-display {
-    padding: 1rem;
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    background: var(--background-color);
+    color: var(--text-color);
 
     h3 {
       margin-top: 0;
-      color: #333;
+      color: var(--text-color);
       font-size: 1.4rem;
     }
 
     p {
-      color: #666;
+      color: var(--secondary-text-color);
       margin-bottom: 1rem;
     }
 
     .quiz-details {
-      background: #f5f5f5;
-      padding: 1rem;
+      background: var(--card-background);
+      padding: 16px;
       border-radius: 4px;
       margin-top: 1rem;
 
       p {
         margin: 0.5rem 0;
         font-size: 0.9rem;
-        color: #555;
+        color: var(--secondary-text-color);
       }
     }
   }
