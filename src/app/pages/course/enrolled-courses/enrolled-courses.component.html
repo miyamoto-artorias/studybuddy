@@ -52,22 +52,30 @@
                           </li>
                         }
                       </ul>
+                      <h3>Quizzes</h3>
+                      <div *ngIf="chapter.quizzes && chapter.quizzes.length > 0; else noQuizzes">
+                        <ul>
+                          @for (quiz of chapter.quizzes; track quiz.quizId) {
+                            <li 
+                              [class.active]="selectedQuiz?.quizId === quiz.quizId"
+                              (click)="selectQuiz(quiz)">
+                              {{ quiz.title }}
+                            </li>
+                          }
+                        </ul>
+                      </div>
+                      <ng-template #noQuizzes>
+                        <p class="no-quizzes">No quizzes available for this chapter</p>
+                      </ng-template>
                     </div>
   
-                    <!-- Content display -->
+                    <!-- Content/Quiz display -->
                     <div class="content-display">
-                      @if (selectedContent) {
+                      <ng-container *ngIf="selectedContent">
                         <ng-container [ngSwitch]="selectedContent.type">
                           <!-- PDF content -->
                           <div *ngSwitchCase="'pdf'">
                             <ng-container *ngIf="selectedContent.downloadUrl; else loadingOrError">
-                         <!--     <div class="pdf-info">
-                                <p>Course ID: {{ selectedCourse?.id }}</p>
-                                <p>Chapter ID: {{ selectedChapter?.id }}</p>
-                                <p>Content ID: {{ selectedContent?.id }}</p>
-                                <p>PDF URL: {{ selectedContent.downloadUrl }}</p>
-                                <p>Content Type: {{ selectedContent.type }}</p>
-                              </div> -->
                               <app-pdf-viewer-wrapper
                                 [src]="selectedContent.downloadUrl"
                                 [renderText]="true"
@@ -107,9 +115,24 @@
                             <div class="empty-content">No content available</div>
                           </div>
                         </ng-container>
-                      } @else {
-                        <div class="empty-content">Select a content item to view</div>
-                      }
+                      </ng-container>
+  
+                      <ng-container *ngIf="!selectedContent && selectedQuiz">
+                        <div class="quiz-display">
+                          <h3>{{ selectedQuiz.title }}</h3>
+                          <p>{{ selectedQuiz.description }}</p>
+                          <div class="quiz-details">
+                            <p>Time Limit: {{ selectedQuiz.timeLimit }} minutes</p>
+                            <p>Passing Score: {{ selectedQuiz.passingScore }}</p>
+                            <p>Max Attempts: {{ selectedQuiz.maxAttempts }}</p>
+                          </div>
+                          <!-- Quiz questions will be displayed here later -->
+                        </div>
+                      </ng-container>
+  
+                      <ng-container *ngIf="!selectedContent && !selectedQuiz">
+                        <div class="empty-content">Select a content item or quiz to view</div>
+                      </ng-container>
                     </div>
                   </div>
                 </ng-template>

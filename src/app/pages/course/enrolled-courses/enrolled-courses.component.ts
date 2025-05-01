@@ -42,6 +42,7 @@ export class EnrolledCoursesComponent {
   selectedCourse: any = null;
   selectedChapter: any = null;
   selectedContent: any = null;
+  selectedQuiz: any = null;
   loading = true;
   error: string | null = null;
 
@@ -82,6 +83,7 @@ export class EnrolledCoursesComponent {
     this.activeTabId = `course-${course.id}`;
     this.selectedChapter = null;
     this.selectedContent = null;
+    this.selectedQuiz = null;
     // Clean up any existing Blob URL
     this.revokeBlobUrl();
   }
@@ -89,12 +91,38 @@ export class EnrolledCoursesComponent {
   selectChapter(chapter: any): void {
     console.log('Chapter selected:', chapter);
     this.selectedChapter = chapter;
+    this.selectedQuiz = null;
+    // Initialize quizzes array if it doesn't exist
+    if (!this.selectedChapter.quizzes) {
+      this.selectedChapter.quizzes = [];
+    }
     if (chapter.contents && chapter.contents.length) {
       this.selectContent(chapter.contents[0]);
     } else {
       this.selectedContent = null;
       this.revokeBlobUrl();
     }
+    // Load quizzes for the selected chapter
+    console.log('Loading quizzes for chapter:', chapter.id);
+    this.loadChapterQuizzes(chapter.id);
+  }
+
+  loadChapterQuizzes(chapterId: number): void {
+    console.log('Fetching quizzes for chapter:', chapterId);
+    this.courseService.getChapterQuizzes(chapterId).subscribe({
+      next: (quizzes) => {
+        console.log('Received quizzes:', quizzes);
+        this.selectedChapter.quizzes = quizzes;
+        // Force change detection by creating a new reference
+        this.selectedChapter = { ...this.selectedChapter };
+      },
+      error: (err) => {
+        console.error('Error loading quizzes:', err);
+        this.selectedChapter.quizzes = [];
+        // Force change detection by creating a new reference
+        this.selectedChapter = { ...this.selectedChapter };
+      }
+    });
   }
 
   selectContent(content: any): void {
@@ -148,6 +176,13 @@ export class EnrolledCoursesComponent {
           }
         });
     }
+  }
+
+  selectQuiz(quiz: any): void {
+    console.log('Quiz selected:', quiz);
+    this.selectedQuiz = quiz;
+    this.selectedContent = null;
+    this.revokeBlobUrl();
   }
 
   isYoutubeLink(url: string): boolean {

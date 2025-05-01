@@ -29,10 +29,10 @@
     background: #1a1a1a; /* Dark background to match theme */
   
     h3 {
-      margin: 0 0 16px;
-      font-size: 18px;
-      font-weight: 500;
-      color: #fff; /* White text for dark theme */
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      color: #333;
+      font-size: 1.1rem;
     }
   
     ul {
@@ -42,20 +42,28 @@
     }
   
     li {
-      padding: 8px 12px;
+      padding: 0.5rem 1rem;
       cursor: pointer;
-      border-radius: 4px;
-      color: #fff; /* White text */
-      transition: background 0.2s;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.2s;
   
       &:hover {
-        background: #333; /* Darker hover state */
+        background-color: #f5f5f5;
       }
   
       &.active {
-        background: #007bff; /* Keep blue for active, or change to #555 if preferred */
-        color: white;
+        background-color: #e3f2fd;
+        color: #1976d2;
+        font-weight: 500;
       }
+    }
+  
+    .no-quizzes {
+      color: #666;
+      font-style: italic;
+      padding: 0.5rem 1rem;
+      margin: 0;
+      font-size: 0.9rem;
     }
   }
   
@@ -98,4 +106,35 @@
   video {
     max-width: 100%;
     background: #000; /* Black background for video content */
+  }
+
+  .quiz-display {
+    padding: 1rem;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    h3 {
+      margin-top: 0;
+      color: #333;
+      font-size: 1.4rem;
+    }
+
+    p {
+      color: #666;
+      margin-bottom: 1rem;
+    }
+
+    .quiz-details {
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+
+      p {
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+        color: #555;
+      }
+    }
   }

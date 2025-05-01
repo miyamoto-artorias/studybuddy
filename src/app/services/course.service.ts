@@ -244,4 +244,16 @@ createQuiz(chapterId: number, quizData: any): Observable<any> {
     })
   );
 }
+
+// Add a method to fetch quizzes for a given chapter
+getChapterQuizzes(chapterId: number): Observable<any[]> {
+  const url = `http://localhost:8081/api/chapters/${chapterId}/quizzes`;
+  return this.http.get<any[]>(url).pipe(
+    tap(quizzes => console.log('Fetched quizzes:', quizzes)),
+    catchError(error => {
+      console.error('Error fetching quizzes:', error);
+      throw error;
+    })
+  );
+}
 }
