@@ -257,19 +257,7 @@ getChapterQuizzes(chapterId: number): Observable<any[]> {
   );
 }
 
-// Add a method to create a quiz attempt
-createQuizAttempt(chapterId: number, quizId: number, userId: number): Observable<any> {
-  const url = `http://localhost:8081/api/chapters/${chapterId}/quizzes/${quizId}/attempt?userId=${userId}`;
-  return this.http.post(url, {}).pipe(
-    tap(response => console.log('Quiz attempt created:', response)),
-    catchError(error => {
-      console.error('Quiz attempt creation failed:', error);
-      throw error;
-    })
-  );
-}
-
-// Add a method to submit quiz responses
+// Remove createQuizAttempt method and keep only submitQuizResponses
 submitQuizResponses(chapterId: number, quizId: number, userId: number, responses: { [key: string]: string }): Observable<any> {
   const url = `http://localhost:8081/api/chapters/${chapterId}/quizzes/${quizId}/attempt?userId=${userId}`;
   const payload = { responses };

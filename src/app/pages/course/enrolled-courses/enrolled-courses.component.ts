@@ -223,31 +223,25 @@ export class EnrolledCoursesComponent {
   // Add new methods for quiz functionality
   startQuizAttempt(): void {
     if (!this.selectedChapter || !this.selectedQuiz) return;
-    
-    const userId = JSON.parse(localStorage.getItem('currentUser') || '{}').id;
-    if (!userId) {
-      console.error('No user ID found');
+    // Just set the attempt in progress without making API call
+    this.attemptInProgress = true;
+    this.quizResponses = {};
+  }
+
+  updateResponse(questionId: number | undefined, response: string): void {
+    if (questionId === undefined) {
+      console.error('Question ID is undefined');
       return;
     }
-
-    this.courseService.createQuizAttempt(this.selectedChapter.id, this.selectedQuiz.quizId, userId).subscribe({
-      next: (response) => {
-        console.log('Quiz attempt created:', response);
-        this.attemptInProgress = true;
-        this.quizResponses = {};
-      },
-      error: (err) => {
-        console.error('Failed to create quiz attempt:', err);
-        // Handle error appropriately
-      }
-    });
-  }
-
-  updateResponse(questionId: number, response: string): void {
     this.quizResponses[questionId.toString()] = response;
+    console.log('Updated responses:', this.quizResponses);
   }
 
-  onTextAnswerChange(event: Event, questionId: number): void {
+  onTextAnswerChange(event: Event, questionId: number | undefined): void {
+    if (questionId === undefined) {
+      console.error('Question ID is undefined');
+      return;
+    }
     const target = event.target as HTMLInputElement;
     if (target) {
       this.updateResponse(questionId, target.value);
@@ -263,6 +257,7 @@ export class EnrolledCoursesComponent {
       return;
     }
 
+    // Create attempt and submit responses in one call
     this.courseService.submitQuizResponses(
       this.selectedChapter.id,
       this.selectedQuiz.quizId,
