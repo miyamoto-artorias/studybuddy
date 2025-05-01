@@ -1,1 +1,15 @@
-<p>credit-card works!</p>
+<div class="credit-card-container">
+  <p *ngIf="loading">Loading credit card details...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+  <div *ngIf="!loading && !error && card" class="card-details">
+    <h2>Credit Card Details</h2>
+    <p><strong>Email:</strong> {{ card.user?.email }}</p>
+    <p><strong>Balance:</strong> {{ card.balance | number:'1.2-2' }}</p>
+    <p>
+      <strong>Valid:</strong>
+      <span [class.valid]="card.valid" [class.invalid]="!card.valid">
+        {{ card.valid ? 'Yes' : 'No' }}
+      </span>
+    </p>
+  </div>
+</div>
