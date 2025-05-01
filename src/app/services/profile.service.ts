@@ -14,7 +14,7 @@ export class ProfileService {
     return this.http.get(`${this.apiUrl}/${userId}`);
   }
 
-  getProfilePicture(userId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${userId}/profile-picture`);
+  getProfilePicture(userId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${userId}/profile-picture`, { responseType: 'blob' });
   }
 }

@@ -40,16 +40,19 @@ export class ProfileComponent implements OnInit {
 
     this.profileService.getUserDetails(this.userId).subscribe({
       next: (data) => {
-        this.userDetails = data;  // Exclude sensitive fields if needed, but handle in template
+        this.userDetails = data;
       },
       error: (err) => console.error('Error fetching user details:', err)
     });
 
     this.profileService.getProfilePicture(this.userId).subscribe({
-      next: (data) => {
-        this.profilePictureUrl = data.url;  // Assuming the response has a URL field; adjust based on API response
+      next: (data: Blob) => {
+        console.log('Profile picture API response:', data);
+        this.profilePictureUrl = URL.createObjectURL(data);
       },
-      error: (err) => console.error('Error fetching profile picture:', err)
+      error: (err) => {
+        console.error('Error fetching profile picture:', err);
+      }
     });
   }
 }
