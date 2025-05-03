@@ -15,7 +15,6 @@ import { FileGridLayoutComponent } from '../_layout/file-grid-layout/file-grid-l
 import { File, FileSelectedEvent } from '../types';
 import { MenuOptionGroupDirective } from '@elementar-ui/components';
 import { AvatarComponent } from '@elementar-ui/components';
-import { FileService } from '../../../../services/file.service';
 
 @Component({
   imports: [
@@ -46,63 +45,15 @@ import { FileService } from '../../../../services/file.service';
 export class OverviewComponent {
 
   ngOnInit() {
-    this.fetchFiles();
-    this.files1.forEach((file, index) => {
-      const newFile = { ...this.fileTemplate }; 
-      newFile.name = this.files1[index].fileName; 
-      this.files.push(newFile); 
-    });
+
   }
 
   private _fb = inject(FormBuilder);
-  private file = inject(FileService);
   selectedFile: globalThis.File | null = null;
   files1: any[] = []; // Array to store the files data
 
 
-  fetchFiles() {
-    this.file.getAllFiles().subscribe(
-      (data) => {
-        this.files1 = data; // Store the fetched files
-        console.log(data);
-      },
-      (error) => {
-        console.error("failed to get all data for /all");
-      }
-    );
-  }
-  
 
-  onFileSelected(event: any) {
-    this.selectedFile = event.target.files[0]; 
-    this.upload(); 
-  }
-  
-  upload() {
-    if (this.selectedFile) {
-      this.file.uploadFile(this.selectedFile).subscribe(response => {
-        console.log('Upload successful', response);
-      });
-    }
-  }
-  
-  
-
-
-  onDownload(filename: string) {
-    this.file.downloadFile(filename).subscribe(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename; // Set filename
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url); // Clean up memory
-    }, error => {
-      console.error('Download failed:', error);
-    });
-  }
   
 
 

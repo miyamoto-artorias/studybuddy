@@ -269,4 +269,36 @@ submitQuizResponses(chapterId: number, quizId: number, userId: number, responses
     })
   );
 }
+
+uploadVideo(courseId: number, chapterId: number, file: File, title: string): Observable<any> {
+  const url = `http://localhost:8081/api/course-content/course/${courseId}/chapter/${chapterId}/upload-video`;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('title', title);
+
+  return this.http.post(url, formData).pipe(
+    tap(response => console.log('Video uploaded successfully:', response)),
+    catchError(error => {
+      console.error('Video upload failed:', error);
+      throw error;
+    })
+  );
+}
+
+addYouTubeLink(courseId: number, chapterId: number, linkData: { title: string; url: string }): Observable<any> {
+  const url = `http://localhost:8081/api/course-content/course/${courseId}/chapter/${chapterId}`;
+  const payload = {
+    title: linkData.title,
+    type: 'youtube',
+    content: linkData.url
+  };
+
+  return this.http.post(url, payload).pipe(
+    tap(response => console.log('YouTube link added successfully:', response)),
+    catchError(error => {
+      console.error('Adding YouTube link failed:', error);
+      throw error;
+    })
+  );
+}
 }

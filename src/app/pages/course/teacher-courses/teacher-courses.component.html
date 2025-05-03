@@ -128,6 +128,7 @@
           <option value="">Select Content Type</option>
           <option value="video">Video</option>
           <option value="pdf">PDF Document</option>
+          <option value="youtube">YouTube Link</option>
         </select>
       </div>
 
@@ -137,12 +138,28 @@
       </div>
 
       <div class="form-group" *ngIf="contentForm.value.type === 'video'">
-        <label for="videoUrl">Video URL</label>
+        <label for="videoFile">Upload Video</label>
+        <div class="file-upload">
+          <input 
+            id="videoFile"
+            type="file" 
+            (change)="handleFileInput($event)" 
+            accept="video/*"
+            required
+          >
+          <span class="file-name">
+            {{ fileToUpload?.name || 'No file selected' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="contentForm.value.type === 'youtube'">
+        <label for="youtubeUrl">YouTube URL</label>
         <input 
-          id="videoUrl"
+          id="youtubeUrl"
           type="url" 
           formControlName="videoUrl" 
-          placeholder="https://youtube.com/embed/..."
+          placeholder="https://youtube.com/watch?v=..."
           pattern="https://.*"
         >
       </div>

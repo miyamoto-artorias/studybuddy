@@ -19,7 +19,7 @@
 
 <div class="flex flex-wrap gap-x-5 gap-y-8 mt-8">
   @for (file of files(); track file) {
-    <div class="rounded group/file" (onclick)="onDownload(file.name)">
+    <div class="rounded group/file" >
       <div class="bg-surface-container hover:bg-surface-container-high size-[260px] group/thumbnail
                   flex items-center justify-center rounded-xl cursor-pointer relative select-none" matRipple>
         @if (selectionModel.isSelected(file.id)) {

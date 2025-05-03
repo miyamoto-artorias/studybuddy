@@ -125,36 +125,51 @@ showAddContentForm(): void {
 
   addContent(): void {
     if (this.contentForm.invalid || !this.selectedChapter) return;
-  
-    const contentData = {
-      title: this.contentForm.value.title,
-      type: this.contentForm.value.type,
-      ...(this.contentForm.value.type === 'video' ? { 
-        content: this.contentForm.value.videoUrl 
-      } : {})
-    };
-  
-    const fileToUpload = this.contentForm.value.type === 'pdf' && this.fileToUpload ? this.fileToUpload : undefined;
-  
-    this.courseService.uploadContent(
-      this.selectedCourse.id,
-      this.selectedChapter.id,
-      contentData,
-      fileToUpload
-    ).subscribe({
-      next: (newContent) => {
-        this.selectedChapter.contents = this.selectedChapter.contents || [];
-        this.selectedChapter.contents.push(newContent);
-        this.updateLocalCourses();
-        this.showContentForm = false;
-        this.contentForm.reset();
-        this.fileToUpload = null;
-      },
-      error: (err) => {
-        console.error('Error adding content:', err);
-        alert('Failed to add content: ' + (err.error?.message || 'Unknown error'));
-      }
-    });
+
+    const contentType = this.contentForm.value.type;
+    const contentTitle = this.contentForm.value.title;
+
+    if (contentType === 'video' && this.fileToUpload) {
+      // Use the uploadVideo method for video uploads
+      this.courseService.uploadVideo(this.selectedCourse.id, this.selectedChapter.id, this.fileToUpload, contentTitle)
+        .subscribe({
+          next: (newContent) => {
+            this.selectedChapter.contents = this.selectedChapter.contents || [];
+            this.selectedChapter.contents.push(newContent);
+            this.updateLocalCourses();
+            this.showContentForm = false;
+            this.contentForm.reset();
+            this.fileToUpload = null;
+          },
+          error: (err) => {
+            console.error('Error uploading video:', err);
+            alert('Failed to upload video: ' + (err.error?.message || 'Unknown error'));
+          }
+        });
+    } else if (contentType === 'youtube') {
+      // Use the addYouTubeLink method for YouTube links
+      const youtubeLinkData = {
+        title: contentTitle,
+        url: this.contentForm.value.videoUrl
+      };
+
+      this.courseService.addYouTubeLink(this.selectedCourse.id, this.selectedChapter.id, youtubeLinkData)
+        .subscribe({
+          next: (newContent) => {
+            this.selectedChapter.contents = this.selectedChapter.contents || [];
+            this.selectedChapter.contents.push(newContent);
+            this.updateLocalCourses();
+            this.showContentForm = false;
+            this.contentForm.reset();
+          },
+          error: (err) => {
+            console.error('Error adding YouTube link:', err);
+            alert('Failed to add YouTube link: ' + (err.error?.message || 'Unknown error'));
+          }
+        });
+    } else {
+      alert('Invalid content type or missing file');
+    }
   }
 
   private updateLocalCourses(): void {
