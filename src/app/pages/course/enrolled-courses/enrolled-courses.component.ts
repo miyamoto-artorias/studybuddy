@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { take } from 'rxjs';
 import {
@@ -16,6 +16,7 @@ import { CommonModule } from '@angular/common';
 import { PdfViewerWrapperComponent } from './pdf-viewer-wrapper/pdf-viewer-wrapper.component';
 import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
+import { HttpHeaders, HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-enrolled-courses',
@@ -36,7 +37,9 @@ import { AuthService } from '../../../services/auth.service';
   templateUrl: './enrolled-courses.component.html',
   styleUrl: './enrolled-courses.component.scss'
 })
-export class EnrolledCoursesComponent {
+export class EnrolledCoursesComponent implements OnInit, OnDestroy {
+  @ViewChild('videoPlayer', { static: false }) videoPlayer!: ElementRef<HTMLVideoElement>;
+
   activeTabId = 'course-1'; // Default to first course
   courses: any[] = [];
   selectedCourse: any = null;
@@ -57,7 +60,8 @@ export class EnrolledCoursesComponent {
   constructor(
     private sanitizer: DomSanitizer, 
     private courseService: CourseService,
-    private authService: AuthService
+    private authService: AuthService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -183,7 +187,39 @@ export class EnrolledCoursesComponent {
             this.selectedContent = { ...this.selectedContent, error: true };
           }
         });
+    } else if (content.type === 'video') {
+      console.log('Processing video content');
+      const courseId = this.selectedCourse?.id;
+      const chapterId = this.selectedChapter?.id;
+      const contentId = content?.id;
+
+      if (!courseId || !chapterId || !contentId) {
+        console.error('Missing required IDs:', { courseId, chapterId, contentId });
+        this.selectedContent = { ...this.selectedContent, error: true };
+        return;
+      }
+
+      this.streamVideo(courseId, chapterId, contentId);
     }
+  }
+
+  streamVideo(courseId: number, chapterId: number, contentId: number): void {
+    const url = `http://localhost:8081/api/course-content/course/${courseId}/chapter/${chapterId}/stream-video/${contentId}`;
+    const headers = new HttpHeaders({
+      'Range': 'bytes=0-'
+    });
+
+    this.http.get(url, { headers, responseType: 'blob' }).subscribe({
+      next: (blob) => {
+      const videoUrl: string = URL.createObjectURL(blob);
+      this.videoPlayer.nativeElement.src = videoUrl;
+      this.videoPlayer.nativeElement.load();
+      this.videoPlayer.nativeElement.play();
+      },
+      error: (error: any) => {
+      console.error('Video stream failed:', error);
+      }
+    });
   }
 
   selectQuiz(quiz: any): void {
@@ -304,5 +340,21 @@ export class EnrolledCoursesComponent {
         // Handle error appropriately
       }
     });
+  }
+
+  getVideoUrl(contentPath: string): string {
+    // Ensure the video is served from the assets folder or a server
+    return contentPath.startsWith('http') ? contentPath : `assets/videos/${contentPath}`;
+  }
+
+  playVideo(contentPath: string): void {
+    const videoUrl = this.getVideoUrl(contentPath);
+    if (this.videoPlayer && this.videoPlayer.nativeElement) {
+      this.videoPlayer.nativeElement.src = videoUrl;
+      this.videoPlayer.nativeElement.load();
+      this.videoPlayer.nativeElement.play();
+    } else {
+      console.error('Video player is not initialized');
+    }
   }
 }

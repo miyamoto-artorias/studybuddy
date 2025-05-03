@@ -301,4 +301,19 @@ addYouTubeLink(courseId: number, chapterId: number, linkData: { title: string; u
     })
   );
 }
+
+streamVideo(courseId: number, chapterId: number, contentId: number): Observable<Blob> {
+  const url = `http://localhost:8081/api/course-content/course/${courseId}/chapter/${chapterId}/stream-video/${contentId}`;
+  const headers = new HttpHeaders({
+    'Range': 'bytes=0-'
+  });
+
+  return this.http.get(url, { headers, responseType: 'blob' }).pipe(
+    tap(response => console.log('Video stream started successfully:', response)),
+    catchError(error => {
+      console.error('Video stream failed:', error);
+      throw error;
+    })
+  );
+}
 }
