@@ -1,6 +1,8 @@
 <div class="credit-card-container">
   <p *ngIf="loading">Loading credit card details...</p>
   <p *ngIf="error" class="error">{{ error }}</p>
+
+  <!-- Display card details if available -->
   <div *ngIf="!loading && !error && card" class="card-details">
     <h2>Credit Card Details</h2>
     <p><strong>Email:</strong> {{ card.user?.email }}</p>
@@ -11,5 +13,27 @@
         {{ card.valid ? 'Yes' : 'No' }}
       </span>
     </p>
+  </div>
+
+  <!-- Show form to add a card if no card is available -->
+  <div *ngIf="!loading && error" class="add-card-form">
+    <h2>Add a Credit Card</h2>
+    <form [formGroup]="cardForm" (ngSubmit)="addCard()">
+      <div class="form-group">
+        <label for="cardNumber">Card Number</label>
+        <input id="cardNumber" type="text" formControlName="cardNumber" placeholder="Enter 4-digit card number">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" formControlName="password" placeholder="Enter card password">
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="cardForm.invalid || addingCard">
+          {{ addingCard ? 'Adding...' : 'Add Card' }}
+        </button>
+      </div>
+    </form>
   </div>
 </div>

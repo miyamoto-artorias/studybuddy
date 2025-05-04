@@ -27,4 +27,26 @@ export class PaymentAndCreditService {
       })
     );
   }
+
+  validateCard(cardData: { cardNumber: string; password: string }): Observable<any> {
+    const url = 'http://localhost:8081/api/cards/validate-card';
+    return this.http.post<any>(url, cardData).pipe(
+      tap(response => console.log('Card validated successfully:', response)),
+      catchError(error => {
+        console.error('Card validation failed:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  assignCardToUser(cardId: number, userId: number): Observable<any> {
+    const url = `http://localhost:8081/api/cards/${cardId}/user/${userId}`;
+    return this.http.put<any>(url, {}).pipe(
+      tap(response => console.log('Card assigned to user successfully:', response)),
+      catchError(error => {
+        console.error('Failed to assign card to user:', error);
+        return throwError(() => error);
+      })
+    );
+  }
 }
