@@ -289,15 +289,26 @@ addYouTubeLink(courseId: number, chapterId: number, linkData: { title: string; u
   const url = `http://localhost:8081/api/course-content/course/${courseId}/chapter/${chapterId}`;
   const payload = {
     title: linkData.title,
-    type: 'youtube',
+    type: 'video', // Updated to match the expected type
     content: linkData.url
   };
 
-  return this.http.post(url, payload).pipe(
+  console.log('Sending payload to add YouTube link:', payload);
+
+  return this.http.post(url, payload, { headers: { 'Content-Type': 'application/json' } }).pipe(
     tap(response => console.log('YouTube link added successfully:', response)),
     catchError(error => {
       console.error('Adding YouTube link failed:', error);
-      throw error;
+      if (error.error) {
+        console.error('Server error response:', error.error);
+      }
+      if (error.status === 400) {
+        return throwError(() => new Error('Bad Request: Please check the YouTube link and try again.'));
+      } else if (error.status === 500) {
+        return throwError(() => new Error('Server Error: Please try again later.'));
+      } else {
+        return throwError(() => new Error(error.error?.message || 'Unknown error'));
+      }
     })
   );
 }
