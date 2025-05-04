@@ -167,6 +167,25 @@ showAddContentForm(): void {
             alert('Failed to add YouTube link: ' + (err.error?.message || 'Unknown error'));
           }
         });
+    } else if (contentType === 'pdf' && this.fileToUpload) {
+      // Handle PDF upload
+      this.courseService.uploadContent(this.selectedCourse.id, this.selectedChapter.id, {
+        title: contentTitle,
+        type: contentType
+      }, this.fileToUpload).subscribe({
+        next: (newContent) => {
+          this.selectedChapter.contents = this.selectedChapter.contents || [];
+          this.selectedChapter.contents.push(newContent);
+          this.updateLocalCourses();
+          this.showContentForm = false;
+          this.contentForm.reset();
+          this.fileToUpload = null;
+        },
+        error: (err) => {
+          console.error('Error uploading PDF:', err);
+          alert('Failed to upload PDF: ' + (err.error?.message || 'Unknown error'));
+        }
+      });
     } else {
       alert('Invalid content type or missing file');
     }
