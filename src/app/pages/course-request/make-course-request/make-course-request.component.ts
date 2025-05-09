@@ -12,6 +12,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { CourseRequestService } from '../../../services/course-request.service';
 import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-make-course-request',
@@ -37,6 +38,7 @@ export class MakeCourseRequestComponent implements OnInit {
   categories: any[] = [];
   teachers: any[] = [];
   isLoading = false;
+  isLoadingTeachers = false;
   currentUserId: number;
   
   constructor(
@@ -61,13 +63,8 @@ export class MakeCourseRequestComponent implements OnInit {
     // Load categories from API
     this.loadCategories();
     
-    // In a real app, you would fetch teachers from an API
-    // For now, we'll use some mock data
-    this.teachers = [
-      { id: 1, name: 'Teacher One' },
-      { id: 2, name: 'Teacher Two' },
-      { id: 3, name: 'Teacher Three' }
-    ];
+    // Load teachers from API
+    this.loadTeachers();
   }
   
   loadCategories(): void {
@@ -80,6 +77,21 @@ export class MakeCourseRequestComponent implements OnInit {
         this.snackBar.open('Failed to load categories', 'Close', { duration: 3000 });
       }
     });
+  }
+  
+  loadTeachers(): void {
+    this.isLoadingTeachers = true;
+    this.courseService.getAllTeachers()
+      .pipe(finalize(() => this.isLoadingTeachers = false))
+      .subscribe({
+        next: (teachers) => {
+          this.teachers = teachers;
+        },
+        error: (err) => {
+          console.error('Error loading teachers:', err);
+          this.snackBar.open('Failed to load teachers', 'Close', { duration: 3000 });
+        }
+      });
   }
   
   onSubmit(): void {

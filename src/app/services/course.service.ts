@@ -339,4 +339,15 @@ searchCourses(query: string): Observable<any[]> {
     })
   );
 }
+
+getAllTeachers(): Observable<any[]> {
+  const url = 'http://localhost:8081/api/teachers';
+  return this.http.get<any[]>(url).pipe(
+    tap(teachers => console.log('Fetched all teachers:', teachers)),
+    catchError(error => {
+      console.error('Error fetching teachers:', error);
+      return throwError(() => error);
+    })
+  );
+}
 }

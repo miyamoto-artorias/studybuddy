@@ -20,8 +20,9 @@
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Select Teacher</mat-label>
           <mat-select formControlName="teacherId">
+            <mat-option *ngIf="isLoadingTeachers" disabled>Loading teachers...</mat-option>
             <mat-option *ngFor="let teacher of teachers" [value]="teacher.id">
-              {{ teacher.name }}
+              {{ teacher.username }} {{ teacher.fullName }}
             </mat-option>
           </mat-select>
           <mat-error *ngIf="courseRequestForm.get('teacherId')?.hasError('required')">
