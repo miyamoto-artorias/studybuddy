@@ -31,7 +31,12 @@ const routes: Routes = [
         loadChildren: () => import('./content/content.module').then(m => m.ContentModule)
       },
       {path: 'settings',
-      loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule)}
+      loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule)},
+      {path: 'course-request',
+      loadChildren: () => import('./course-request/course-request.module').then(m => m.CourseRequestModule)
+    }
+
+    
     ]
   }
 ];
