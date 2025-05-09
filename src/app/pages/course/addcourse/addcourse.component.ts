@@ -33,7 +33,7 @@ export class AddcourseComponent implements OnInit {
     private authService: AuthService,
     private router: Router
   ) {
-    if (!this.authService.isLoggedIn() || !this.authService.isTeacher()) {
+    if (!this.authService.isLoggedIn() || !this.authService.isUserTeacher()) {
       this.isAuthorized = false;
       setTimeout(() => this.router.navigate(['/dashboard']), 3000);
     } else {

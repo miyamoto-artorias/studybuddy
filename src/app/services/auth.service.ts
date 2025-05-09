@@ -128,7 +128,12 @@ export class AuthService {
     return JSON.parse(localStorage.getItem('currentUser') || '{}');
   }
 
-  isTeacher(): boolean {
+  isUserStudent(): boolean {
+    const user = this.getCurrentUser();
+    return user.userType === 'STUDENT';
+  }
+  
+  isUserTeacher(): boolean {
     const user = this.getCurrentUser();
     return user.userType === 'TEACHER';
   }

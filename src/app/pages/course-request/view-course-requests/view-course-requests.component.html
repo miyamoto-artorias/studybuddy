@@ -1,1 +1,110 @@
-<p>view-course-requests works!</p>
+<div class="container">
+  <div class="header">
+    <h1>Course Requests</h1>
+    <button mat-icon-button color="primary" (click)="refreshRequests()" aria-label="Refresh requests">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <mat-tab-group *ngIf="!isLoading">
+    <!-- Sent Requests Tab -->
+    <mat-tab label="Sent Requests" [disabled]="!isStudent">
+      <div class="tab-content">
+        <div *ngIf="sentRequests.length === 0" class="no-requests">
+          <p>No sent requests found.</p>
+        </div>
+
+        <div *ngFor="let request of sentRequests" class="request-card-container">
+          <mat-card class="request-card">
+            <mat-card-header>
+              <mat-card-title>{{ request.subject }}</mat-card-title>
+              <mat-card-subtitle>Request ID: {{ request.id }}</mat-card-subtitle>
+              <div class="status-chip" [ngClass]="getStatusClass(request.status)">
+                {{ request.status }}
+              </div>
+            </mat-card-header>
+            
+            <mat-card-content>
+              <div class="request-details">
+                <p><strong>Teacher:</strong> {{ request.teacherName || 'Not available' }}</p>
+                <p><strong>Price:</strong> ${{ request.price }}</p>
+                <p *ngIf="request.message"><strong>Message:</strong> {{ request.message }}</p>
+                
+                <div class="categories" *ngIf="request.categories?.length">
+                  <strong>Categories:</strong>
+                  <div class="category-chips">
+                    <span class="category-chip" *ngFor="let category of request.categories">
+                      {{ category.name }}
+                    </span>
+                  </div>
+                </div>
+
+                <p><strong>Date Requested:</strong> {{ request.createdAt | date:'medium' }}</p>
+              </div>
+            </mat-card-content>
+            
+            <mat-card-actions align="end">
+              <button mat-button color="warn" *ngIf="request.status === 'pending'" 
+                (click)="updateRequestStatus(request, 'cancelled')">
+                Cancel Request
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Received Requests Tab (Only for teachers) -->
+    <mat-tab label="Received Requests" [disabled]="!isTeacher">
+      <div class="tab-content">
+        <div *ngIf="receivedRequests.length === 0" class="no-requests">
+          <p>No received requests found.</p>
+        </div>
+
+        <div *ngFor="let request of receivedRequests" class="request-card-container">
+          <mat-card class="request-card">
+            <mat-card-header>
+              <mat-card-title>{{ request.subject }}</mat-card-title>
+              <mat-card-subtitle>Request ID: {{ request.id }}</mat-card-subtitle>
+              <div class="status-chip" [ngClass]="getStatusClass(request.status)">
+                {{ request.status }}
+              </div>
+            </mat-card-header>
+            
+            <mat-card-content>
+              <div class="request-details">
+                <p><strong>Student:</strong> {{ request.studentName || 'Not available' }}</p>
+                <p><strong>Price:</strong> ${{ request.price }}</p>
+                <p *ngIf="request.message"><strong>Message:</strong> {{ request.message }}</p>
+                
+                <div class="categories" *ngIf="request.categories?.length">
+                  <strong>Categories:</strong>
+                  <div class="category-chips">
+                    <span class="category-chip" *ngFor="let category of request.categories">
+                      {{ category.name }}
+                    </span>
+                  </div>
+                </div>
+
+                <p><strong>Date Requested:</strong> {{ request.createdAt | date:'medium' }}</p>
+              </div>
+            </mat-card-content>
+            
+            <mat-card-actions align="end" *ngIf="request.status === 'pending'">
+              <button mat-button color="accent" (click)="updateRequestStatus(request, 'approved')">
+                Approve
+              </button>
+              <button mat-button color="warn" (click)="updateRequestStatus(request, 'declined')">
+                Decline
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

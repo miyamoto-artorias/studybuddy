@@ -1,0 +1,133 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  margin: 40px 0;
+}
+
+.tab-content {
+  padding: 20px 0;
+}
+
+.no-requests {
+  text-align: center;
+  margin: 40px 0;
+  color: #666;
+  font-size: 16px;
+}
+
+.request-card-container {
+  margin-bottom: 20px;
+}
+
+.request-card {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+mat-card-header {
+  position: relative;
+  padding-right: 80px;
+}
+
+.status-chip {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  padding: 5px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-pending {
+  background-color: #ffd740;
+  color: #866500;
+}
+
+.status-approved {
+  background-color: #69f0ae;
+  color: #007a3e;
+}
+
+.status-declined, .status-cancelled {
+  background-color: #ff5252;
+  color: #ffffff;
+}
+
+.request-details {
+  padding: 10px;
+}
+
+.request-details p {
+  margin: 8px 0;
+}
+
+.categories {
+  margin: 16px 0;
+}
+
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.category-chip {
+  background: #e0e0e0;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+mat-card-actions {
+  padding: 8px 16px 16px;
+}
+
+/* Divider between requests */
+.request-card:not(:last-child) {
+  margin-bottom: 24px;
+}
+
+/* Tab styling */
+::ng-deep .mat-mdc-tab-group {
+  .mat-mdc-tab-header {
+    margin-bottom: 24px;
+  }
+  
+  .mat-mdc-tab-label-content {
+    font-weight: 500;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  
+  mat-card-header {
+    padding-right: 0;
+    padding-bottom: 40px;
+  }
+  
+  .status-chip {
+    top: auto;
+    bottom: 12px;
+    right: 16px;
+  }
+}
