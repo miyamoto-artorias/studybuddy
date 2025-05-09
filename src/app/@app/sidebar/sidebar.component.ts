@@ -152,7 +152,32 @@ export class SidebarComponent implements OnInit {
         }
       ]
     },
-    
+    {
+      key: 'Course Request',
+      type: 'group',
+      icon: 'view_quilt',
+      name: 'Course Request',
+      children: [
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Make course Request',
+          link: '/pages/ui-elements/buttons'
+        },
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Course Requests',
+          link: '/pages/ui-elements/icons'
+        },
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'View Course Requests',
+          link: '/pages/ui-elements/typography'
+        }
+      ]
+    },
     
     
     
