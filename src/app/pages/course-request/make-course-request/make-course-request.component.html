@@ -34,8 +34,9 @@
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Select Categories</mat-label>
           <mat-select formControlName="categoryIds" multiple>
+            <mat-option *ngIf="categories.length === 0" disabled>Loading categories...</mat-option>
             <mat-option *ngFor="let category of categories" [value]="category.id">
-              {{ category.name }}
+              {{ category.title }}
             </mat-option>
           </mat-select>
           <mat-error *ngIf="courseRequestForm.get('categoryIds')?.hasError('required')">
