@@ -24,6 +24,35 @@
       </div>
     </div>
 
+    <!-- New Course Meta Info Section -->
+    <div class="course-meta-info">
+      <div class="meta-item">
+        <span class="meta-label">Price:</span>
+        <span class="meta-value price">${{ course.price }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Teacher:</span>
+        <span class="meta-value">{{ course.teacher?.username || 'Unknown' }}</span>
+      </div>
+      <div class="meta-item" *ngIf="course.categories && course.categories.length > 0">
+        <span class="meta-label">Categories:</span>
+        <div class="categories-list">
+          <span class="category-badge" *ngFor="let category of course.categories">
+            {{ category.title }}
+          </span>
+        </div>
+      </div>
+      <!-- Display tags -->
+      <div class="meta-item" *ngIf="course.tags && course.tags.length > 0">
+        <span class="meta-label">Tags:</span>
+        <div class="tags-list">
+          <span class="tag-badge" *ngFor="let tag of course.tags">
+            {{ tag }}
+          </span>
+        </div>
+      </div>
+    </div>
+
     <div class="course-actions">
       <div *ngIf="isEnrolled" class="enrolled-message">
         <p>You are already enrolled in this course.</p>

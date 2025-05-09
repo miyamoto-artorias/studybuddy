@@ -39,6 +39,15 @@
             </span>
           </div>
         </div>
+        <!-- Display tags if available -->
+        <div class="course-tags" *ngIf="course.tags && course.tags.length > 0">
+          <span class="tags-label">Tags:</span>
+          <div class="tags-list">
+            <span class="tag-badge" *ngFor="let tag of course.tags">
+              {{ tag }}
+            </span>
+          </div>
+        </div>
         <div class="enrollment-status" *ngIf="isEnrolled(course.id)">
           <span class="enrolled-badge">Enrolled</span>
         </div>

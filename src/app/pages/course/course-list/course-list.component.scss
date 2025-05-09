@@ -179,6 +179,38 @@
         border-radius: 20px;
         font-size: 0.8rem;
       }
+
+      .course-tags {
+        margin-top: 10px;
+        display: flex;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .tags-label {
+          font-size: 0.85rem;
+          font-weight: 500;
+          color: #555;
+          margin-right: 5px;
+        }
+
+        .tags-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 5px;
+        }
+
+        .tag-badge {
+          display: inline-block;
+          padding: 4px 8px;
+          background-color: #e1f5fe;
+          color: #0288d1;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          border: 1px solid #b3e5fc;
+        }
+      }
     }
   }
 }
