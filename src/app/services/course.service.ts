@@ -51,7 +51,8 @@ export class CourseService {
       description: courseData.description,
       picture: courseData.picture,
       price: courseData.price,
-      categoryIds: courseData.categoryIds
+      categoryIds: courseData.categoryIds,
+      tags: courseData.tags || [] // Include the tags array
     };
 
     console.log('Sending course data:', formattedCourseData);

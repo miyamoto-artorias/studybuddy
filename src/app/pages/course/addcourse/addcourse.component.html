@@ -65,6 +65,37 @@
     </div>
 
     <div class="form-group">
+      <label for="tags">Tags</label>
+      <div class="input-group mb-2">
+        <input 
+          type="text" 
+          id="tags" 
+          name="newTag" 
+          [(ngModel)]="newTag" 
+          class="form-control"
+          placeholder="Enter tag and press Add"
+        >
+        <button 
+          type="button" 
+          class="btn btn-outline-primary" 
+          (click)="addTag()"
+          [disabled]="!newTag.trim()">
+          Add
+        </button>
+      </div>
+      
+      <div class="tags-container">
+        <span *ngFor="let tag of course.tags" class="tag-item">
+          {{ tag }}
+          <button type="button" class="btn-close btn-close-sm" (click)="removeTag(tag)"></button>
+        </span>
+        <small *ngIf="course.tags.length === 0" class="text-muted">
+          No tags yet. Add tags to make your course more discoverable.
+        </small>
+      </div>
+    </div>
+
+    <div class="form-group">
       <label for="price">Price (USD) *</label>
       <div class="input-group">
         <span class="input-group-text">$</span>

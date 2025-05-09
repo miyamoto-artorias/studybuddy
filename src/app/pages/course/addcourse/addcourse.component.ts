@@ -18,7 +18,8 @@ export class AddcourseComponent implements OnInit {
     description: '',
     picture: '',
     price: 0,
-    categoryIds: [] as number[]
+    categoryIds: [] as number[],
+    tags: [] as string[]
   };
   categories: any[] = [];
   teacherId = 0;
@@ -88,7 +89,8 @@ export class AddcourseComponent implements OnInit {
       description: this.course.description,
       picture: this.course.picture || 'default-course.png', // Provide a default image if none is specified
       price: Number(this.course.price), // Ensure price is a number
-      categoryIds: this.course.categoryIds
+      categoryIds: this.course.categoryIds,
+      tags: this.course.tags
     };
 
     console.log('Submitting course data:', courseData);
@@ -110,5 +112,21 @@ export class AddcourseComponent implements OnInit {
         console.error('Course creation failed:', error);
       }
     });
+  }
+
+  newTag: string = '';
+
+  addTag(): void {
+    if (this.newTag.trim() !== '' && !this.course.tags.includes(this.newTag.trim())) {
+      this.course.tags.push(this.newTag.trim());
+      this.newTag = '';
+    }
+  }
+
+  removeTag(tag: string): void {
+    const index = this.course.tags.indexOf(tag);
+    if (index !== -1) {
+      this.course.tags.splice(index, 1);
+    }
   }
 }

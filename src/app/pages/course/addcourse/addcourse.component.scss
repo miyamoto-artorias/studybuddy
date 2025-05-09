@@ -100,3 +100,37 @@
   height: 1rem;
   border-width: 0.2em;
 }
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  min-height: 30px;
+}
+
+.tag-item {
+  display: inline-flex;
+  align-items: center;
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.tag-item .btn-close {
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.tag-item .btn-close:hover {
+  opacity: 1;
+}
+
+.btn-close-sm {
+  font-size: 0.7rem;
+}
