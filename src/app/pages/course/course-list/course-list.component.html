@@ -58,6 +58,6 @@
   <div *ngIf="!loading && !error && courses.length === 0" class="empty-message-container">
     <p>No courses to display.</p>
     <!-- You could add a more specific message if it was a search that yielded no results -->
-    <p *ngIf="this.route.snapshot.queryParams['search']">No courses found matching your search criteria.</p>
+    <p *ngIf="isSearchMode()">No courses found matching your search criteria.</p>
   </div>
 </div>

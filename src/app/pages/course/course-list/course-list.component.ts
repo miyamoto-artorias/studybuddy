@@ -173,4 +173,8 @@ export class CourseListComponent implements OnInit {
   isEnrolled(courseId: number): boolean {
     return this.enrolledCourses.some(course => course.id === courseId);
   }
+
+  isSearchMode(): boolean {
+    return this.route.snapshot.queryParams['search'] !== undefined;
+  }
 }

@@ -46,7 +46,8 @@ export class AssistantSearchComponent implements OnDestroy {
 
   performSearch(): void {
     if (this.searchText && this.searchText.trim() !== '') {
-      this._router.navigate(['/courses'], { queryParams: { search: this.searchText.trim() } });
+      // Navigate to the correct nested route within the pages layout
+      this._router.navigate(['/pages/course/courses'], { queryParams: { search: this.searchText.trim() } });
     }
   }
 
