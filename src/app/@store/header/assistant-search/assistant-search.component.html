@@ -1,4 +1,29 @@
+
+
 <mat-icon class="font-icon search-icon">search</mat-icon>
+<input type="text" [(ngModel)]="searchText" placeholder="What are you looking for?"
+       >
+@if (searchText) {
+  <div class="absolute end-1 w-max">
+    <button mat-icon-button (click)="clearText()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <mat-icon class="font-icon search-icon">search</mat-icon>
 <input type="text" [(ngModel)]="searchText" placeholder="Recommend to search: My orders"
        (focus)="focus($event, suggestionDropdown)">
 @if (searchText) {
@@ -58,4 +83,4 @@
       </div>
     </emr-suggestion-block>
   </emr-suggestions>
-</ng-template>
+</ng-template> -->
