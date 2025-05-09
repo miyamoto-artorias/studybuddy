@@ -35,7 +35,7 @@ import { catchError } from 'rxjs/operators';
 export class ViewCourseRequestsComponent implements OnInit {
   sentRequests: any[] = [];
   receivedRequests: any[] = [];
-  isStudent: boolean = false;
+  isStudent: boolean = true; // Default to true - everyone can send requests
   isTeacher: boolean = false;
   isLoading: boolean = true;
   currentUserId: number;
@@ -46,7 +46,7 @@ export class ViewCourseRequestsComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {
     this.currentUserId = this.authService.getUserId();
-    this.isStudent = this.authService.isUserStudent();
+    // Everyone can send requests, so no need for isStudent check
     this.isTeacher = this.authService.isUserTeacher();
   }
   
@@ -58,7 +58,7 @@ export class ViewCourseRequestsComponent implements OnInit {
     // Create an array to hold our observables
     const requests = [];
     
-    // Always load sent requests (as student)
+    // Always load sent requests - everyone can send requests
     requests.push(
       this.courseRequestService.getCourseRequestsByStudentId(this.currentUserId).pipe(
         catchError(error => {
