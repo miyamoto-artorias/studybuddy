@@ -1,5 +1,5 @@
 <div class="course-list-container">
-  <h1 class="page-title">Available Courses</h1>
+  <h1 class="page-title">{{ pageTitle }}</h1>
   
   <div *ngIf="loading" class="loading-container">
     <div class="spinner"></div>
@@ -11,14 +11,15 @@
     <button (click)="loadCourses()" class="retry-button">Retry</button>
   </div>
 
-  <div class="courses-grid" *ngIf="!loading && !error">
+  <div class="courses-grid" *ngIf="!loading && !error && courses.length > 0">
     <div class="course-card" *ngFor="let course of courses">
       <div class="course-image">
         <img [src]="course.picture || 'assets/default-course.jpg'" [alt]="course.title">
       </div>
       <div class="course-info">
         <h2 class="course-title">
-          <a [routerLink]="['/pages/course/course', course.id]">{{ course.title }}</a>
+          <!-- Ensure course.id is available if linking to detail view; search results might not have it -->
+          <a [routerLink]="course.id ? ['/course', course.id] : null">{{ course.title }}</a>
         </h2>
         <p class="course-description">{{ course.description }}</p>
         <div class="course-meta">
@@ -35,11 +36,10 @@
           <span class="categories-label">Categories:</span>
           <div class="categories-list">
             <span class="category-badge" *ngFor="let category of course.categories">
-              {{ category.title }}
+              {{ category.title }} <!-- Assumes category object has a title -->
             </span>
           </div>
         </div>
-        <!-- Display tags if available -->
         <div class="course-tags" *ngIf="course.tags && course.tags.length > 0">
           <span class="tags-label">Tags:</span>
           <div class="tags-list">
@@ -48,10 +48,16 @@
             </span>
           </div>
         </div>
-        <div class="enrollment-status" *ngIf="isEnrolled(course.id)">
+        <div class="enrollment-status" *ngIf="course.id && isEnrolled(course.id)">
           <span class="enrolled-badge">Enrolled</span>
         </div>
       </div>
     </div>
+  </div>
+
+  <div *ngIf="!loading && !error && courses.length === 0" class="empty-message-container">
+    <p>No courses to display.</p>
+    <!-- You could add a more specific message if it was a search that yielded no results -->
+    <p *ngIf="this.route.snapshot.queryParams['search']">No courses found matching your search criteria.</p>
   </div>
 </div>

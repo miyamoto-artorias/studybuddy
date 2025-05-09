@@ -328,4 +328,15 @@ streamVideo(courseId: number, chapterId: number, contentId: number): Observable<
     })
   );
 }
+
+searchCourses(query: string): Observable<any[]> {
+  const url = `${this.coursesbaseUrl}/search?query=${encodeURIComponent(query)}`;
+  return this.http.get<any[]>(url).pipe(
+    tap(courses => console.log(`Fetched courses for query "${query}":`, courses)),
+    catchError(error => {
+      console.error(`Error fetching courses for query "${query}":`, error);
+      return throwError(() => error); // Rethrow the error to be handled by the component
+    })
+  );
+}
 }
