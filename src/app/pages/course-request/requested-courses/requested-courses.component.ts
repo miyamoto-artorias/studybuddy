@@ -17,6 +17,7 @@ import { PdfViewerWrapperComponent } from '../../course/enrolled-courses/pdf-vie
 import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-requested-courses',
@@ -81,19 +82,88 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
       return;
     }
     
+    // First, get all requested course IDs
     this.http.get<any[]>(`http://localhost:8081/api/courses/user-requests/${userId}`).subscribe({
-      next: (courses) => {
-        this.courses = courses;
-        if (this.courses.length) {
-          this.selectCourse(this.courses[0]);
+      next: (requestedCourses) => {
+        console.log('Requested courses IDs received:', requestedCourses);
+        
+        // If there are no courses, stop here
+        if (!requestedCourses || requestedCourses.length === 0) {
+          this.courses = [];
+          this.loading = false;
+          return;
         }
-        this.loading = false;
+        
+        // Store the initial course data
+        this.courses = requestedCourses;
+        
+        // For each course, fetch detailed information including chapters
+        const courseDetailsRequests = requestedCourses.map(course => 
+          this.courseService.getCourseById(course.id)
+        );
+        
+        // Process all course detail requests
+        forkJoin(courseDetailsRequests).subscribe({
+          next: (detailedCourses) => {
+            console.log('All course details received:', detailedCourses);
+            
+            // Update courses with detailed information
+            for (let i = 0; i < detailedCourses.length; i++) {
+              if (detailedCourses[i]) {
+                // Preserve the original course ID
+                const courseId = this.courses[i].id;
+                // Merge the detailed course data
+                this.courses[i] = { 
+                  ...detailedCourses[i], 
+                  id: courseId 
+                };
+              }
+            }
+            
+            // If there are courses, select the first one
+            if (this.courses.length) {
+              this.selectCourse(this.courses[0]);
+            }
+            
+            this.loading = false;
+          },
+          error: (err) => {
+            console.error('Error fetching course details:', err);
+            // We already have basic course info, so continue with that
+            if (this.courses.length) {
+              this.selectCourse(this.courses[0]);
+            }
+            this.loading = false;
+          }
+        });
       },
       error: (err) => {
         console.error('Error loading requested courses:', err);
         this.error = 'Failed to load requested courses';
         this.loading = false;
         this.courses = [];
+      }
+    });
+  }
+
+  loadCourseDetails(courseId: number): void {
+    console.log('Loading details for course:', courseId);
+    this.courseService.getCourseById(courseId).subscribe({
+      next: (courseDetails) => {
+        console.log('Course details received:', courseDetails);
+        // Update the course in the array with full details
+        const index = this.courses.findIndex(c => c.id === courseId);
+        if (index !== -1) {
+          this.courses[index] = { ...this.courses[index], ...courseDetails };
+          
+          // If this is the selected course, update it too
+          if (this.selectedCourse && this.selectedCourse.id === courseId) {
+            this.selectedCourse = this.courses[index];
+          }
+        }
+      },
+      error: (err) => {
+        console.error(`Error loading details for course ${courseId}:`, err);
       }
     });
   }
@@ -106,15 +176,20 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
     this.selectedContent = null;
     this.selectedQuiz = null;
     
-    // Load chapters for the selected course
-    this.loadCourseChapters(course.id);
+    // Get full course details with chapters if not already loaded
+    if (!course.chapters || course.chapters.length === 0) {
+      console.log('Loading chapters for course:', course.id);
+      this.loadCourseChapters(course.id);
+    } else {
+      console.log('Course already has chapters:', course.chapters);
+    }
     
     // Clean up any existing Blob URL
     this.revokeBlobUrl();
   }
 
   loadCourseChapters(courseId: number): void {
-    console.log('Loading chapters for course:', courseId);
+    console.log('Fetching chapters for course:', courseId);
     this.http.get<any[]>(`http://localhost:8081/api/courses/${courseId}/chapters`).subscribe({
       next: (chapters) => {
         console.log('Received chapters:', chapters);
@@ -123,6 +198,15 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
           ...this.selectedCourse,
           chapters: chapters
         };
+        
+        // Also update the course in the array
+        const index = this.courses.findIndex(c => c.id === courseId);
+        if (index !== -1) {
+          this.courses[index] = {
+            ...this.courses[index],
+            chapters: chapters
+          };
+        }
         
         // If there are chapters, select the first one
         if (chapters && chapters.length > 0) {
@@ -143,6 +227,7 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
     console.log('Chapter selected:', chapter);
     this.selectedChapter = chapter;
     this.selectedQuiz = null;
+    
     // Initialize quizzes array if it doesn't exist
     if (!this.selectedChapter.quizzes) {
       this.selectedChapter.quizzes = [];
@@ -150,12 +235,16 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
     
     // Check if chapter contents exist, if not load them
     if (!chapter.contents || chapter.contents.length === 0) {
+      console.log('Chapter has no contents, loading from API:', chapter.id);
       this.loadChapterContents(chapter.id);
-    } else if (chapter.contents && chapter.contents.length > 0) {
-      this.selectContent(chapter.contents[0]);
     } else {
-      this.selectedContent = null;
-      this.revokeBlobUrl();
+      console.log('Chapter already has contents:', chapter.contents);
+      if (chapter.contents.length > 0) {
+        this.selectContent(chapter.contents[0]);
+      } else {
+        this.selectedContent = null;
+        this.revokeBlobUrl();
+      }
     }
     
     // Load quizzes for the selected chapter
@@ -168,21 +257,34 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
     this.http.get<any[]>(`http://localhost:8081/api/chapters/${chapterId}/contents`).subscribe({
       next: (contents) => {
         console.log('Received contents:', contents);
-        // Update the selected chapter with contents
-        this.selectedChapter.contents = contents;
-        // Force change detection by creating a new reference
-        this.selectedChapter = { ...this.selectedChapter };
         
-        // Select the first content if available
-        if (contents && contents.length > 0) {
-          this.selectContent(contents[0]);
+        // Update the selected chapter with contents
+        if (this.selectedChapter && this.selectedChapter.id === chapterId) {
+          this.selectedChapter.contents = contents;
+          // Force change detection by creating a new reference
+          this.selectedChapter = { ...this.selectedChapter };
+          
+          // Select the first content if available
+          if (contents && contents.length > 0) {
+            this.selectContent(contents[0]);
+          }
+        }
+        
+        // Also update in the chapters array if possible
+        if (this.selectedCourse && this.selectedCourse.chapters) {
+          const chapterIndex = this.selectedCourse.chapters.findIndex((c: any) => c.id === chapterId);
+          if (chapterIndex !== -1) {
+            this.selectedCourse.chapters[chapterIndex].contents = contents;
+          }
         }
       },
       error: (err) => {
         console.error('Error loading chapter contents:', err);
-        this.selectedChapter.contents = [];
-        // Force change detection by creating a new reference
-        this.selectedChapter = { ...this.selectedChapter };
+        if (this.selectedChapter) {
+          this.selectedChapter.contents = [];
+          // Force change detection by creating a new reference
+          this.selectedChapter = { ...this.selectedChapter };
+        }
       }
     });
   }
@@ -207,8 +309,8 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
 
   selectContent(content: any): void {
     console.log('Content selected:', content);
-    console.log('Selected Course:', this.selectedCourse);
-    console.log('Selected Chapter:', this.selectedChapter);
+    console.log('Selected Course:', this.selectedCourse?.id);
+    console.log('Selected Chapter:', this.selectedChapter?.id);
     this.revokeBlobUrl();
     this.selectedContent = { ...content };
 
@@ -268,6 +370,8 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
       }
 
       this.streamVideo(courseId, chapterId, contentId);
+    } else {
+      console.log('Content type not handled:', content.type);
     }
   }
 

@@ -23,6 +23,11 @@ const routes: Routes = [
     title: 'View Course Requests',
     loadComponent: () => import('./view-course-requests/view-course-requests.component').then(c => c.ViewCourseRequestsComponent)
    },
+   {
+    path: 'requested-courses-teacher',
+    title: 'Requested Courses Teacher',
+    loadComponent: () => import('./requested-courses-teacher/requested-courses-teacher.component').then(c => c.RequestedCoursesTeacherComponent)
+   }
 
  
 ];

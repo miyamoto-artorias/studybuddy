@@ -1,0 +1,397 @@
+/* Container for the entire teacher courses view */
+.teacher-courses-container {
+    display: flex;
+    height: 100vh;
+    background: #f7f7f7;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  /* Left Panel: Courses list */
+  .courses-list {
+    width: 20%;
+    padding: 1rem;
+    background: #ffffff;
+    border-right: 1px solid #ddd;
+  
+    h2 {
+      margin-top: 0;
+      font-size: 1.4rem;
+      color: #333;
+    }
+  
+    ul {
+      list-style-type: none;
+      padding: 0;
+  
+      li {
+        padding: 0.75rem;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        transition: background 0.2s;
+  
+        &:hover {
+          background: #f0f0f0;
+        }
+  
+        &.active {
+          background: #e0e0e0;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  
+  /* Center Panel: Chapters list */
+  .chapters-section {
+    width: 25%;
+    padding: 1rem;
+    background: #fafafa;
+    border-right: 1px solid #ddd;
+  
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+  
+      h2 {
+        margin: 0;
+        font-size: 1.4rem;
+        color: #333;
+      }
+  
+      .btn-secondary {
+        background-color: #007bff;
+        color: #fff;
+        padding: 0.4rem 0.8rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.9rem;
+  
+        emr-icon {
+          font-size: 1rem;
+        }
+      }
+    }
+  
+    ul {
+      list-style-type: none;
+      padding: 0;
+  
+      li {
+        padding: 0.75rem;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        transition: background 0.2s;
+  
+        &:hover {
+          background: #f0f0f0;
+        }
+  
+        &.active {
+          background: #e0e0e0;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  
+  /* Right Panel: Content section */
+  .content-section {
+    flex: 1;
+    padding: 1rem;
+  
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+  
+      h3 {
+        margin: 0;
+        font-size: 1.4rem;
+        color: #333;
+      }
+  
+      .btn-secondary {
+        background-color: #007bff;
+        color: #fff;
+        padding: 0.4rem 0.8rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.9rem;
+      }
+    }
+  
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+  
+      .content-card {
+        background: #fff;
+        padding: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  
+        h4 {
+          margin-top: 0;
+          font-size: 1.1rem;
+          color: #333;
+        }
+  
+        .type-label {
+          font-size: 0.9rem;
+          color: #666;
+        }
+      }
+  
+      .empty-message {
+        grid-column: 1 / -1;
+        text-align: center;
+        color: #888;
+        font-style: italic;
+      }
+    }
+  }
+  
+  /* Modal Overlay and Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  
+    .modal {
+      background: #fff;
+      width: 400px;
+      max-width: 90%;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+  
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #007bff;
+        color: #fff;
+        padding: 0.75rem 1rem;
+  
+        h3 {
+          margin: 0;
+          font-size: 1.2rem;
+        }
+  
+        .btn-close {
+          background: transparent;
+          border: none;
+          color: #fff;
+          font-size: 1.2rem;
+          cursor: pointer;
+        }
+      }
+  
+      form {
+        padding: 1rem;
+        overflow-y: auto;
+        flex: 1;
+  
+        .form-group {
+          margin-bottom: 1rem;
+  
+          label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+          }
+  
+          input,
+          select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.95rem;
+          }
+  
+          .file-upload {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+  
+            input[type="file"] {
+              flex: 1;
+            }
+  
+            .file-name {
+              font-size: 0.9rem;
+              color: #555;
+            }
+          }
+        }
+  
+        .form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 0.5rem;
+  
+          button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            cursor: pointer;
+          }
+  
+          .btn-outline {
+            background: transparent;
+            border: 1px solid #007bff;
+            color: #007bff;
+          }
+  
+          .btn-primary {
+            background: #007bff;
+            color: #fff;
+          }
+        }
+      }
+    }
+  }
+  .chapter-form {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  
+    .form-group {
+      margin-bottom: 1rem;
+      label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+      }
+      input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+    }
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-outline {
+        background: transparent;
+        border: 1px solid #007bff;
+        color: #007bff;
+      }
+      .btn-primary {
+        background: #007bff;
+        color: #fff;
+      }
+    }
+  }
+  
+  .quiz-section {
+    flex: 1;
+    padding: 1rem;
+  
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+  
+      h3 {
+        margin: 0;
+        font-size: 1.4rem;
+        color: #333;
+      }
+  
+      .btn-secondary {
+        background-color: #007bff;
+        color: #fff;
+        padding: 0.4rem 0.8rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.9rem;
+      }
+    }
+  
+    .quiz-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+  
+      .quiz-card {
+        background: #fff;
+        padding: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  
+        h4 {
+          margin-top: 0;
+          font-size: 1.1rem;
+          color: #333;
+        }
+  
+        .description {
+          font-size: 0.9rem;
+          color: #666;
+          margin-bottom: 0.5rem;
+        }
+  
+        .quiz-details {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+  
+          .detail {
+            font-size: 0.85rem;
+            color: #555;
+          }
+        }
+      }
+  
+      .empty-message {
+        grid-column: 1 / -1;
+        text-align: center;
+        color: #888;
+        font-style: italic;
+      }
+    }
+  }
+    
