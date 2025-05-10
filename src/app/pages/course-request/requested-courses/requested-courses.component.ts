@@ -19,7 +19,7 @@ import { AuthService } from '../../../services/auth.service';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 
 @Component({
-  selector: 'app-enrolled-courses',
+  selector: 'app-requested-courses',
   imports: [
     CommonModule,
     IconComponent,
@@ -65,14 +65,23 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
   ) {}
 
   ngOnInit(): void {
-    this.loadEnrolledCourses();
+    this.loadRequestedCourses();
   }
 
-  loadEnrolledCourses(): void {
+  loadRequestedCourses(): void {
     this.loading = true;
     this.error = null;
     
-    this.authService.getEnrolledCourses().subscribe({
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userId = currentUser.id;
+    
+    if (!userId) {
+      this.error = 'User not logged in';
+      this.loading = false;
+      return;
+    }
+    
+    this.http.get<any[]>(`http://localhost:8081/api/courses/user-requests/${userId}`).subscribe({
       next: (courses) => {
         this.courses = courses;
         if (this.courses.length) {
@@ -81,8 +90,8 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading enrolled courses:', err);
-        this.error = 'Failed to load enrolled courses';
+        console.error('Error loading requested courses:', err);
+        this.error = 'Failed to load requested courses';
         this.loading = false;
         this.courses = [];
       }
@@ -96,8 +105,38 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
     this.selectedChapter = null;
     this.selectedContent = null;
     this.selectedQuiz = null;
+    
+    // Load chapters for the selected course
+    this.loadCourseChapters(course.id);
+    
     // Clean up any existing Blob URL
     this.revokeBlobUrl();
+  }
+
+  loadCourseChapters(courseId: number): void {
+    console.log('Loading chapters for course:', courseId);
+    this.http.get<any[]>(`http://localhost:8081/api/courses/${courseId}/chapters`).subscribe({
+      next: (chapters) => {
+        console.log('Received chapters:', chapters);
+        // Update the selected course with chapters
+        this.selectedCourse = {
+          ...this.selectedCourse,
+          chapters: chapters
+        };
+        
+        // If there are chapters, select the first one
+        if (chapters && chapters.length > 0) {
+          this.selectChapter(chapters[0]);
+        }
+      },
+      error: (err) => {
+        console.error('Error loading chapters:', err);
+        this.selectedCourse = {
+          ...this.selectedCourse,
+          chapters: []
+        };
+      }
+    });
   }
 
   selectChapter(chapter: any): void {
@@ -108,15 +147,44 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
     if (!this.selectedChapter.quizzes) {
       this.selectedChapter.quizzes = [];
     }
-    if (chapter.contents && chapter.contents.length) {
+    
+    // Check if chapter contents exist, if not load them
+    if (!chapter.contents || chapter.contents.length === 0) {
+      this.loadChapterContents(chapter.id);
+    } else if (chapter.contents && chapter.contents.length > 0) {
       this.selectContent(chapter.contents[0]);
     } else {
       this.selectedContent = null;
       this.revokeBlobUrl();
     }
+    
     // Load quizzes for the selected chapter
     console.log('Loading quizzes for chapter:', chapter.id);
     this.loadChapterQuizzes(chapter.id);
+  }
+
+  loadChapterContents(chapterId: number): void {
+    console.log('Loading contents for chapter:', chapterId);
+    this.http.get<any[]>(`http://localhost:8081/api/chapters/${chapterId}/contents`).subscribe({
+      next: (contents) => {
+        console.log('Received contents:', contents);
+        // Update the selected chapter with contents
+        this.selectedChapter.contents = contents;
+        // Force change detection by creating a new reference
+        this.selectedChapter = { ...this.selectedChapter };
+        
+        // Select the first content if available
+        if (contents && contents.length > 0) {
+          this.selectContent(contents[0]);
+        }
+      },
+      error: (err) => {
+        console.error('Error loading chapter contents:', err);
+        this.selectedChapter.contents = [];
+        // Force change detection by creating a new reference
+        this.selectedChapter = { ...this.selectedChapter };
+      }
+    });
   }
 
   loadChapterQuizzes(chapterId: number): void {
@@ -257,7 +325,7 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
     this.revokeBlobUrl();
   }
 
-  // Add new methods for quiz functionality
+  // Quiz functionality methods
   startQuizAttempt(): void {
     if (!this.selectedChapter || !this.selectedQuiz) return;
     this.attemptInProgress = true;
