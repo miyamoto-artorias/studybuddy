@@ -62,12 +62,13 @@ export class RequestedCoursesTeacherComponent  implements OnInit {
   loadTeacherCourses(): void {
     const currentUser = this.authService.getCurrentUser();
     if (currentUser && currentUser.id) {
-      this.authService.getTeacherCourses(currentUser.id).subscribe({
+      this.courseService.getTeacherRequestedCourses(currentUser.id).subscribe({
         next: (courses) => {
+          console.log('Loaded requested courses for teacher:', courses);
           this.teacherCourses = courses;
         },
         error: (err) => {
-          console.error('Error loading teacher courses:', err);
+          console.error('Error loading teacher requested courses:', err);
           this.teacherCourses = [];
         }
       });
@@ -191,9 +192,24 @@ showAddContentForm(): void {
   }
 
   private updateLocalCourses(): void {
+    // Update the course in the array
     const index = this.teacherCourses.findIndex(c => c.id === this.selectedCourse.id);
-    this.teacherCourses[index] = this.selectedCourse;
-    this.loadTeacherCourses(); // Refresh the courses list
+    if (index !== -1) {
+      this.teacherCourses[index] = this.selectedCourse;
+    }
+    
+    // Refresh the courses list from the API
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser && currentUser.id) {
+      this.courseService.getTeacherRequestedCourses(currentUser.id).subscribe({
+        next: (courses) => {
+          this.teacherCourses = courses;
+        },
+        error: (err) => {
+          console.error('Error refreshing teacher requested courses:', err);
+        }
+      });
+    }
   }
 
   // Helper to access questions form array

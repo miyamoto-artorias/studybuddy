@@ -350,4 +350,15 @@ getAllTeachers(): Observable<any[]> {
     })
   );
 }
+
+getTeacherRequestedCourses(teacherId: number): Observable<any[]> {
+  const url = `http://localhost:8081/api/courses/request-teacher/${teacherId}`;
+  return this.http.get<any[]>(url).pipe(
+    tap(courses => console.log('Fetched teacher requested courses:', courses)),
+    catchError(error => {
+      console.error('Error fetching teacher requested courses:', error);
+      return throwError(() => error);
+    })
+  );
+}
 }
