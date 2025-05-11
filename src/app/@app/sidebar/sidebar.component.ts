@@ -132,8 +132,18 @@ export class SidebarComponent implements OnInit {
       type: 'group',
       icon: 'apps',
       name: 'Courses',
-      children: [
-
+      children: [        {
+          key: uuid(),
+          type: 'link',
+          name: 'My Enrolled Courses',
+          link: '/pages/course/enrolled-courses-list'
+        },
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Enrolled Courses View',
+          link: '/pages/course/enrolled-courses-view'
+        },
         {
           key: uuid(),
           type: 'link',

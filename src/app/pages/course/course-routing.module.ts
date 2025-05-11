@@ -3,6 +3,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { CourseListComponent } from './course-list/course-list.component';
 import { CourseDetailComponent } from './course-detail/course-detail.component';
 import { TeacherProfileComponent } from './teacher-profile/teacher-profile.component';
+import { EnrolledCoursesListComponent } from './enrolled-courses-list/enrolled-courses-list.component';
+import { EnrolledCourseViewComponent } from './enrolled-course-view/enrolled-course-view.component';
 
 const routes: Routes = [
   {
@@ -38,6 +40,14 @@ const routes: Routes = [
   {
     path: 'teacher/:id',
     component: TeacherProfileComponent
+  },
+  {
+    path: 'enrolled-courses-list',
+    component: EnrolledCoursesListComponent
+  },
+  {
+    path: 'enrolled-courses-view',
+    component: EnrolledCourseViewComponent
   }
 ];
 

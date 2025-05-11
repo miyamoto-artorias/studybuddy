@@ -1,0 +1,58 @@
+<div class="enrolled-courses-container">
+  <h2 class="page-title">My Enrolled Courses</h2>
+
+  <!-- Loading spinner -->
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading enrolled courses...</p>
+  </div>
+
+  <!-- Error message -->
+  <div class="error-message" *ngIf="error">
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadEnrolledCourses()">Try Again</button>
+  </div>
+
+  <!-- No courses message -->
+  <div class="no-courses-message" *ngIf="!isLoading && !error && enrolledCourses.length === 0">
+    <p>You are not enrolled in any courses yet.</p>
+    <button mat-raised-button color="primary" routerLink="/course-request/make">Request a Course</button>
+  </div>
+
+  <!-- Courses grid -->
+  <div class="courses-grid" *ngIf="!isLoading && !error && enrolledCourses.length > 0">
+    <mat-card class="course-card" *ngFor="let course of enrolledCourses">
+      <mat-card-header>
+        <mat-card-title>{{ course.title }}</mat-card-title>
+        <mat-card-subtitle>
+          <ng-container *ngIf="course.teacher">Instructor: {{ course.teacher.firstName }} {{ course.teacher.lastName }}</ng-container>
+          <ng-container *ngIf="course.teacherName">Instructor: {{ course.teacherName }}</ng-container>
+          <ng-container *ngIf="!course.teacher && !course.teacherName">Instructor information unavailable</ng-container>
+        </mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <p class="course-description">{{ course.description || 'No description available' }}</p>
+        
+        <div class="course-categories" *ngIf="course.categories && course.categories.length > 0">
+          <mat-chip-set>
+            <mat-chip *ngFor="let category of course.categories">{{ category.title }}</mat-chip>
+          </mat-chip-set>
+        </div>
+        
+        <div class="course-details">
+          <p *ngIf="course.startDate">
+            <mat-icon>calendar_today</mat-icon> Start date: {{ course.startDate | date:'mediumDate' }}
+          </p>
+          <p *ngIf="course.duration">
+            <mat-icon>schedule</mat-icon> Duration: {{ course.duration }}
+          </p>
+        </div>
+      </mat-card-content>
+      
+      <mat-card-actions>
+        <button mat-button color="primary" (click)="viewCourseDetails(course.id)">VIEW DETAILS</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
