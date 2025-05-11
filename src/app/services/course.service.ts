@@ -1,13 +1,25 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError, forkJoin, of } from 'rxjs';
+import { Observable, throwError, forkJoin, of, from } from 'rxjs';
 import { tap, catchError, switchMap, map } from 'rxjs/operators';
+import * as pdfjs from 'pdfjs-dist';
+import { AiService } from './ai.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CourseService {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private aiService: AiService
+  ) {
+    // Initialize PDF.js worker
+    const pdfjsLib = (pdfjs as any);
+    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      const workerUrl = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+    }
+  }
 
   private baseUrl = 'http://localhost:8081/api/course-content';
   private coursesbaseUrl = 'http://localhost:8081/api/courses';
@@ -31,6 +43,87 @@ export class CourseService {
         throw error;
       })
     );
+  }
+
+  // Method to extract text from PDF blob and send to AI for summarization
+  summarizePdfContent(pdfBlob: Blob, contentTitle: string): Observable<string> {
+    console.log('Starting PDF summarization for:', contentTitle);
+    
+    return from(this.extractTextFromPdf(pdfBlob)).pipe(
+      switchMap(pdfText => {
+        console.log('Extracted PDF text length:', pdfText.length);
+        
+        // If text is too small, return a message
+        if (pdfText.length < 100) {
+          return of('The PDF content is too short or could not be properly extracted for summarization.');
+        }
+        
+        // Generate prompt for summarization
+        const prompt = this.createSummarizationPrompt(pdfText, contentTitle);
+        
+        // Call AI service to generate summary
+        return from(this.aiService.generateText(prompt));
+      }),
+      catchError(error => {
+        console.error('PDF summarization failed:', error);
+        return of('Failed to summarize the PDF content. Please try again later.');
+      })
+    );
+  }
+  
+  // Helper method to extract text from PDF blob
+  private async extractTextFromPdf(pdfBlob: Blob): Promise<string> {
+    try {
+      // Convert Blob to ArrayBuffer
+      const arrayBuffer = await pdfBlob.arrayBuffer();
+      const pdfjsLib = (pdfjs as any);
+      
+      // Load the PDF document
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
+      
+      // Variable to store all the text
+      let fullText = '';
+      
+      // Iterate through each page
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        
+        // Extract text from items
+        const pageText = textContent.items
+          .map((item: any) => item.str || '')
+          .join(' ');
+          
+        fullText += pageText + '\n';
+      }
+      
+      return fullText;
+    } catch (error) {
+      console.error('Error extracting text from PDF:', error);
+      return '';
+    }
+  }
+  
+  // Create a prompt for the AI to summarize the PDF content
+  private createSummarizationPrompt(pdfText: string, contentTitle: string): string {
+    // Trim the text if it's too long
+    const maxTextLength = 15000; // Adjust based on AI model limitations
+    const trimmedText = pdfText.length > maxTextLength 
+      ? pdfText.substring(0, maxTextLength) + '...(content truncated due to length)'
+      : pdfText;
+    
+    return `Please provide a concise summary of the following PDF document titled "${contentTitle}".
+Focus on the main concepts, key points, and important details. Format the summary with headings and bullet points for clarity.
+
+PDF CONTENT:
+${trimmedText}
+
+Please provide a well-structured summary that includes:
+1. Main topic overview (2-3 sentences)
+2. Key concepts (3-5 bullet points)
+3. Important details (3-5 bullet points)
+4. Conclusion (1-2 sentences)`;
   }
 
   downloadFile(fileName: string): Observable<Blob> {

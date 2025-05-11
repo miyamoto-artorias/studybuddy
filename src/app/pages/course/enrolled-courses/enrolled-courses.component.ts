@@ -111,6 +111,12 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
   aiQuizUserResponses: {[questionId: number]: string | string[]} = {};
   aiQuizErrorMessage: string = '';
 
+  // PDF Summarization properties
+  showPdfSummary = false;
+  generatingSummary = false;
+  pdfSummaryContent: string = '';
+  pdfBlob: Blob | null = null;
+
   constructor(
     private sanitizer: DomSanitizer, 
     private courseService: CourseService,
@@ -155,6 +161,8 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
     this.revokeBlobUrl();
     // Reset AI quiz
     this.resetAIQuiz();
+    // Reset PDF summary
+    this.resetPdfSummary();
   }
 
   selectChapter(chapter: any): void {
@@ -162,6 +170,7 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
     this.selectedChapter = chapter;
     this.selectedQuiz = null;
     this.resetAIQuiz();
+    this.resetPdfSummary();
     // Initialize quizzes array if it doesn't exist
     if (!this.selectedChapter.quizzes) {
       this.selectedChapter.quizzes = [];
@@ -202,6 +211,7 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
     this.revokeBlobUrl();
     this.selectedContent = { ...content };
     this.resetAIQuiz();
+    this.resetPdfSummary();
 
     if (content.type === 'pdf') {
       console.log('Processing PDF content');
@@ -228,6 +238,7 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
           next: (blob) => {
             console.log('Received blob response:', blob);
             if (blob instanceof Blob) {
+              this.pdfBlob = blob; // Store the PDF blob for summarization
               const blobUrl = URL.createObjectURL(blob);
               console.log('Created blob URL:', blobUrl);
               this.selectedContent = {
@@ -287,6 +298,7 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
     this.selectedContent = null;
     this.revokeBlobUrl();
     this.resetAIQuiz();
+    this.resetPdfSummary();
     // Reset quiz state
     this.quizResponses = {};
     this.attemptInProgress = false;
@@ -315,6 +327,42 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.revokeBlobUrl();
+  }
+
+  // PDF Summarization methods
+  summarizePdf(): void {
+    if (!this.pdfBlob || !this.selectedContent || this.selectedContent.type !== 'pdf') {
+      console.error('No PDF content available for summarization');
+      return;
+    }
+
+    this.generatingSummary = true;
+    this.showPdfSummary = true;
+    this.pdfSummaryContent = 'Generating summary...';
+
+    this.courseService.summarizePdfContent(this.pdfBlob, this.selectedContent.title)
+      .subscribe({
+        next: (summary) => {
+          console.log('Received PDF summary');
+          this.pdfSummaryContent = summary;
+          this.generatingSummary = false;
+        },
+        error: (err) => {
+          console.error('Error generating PDF summary:', err);
+          this.pdfSummaryContent = 'Failed to generate summary. Please try again.';
+          this.generatingSummary = false;
+        }
+      });
+  }
+
+  closeSummary(): void {
+    this.resetPdfSummary();
+  }
+
+  resetPdfSummary(): void {
+    this.showPdfSummary = false;
+    this.generatingSummary = false;
+    this.pdfSummaryContent = '';
   }
 
   // Add new methods for quiz functionality
@@ -425,6 +473,7 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
       this.selectedContent = null;
       this.selectedQuiz = null;
       this.revokeBlobUrl();
+      this.resetPdfSummary();
       
       // Set a default quiz prompt based on course and chapter info
       if (this.selectedCourse && this.selectedChapter) {

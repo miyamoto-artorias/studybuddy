@@ -82,6 +82,7 @@
     "material-symbols": "^0.27.1",
     "ng2-pdf-viewer": "^10.4.0",
     "ngx-markdown": "^19.0.0",
+    "pdfjs-dist": "^5.2.133",
     "postcss": "^8.5.2",
     "prismjs": "^1.29.0",
     "rxjs": "~7.8.0",
