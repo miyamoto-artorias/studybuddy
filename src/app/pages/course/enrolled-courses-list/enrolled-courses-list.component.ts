@@ -1,56 +1,85 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../services/auth.service';
-import { RouterModule, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-enrolled-courses-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterModule, 
-    MatCardModule, 
-    MatButtonModule, 
-    MatIconModule, 
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
     MatProgressSpinnerModule,
-    MatChipsModule
+    MatIconModule
   ],
   templateUrl: './enrolled-courses-list.component.html',
   styleUrl: './enrolled-courses-list.component.scss'
 })
 export class EnrolledCoursesListComponent implements OnInit {
-  enrolledCourses: any[] = [];
-  isLoading = false;
+  courses: any[] = [];
+  loading = true;
   error: string | null = null;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadEnrolledCourses();
   }
+
   loadEnrolledCourses(): void {
-    this.isLoading = true;
+    this.loading = true;
     this.error = null;
     
     this.authService.getEnrolledCourses().subscribe({
       next: (courses) => {
-        this.enrolledCourses = courses;
-        this.isLoading = false;
+        this.courses = courses;
+        this.loading = false;
       },
       error: (err) => {
         console.error('Error loading enrolled courses:', err);
-        this.error = 'Failed to load enrolled courses. Please try again later.';
-        this.isLoading = false;
+        this.error = 'Failed to load enrolled courses';
+        this.loading = false;
+        this.courses = [];
       }
     });
   }
 
-  viewCourseDetails(courseId: number): void {
-    this.router.navigate(['/courses', courseId]);
+  viewCourse(courseId: number): void {
+    this.router.navigate(['/courses/enrolled/view', courseId]);
+  }
+
+  getProgressPercentage(course: any): number {
+    if (!course.chapters || course.chapters.length === 0) {
+      return 0;
+    }
+
+    // Calculate completed content items out of total content items
+    let totalContents = 0;
+    let completedContents = 0;
+
+    course.chapters.forEach((chapter: any) => {
+      if (chapter.contents) {
+        totalContents += chapter.contents.length;
+        chapter.contents.forEach((content: any) => {
+          if (content.completed) {
+            completedContents++;
+          }
+        });
+      }
+    });
+
+    if (totalContents === 0) {
+      return 0;
+    }
+
+    return Math.round((completedContents / totalContents) * 100);
   }
 }

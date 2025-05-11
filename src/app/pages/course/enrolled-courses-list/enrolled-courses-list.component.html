@@ -1,58 +1,236 @@
 <div class="enrolled-courses-container">
-  <h2 class="page-title">My Enrolled Courses</h2>
-
+  <h1 class="page-title">My Enrolled Courses</h1>
+  
   <!-- Loading spinner -->
-  <div class="loading-container" *ngIf="isLoading">
+  <div *ngIf="loading" class="loading-container">
     <mat-spinner diameter="40"></mat-spinner>
-    <p>Loading enrolled courses...</p>
+    <p>Loading your courses...</p>
   </div>
-
+  
   <!-- Error message -->
-  <div class="error-message" *ngIf="error">
+  <div *ngIf="error" class="error-message">
+    <mat-icon>error</mat-icon>
     <p>{{ error }}</p>
-    <button mat-raised-button color="primary" (click)="loadEnrolledCourses()">Try Again</button>
   </div>
-
+  
   <!-- No courses message -->
-  <div class="no-courses-message" *ngIf="!isLoading && !error && enrolledCourses.length === 0">
-    <p>You are not enrolled in any courses yet.</p>
-    <button mat-raised-button color="primary" routerLink="/course-request/make">Request a Course</button>
+  <div *ngIf="!loading && !error && courses.length === 0" class="no-courses">
+    <mat-icon>school</mat-icon>
+    <p>You haven't enrolled in any courses yet.</p>
+    <button mat-raised-button color="primary" routerLink="/courses">Browse Courses</button>
   </div>
-
-  <!-- Courses grid -->
-  <div class="courses-grid" *ngIf="!isLoading && !error && enrolledCourses.length > 0">
-    <mat-card class="course-card" *ngFor="let course of enrolledCourses">
-      <mat-card-header>
-        <mat-card-title>{{ course.title }}</mat-card-title>
-        <mat-card-subtitle>
-          <ng-container *ngIf="course.teacher">Instructor: {{ course.teacher.firstName }} {{ course.teacher.lastName }}</ng-container>
-          <ng-container *ngIf="course.teacherName">Instructor: {{ course.teacherName }}</ng-container>
-          <ng-container *ngIf="!course.teacher && !course.teacherName">Instructor information unavailable</ng-container>
-        </mat-card-subtitle>
-      </mat-card-header>
-      
-      <mat-card-content>
-        <p class="course-description">{{ course.description || 'No description available' }}</p>
-        
-        <div class="course-categories" *ngIf="course.categories && course.categories.length > 0">
-          <mat-chip-set>
-            <mat-chip *ngFor="let category of course.categories">{{ category.title }}</mat-chip>
-          </mat-chip-set>
+  
+  <!-- Course list -->
+  <div *ngIf="!loading && !error && courses.length > 0" class="course-list">
+    <div class="courses-grid">
+      <mat-card *ngFor="let course of courses" class="course-card">
+        <img *ngIf="course.picture" mat-card-image [src]="course.picture" [alt]="course.title" class="course-image">
+        <div *ngIf="!course.picture" class="course-image placeholder-img">
+          <mat-icon>menu_book</mat-icon>
         </div>
         
-        <div class="course-details">
-          <p *ngIf="course.startDate">
-            <mat-icon>calendar_today</mat-icon> Start date: {{ course.startDate | date:'mediumDate' }}
-          </p>
-          <p *ngIf="course.duration">
-            <mat-icon>schedule</mat-icon> Duration: {{ course.duration }}
-          </p>
-        </div>
-      </mat-card-content>
-      
-      <mat-card-actions>
-        <button mat-button color="primary" (click)="viewCourseDetails(course.id)">VIEW DETAILS</button>
-      </mat-card-actions>
-    </mat-card>
+        <mat-card-content>
+          <h2 class="course-title">{{ course.title }}</h2>
+          <p class="teacher-name">By {{ course.teacher?.fullName || 'Unknown Teacher' }}</p>
+          
+          <!-- Progress bar -->
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getProgressPercentage(course)"></div>
+            </div>
+            <span class="progress-text">{{ getProgressPercentage(course) }}% complete</span>
+          </div>
+          
+          <div class="course-info">
+            <div class="info-item">
+              <mat-icon>folder</mat-icon>
+              <span>{{ course.chapters?.length || 0 }} Chapters</span>
+            </div>
+            <div class="info-item">
+              <mat-icon>insert_drive_file</mat-icon>
+              <span>{{ course.totalContents || 'N/A' }} Contents</span>
+            </div>
+          </div>
+        </mat-card-content>
+        
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="viewCourse(course.id)">
+            Continue Learning
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
   </div>
 </div>
+
+<style>
+  .enrolled-courses-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .page-title {
+    font-size: 24px;
+    margin-bottom: 30px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+  
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  
+  .loading-container p {
+    margin-top: 16px;
+    color: #666;
+  }
+  
+  .error-message {
+    display: flex;
+    align-items: center;
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+  
+  .error-message mat-icon {
+    margin-right: 10px;
+  }
+  
+  .no-courses {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+  }
+  
+  .no-courses mat-icon {
+    font-size: 48px;
+    height: 48px;
+    width: 48px;
+    margin-bottom: 20px;
+    color: #757575;
+  }
+  
+  .no-courses p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+  }
+  
+  .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .course-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .course-image {
+    height: 180px;
+    object-fit: cover;
+  }
+  
+  .placeholder-img {
+    height: 180px;
+    background-color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .placeholder-img mat-icon {
+    font-size: 48px;
+    height: 48px;
+    width: 48px;
+    color: #bdbdbd;
+  }
+  
+  .course-title {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #333;
+  }
+  
+  .teacher-name {
+    color: #757575;
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+  
+  .progress-container {
+    margin: 15px 0;
+  }
+  
+  .progress-bar {
+    height: 8px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background-color: #1976d2;
+  }
+  
+  .progress-text {
+    display: block;
+    font-size: 12px;
+    color: #757575;
+    text-align: right;
+    margin-top: 5px;
+  }
+  
+  .course-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  
+  .info-item {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #757575;
+  }
+  
+  .info-item mat-icon {
+    font-size: 16px;
+    height: 16px;
+    width: 16px;
+    margin-right: 5px;
+  }
+  
+  mat-card-actions {
+    margin-top: auto;
+    padding: 16px;
+  }
+  
+  @media (max-width: 768px) {
+    .courses-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
