@@ -13,15 +13,53 @@ import {
 } from '@elementar-ui/components';
 import { MatTooltip } from '@angular/material/tooltip';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { PdfViewerWrapperComponent } from './pdf-viewer-wrapper/pdf-viewer-wrapper.component';
 import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
+import { AiService } from '../../../services/ai.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
+
+export interface QuizQuestion {
+  questionId?: number;
+  questionText: string;
+  questionType: 'MULTIPLE_CHOICE_SINGLE' | 'MULTIPLE_CHOICE_MULTIPLE' | 'TRUE_FALSE' | 'SHORT_TEXT' | 'ESSAY' | 'MATCHING' | 'ORDERING';
+  options?: string[];
+  correctAnswer?: string;
+  correctAnswers?: string[];
+  points: number;
+  matchingPairs?: {[key: string]: string};
+  orderingSequence?: string[];
+}
+
+export interface Quiz {
+  quizId?: number;
+  title: string;
+  description: string;
+  questions: QuizQuestion[];
+  timeLimit: number; 
+  passingScore: number;
+  maxAttempts: number;
+  status?: string; 
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 @Component({
   selector: 'app-enrolled-courses',
+  standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     IconComponent,
     MatTooltip,
     PdfViewerWrapperComponent,
@@ -31,8 +69,16 @@ import { HttpHeaders, HttpClient } from '@angular/common/http';
     TabPanelAsideComponent,
     TabPanelNavComponent,
     TabPanelHeaderComponent,
-    TabPanelComponent
-
+    TabPanelComponent,
+    MatButtonModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatProgressSpinnerModule,
+    MatCardModule,
+    MatDividerModule,
+    MatRadioModule,
+    MatCheckboxModule,
+    MatIconModule
   ],
   templateUrl: './enrolled-courses.component.html',
   styleUrl: './enrolled-courses.component.scss'
@@ -57,11 +103,20 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
   // Add Object to component
   protected readonly Object = Object;
 
+  // AI Quiz Generation properties
+  showAIQuizGenerator = false;
+  generatingAIQuiz = false;
+  aiQuizPrompt: string = '';
+  generatedAIQuiz: Quiz | null = null;
+  aiQuizUserResponses: {[questionId: number]: string | string[]} = {};
+  aiQuizErrorMessage: string = '';
+
   constructor(
     private sanitizer: DomSanitizer, 
     private courseService: CourseService,
     private authService: AuthService,
-    private http: HttpClient
+    private http: HttpClient,
+    private aiService: AiService
   ) {}
 
   ngOnInit(): void {
@@ -98,12 +153,15 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
     this.selectedQuiz = null;
     // Clean up any existing Blob URL
     this.revokeBlobUrl();
+    // Reset AI quiz
+    this.resetAIQuiz();
   }
 
   selectChapter(chapter: any): void {
     console.log('Chapter selected:', chapter);
     this.selectedChapter = chapter;
     this.selectedQuiz = null;
+    this.resetAIQuiz();
     // Initialize quizzes array if it doesn't exist
     if (!this.selectedChapter.quizzes) {
       this.selectedChapter.quizzes = [];
@@ -143,6 +201,7 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
     console.log('Selected Chapter:', this.selectedChapter);
     this.revokeBlobUrl();
     this.selectedContent = { ...content };
+    this.resetAIQuiz();
 
     if (content.type === 'pdf') {
       console.log('Processing PDF content');
@@ -227,6 +286,7 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
     this.selectedQuiz = quiz;
     this.selectedContent = null;
     this.revokeBlobUrl();
+    this.resetAIQuiz();
     // Reset quiz state
     this.quizResponses = {};
     this.attemptInProgress = false;
@@ -356,5 +416,196 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
     } else {
       console.error('Video player is not initialized');
     }
+  }
+
+  // AI Quiz Generation methods
+  toggleAIQuizGenerator(): void {
+    this.showAIQuizGenerator = !this.showAIQuizGenerator;
+    if (this.showAIQuizGenerator) {
+      this.selectedContent = null;
+      this.selectedQuiz = null;
+      this.revokeBlobUrl();
+      
+      // Set a default quiz prompt based on course and chapter info
+      if (this.selectedCourse && this.selectedChapter) {
+        this.aiQuizPrompt = `Generate a quiz about ${this.selectedChapter.title} from the course ${this.selectedCourse.title}`;
+      }
+    }
+  }
+
+  resetAIQuiz(): void {
+    this.showAIQuizGenerator = false;
+    this.generatedAIQuiz = null;
+    this.aiQuizPrompt = '';
+    this.aiQuizUserResponses = {};
+    this.aiQuizErrorMessage = '';
+  }
+
+  async generateAIQuiz(): Promise<void> {
+    if (!this.aiQuizPrompt.trim()) {
+      this.aiQuizErrorMessage = 'Please enter a topic for the quiz';
+      return;
+    }
+
+    this.generatingAIQuiz = true;
+    this.aiQuizErrorMessage = '';
+    this.generatedAIQuiz = null;
+    this.aiQuizUserResponses = {};
+
+    try {
+      const courseTitle = this.selectedCourse?.title || '';
+      const courseDescription = this.selectedCourse?.description || '';
+      const chapterTitle = this.selectedChapter?.title || '';
+      const chapterDescription = this.selectedChapter?.description || '';
+      
+      const prompt = this.createQuizPrompt(this.aiQuizPrompt, courseTitle, courseDescription, chapterTitle, chapterDescription);
+      const response = await this.aiService.generateText(prompt);
+      
+      console.log('Raw AI response:', response);
+      
+      // Extract the JSON from the response
+      const jsonResponse = this.extractJsonFromResponse(response);
+      
+      if (jsonResponse) {
+        this.generatedAIQuiz = jsonResponse as Quiz;
+        
+        // Assign questionId to each question (for tracking responses)
+        this.generatedAIQuiz.questions.forEach((question, index) => {
+          question.questionId = index + 1;
+        });
+        
+        console.log('Parsed quiz:', this.generatedAIQuiz);
+      } else {
+        throw new Error('Failed to parse AI response as JSON');
+      }
+    } catch (error) {
+      console.error('Error generating quiz:', error);
+      this.aiQuizErrorMessage = 'Failed to generate quiz. Please try again.';
+    } finally {
+      this.generatingAIQuiz = false;
+    }
+  }
+
+  private createQuizPrompt(topic: string, courseTitle: string, courseDescription: string, chapterTitle: string, chapterDescription: string): string {
+    return `Generate a quiz about "${topic}" related to the course "${courseTitle}" (${courseDescription}) and specifically for the chapter "${chapterTitle}" (${chapterDescription}). Create 3 questions.
+
+Your response should be valid JSON that follows this structure:
+{
+  "title": "A concise title related to ${chapterTitle}",
+  "description": "A brief description of the quiz related to ${topic}",
+  "timeLimit": 10,
+  "passingScore": 2,
+  "maxAttempts": 3,
+  "questions": [
+    // Include exactly 3 questions from the types below
+  ]
+}
+
+The questions should be formatted like this:
+1. For multiple choice single answer:
+{
+  "questionText": "A clear question about ${topic}",
+  "questionType": "MULTIPLE_CHOICE_SINGLE",
+  "points": 1,
+  "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+  "correctAnswer": "The correct option text"
+}
+
+2. For multiple choice multiple answers:
+{
+  "questionText": "A clear question about ${topic}",
+  "questionType": "MULTIPLE_CHOICE_MULTIPLE",
+  "points": 2,
+  "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+  "correctAnswers": ["Correct option 1", "Correct option 2"]
+}
+
+Please create a balanced quiz with interesting questions related to the topic. Return ONLY the JSON with no additional text.`;
+  }
+
+  private extractJsonFromResponse(response: string): Quiz | null {
+    try {
+      // First try to directly parse the entire response
+      return JSON.parse(response) as Quiz;
+    } catch (e) {
+      // If direct parsing fails, try to extract JSON from the text
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          return JSON.parse(jsonMatch[0]) as Quiz;
+        } catch (innerError) {
+          console.error('Error parsing extracted JSON:', innerError);
+          return null;
+        }
+      }
+      return null;
+    }
+  }
+
+  updateAISingleChoiceResponse(questionId: number, answer: string) {
+    this.aiQuizUserResponses[questionId] = answer;
+    console.log('Updated AI quiz responses:', this.aiQuizUserResponses);
+  }
+  
+  updateAIMultipleChoiceResponse(questionId: number, option: string, isChecked: boolean) {
+    // Initialize as array if not already
+    if (!this.aiQuizUserResponses[questionId] || !Array.isArray(this.aiQuizUserResponses[questionId])) {
+      this.aiQuizUserResponses[questionId] = [];
+    }
+    
+    const responses = this.aiQuizUserResponses[questionId] as string[];
+    
+    if (isChecked) {
+      if (!responses.includes(option)) {
+        responses.push(option);
+      }
+    } else {
+      const index = responses.indexOf(option);
+      if (index !== -1) {
+        responses.splice(index, 1);
+      }
+    }
+    
+    console.log('Updated AI quiz responses:', this.aiQuizUserResponses);
+  }
+  
+  isAIMultipleChoiceOptionSelected(questionId: number, option: string): boolean {
+    return Array.isArray(this.aiQuizUserResponses[questionId]) && 
+           (this.aiQuizUserResponses[questionId] as string[]).includes(option);
+  }
+  
+  checkAIQuizAnswers() {
+    if (!this.generatedAIQuiz) return;
+    
+    let correctCount = 0;
+    let totalPoints = 0;
+    
+    this.generatedAIQuiz.questions.forEach(question => {
+      const userAnswer = this.aiQuizUserResponses[question.questionId!];
+      
+      if (question.questionType === 'MULTIPLE_CHOICE_SINGLE') {
+        if (userAnswer === question.correctAnswer) {
+          correctCount++;
+          totalPoints += question.points;
+        }
+      } else if (question.questionType === 'MULTIPLE_CHOICE_MULTIPLE') {
+        if (Array.isArray(userAnswer) && question.correctAnswers) {
+          // Check if arrays have the same elements (order doesn't matter)
+          const correctSet = new Set(question.correctAnswers);
+          const userSet = new Set(userAnswer);
+          
+          if (correctSet.size === userSet.size && 
+              [...correctSet].every(value => userSet.has(value))) {
+            correctCount++;
+            totalPoints += question.points;
+          }
+        }
+      }
+    });
+    
+    const totalQuestions = this.generatedAIQuiz.questions.length;
+    const maxPoints = this.generatedAIQuiz.questions.reduce((sum, q) => sum + q.points, 0);
+    
+    alert(`You got ${correctCount} out of ${totalQuestions} questions correct (${totalPoints}/${maxPoints} points).`);
   }
 }

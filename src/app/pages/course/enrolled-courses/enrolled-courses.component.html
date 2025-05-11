@@ -67,11 +67,101 @@
                       <ng-template #noQuizzes>
                         <p class="no-quizzes">No quizzes available for this chapter</p>
                       </ng-template>
+
+                      <!-- AI Quiz Generator Button -->
+                      <div class="ai-quiz-btn-container">
+                        <button mat-raised-button color="primary" (click)="toggleAIQuizGenerator()" class="ai-quiz-button">
+                          <mat-icon>psychology</mat-icon>
+                          <span>AI Quiz Generator</span>
+                        </button>
+                      </div>
                     </div>
   
                     <!-- Content/Quiz display -->
                     <div class="content-display">
-                      <ng-container *ngIf="selectedContent">
+                      <!-- AI Quiz Generator -->
+                      <ng-container *ngIf="showAIQuizGenerator">
+                        <div class="ai-quiz-container">
+                          <h2>AI Quiz Generator</h2>
+                          
+                          <!-- Quiz Generator Form -->
+                          <div *ngIf="!generatedAIQuiz" class="quiz-form">
+                            <mat-card>
+                              <mat-card-content>
+                                <p class="description">Enter a topic and the AI will generate a quiz based on this chapter's content.</p>
+                                
+                                <mat-form-field appearance="outline" class="full-width">
+                                  <mat-label>Quiz Topic</mat-label>
+                                  <input matInput [(ngModel)]="aiQuizPrompt" placeholder="e.g., HTML Basics, CSS Selectors, JavaScript Functions">
+                                </mat-form-field>
+                                
+                                <div class="error-message" *ngIf="aiQuizErrorMessage">{{ aiQuizErrorMessage }}</div>
+                                
+                                <button mat-raised-button color="primary" (click)="generateAIQuiz()" [disabled]="generatingAIQuiz">
+                                  <mat-spinner *ngIf="generatingAIQuiz" diameter="20"></mat-spinner>
+                                  <span *ngIf="!generatingAIQuiz">Generate Quiz</span>
+                                </button>
+                              </mat-card-content>
+                            </mat-card>
+                          </div>
+                          
+                          <!-- Generated Quiz Display -->
+                          <div *ngIf="generatedAIQuiz" class="quiz-display">
+                            <mat-card>
+                              <mat-card-header>
+                                <mat-card-title>{{ generatedAIQuiz.title }}</mat-card-title>
+                                <mat-card-subtitle>{{ generatedAIQuiz.description }}</mat-card-subtitle>
+                              </mat-card-header>
+                              
+                              <mat-card-content>
+                                <div class="quiz-info">
+                                  <p><strong>Time Limit:</strong> {{ generatedAIQuiz.timeLimit }} minutes</p>
+                                  <p><strong>Passing Score:</strong> {{ generatedAIQuiz.passingScore }}</p>
+                                  <p><strong>Max Attempts:</strong> {{ generatedAIQuiz.maxAttempts }}</p>
+                                </div>
+                                
+                                <mat-divider></mat-divider>
+                                
+                                <!-- Questions -->
+                                <div class="questions-container">
+                                  <div *ngFor="let question of generatedAIQuiz.questions" class="question-item">
+                                    <h3>Question {{ question.questionId }}: {{ question.questionText }}</h3>
+                                    <p class="points">({{ question.points }} points)</p>
+                                    
+                                    <!-- Multiple Choice Single -->
+                                    <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_SINGLE'" class="options-container">
+                                      <mat-radio-group aria-label="Select an option" class="radio-group"
+                                                    (change)="updateAISingleChoiceResponse(question.questionId!, $event.value)">
+                                        <mat-radio-button *ngFor="let option of question.options" [value]="option">
+                                          {{ option }}
+                                        </mat-radio-button>
+                                      </mat-radio-group>
+                                    </div>
+                                    
+                                    <!-- Multiple Choice Multiple -->
+                                    <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_MULTIPLE'" class="options-container">
+                                      <div *ngFor="let option of question.options" class="checkbox-option">
+                                        <mat-checkbox 
+                                          [checked]="isAIMultipleChoiceOptionSelected(question.questionId!, option)"
+                                          (change)="updateAIMultipleChoiceResponse(question.questionId!, option, $event.checked)">
+                                          {{ option }}
+                                        </mat-checkbox>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </mat-card-content>
+                              
+                              <mat-card-actions align="end">
+                                <button mat-raised-button color="accent" (click)="checkAIQuizAnswers()">Check Answers</button>
+                                <button mat-button (click)="resetAIQuiz()">New Quiz</button>
+                              </mat-card-actions>
+                            </mat-card>
+                          </div>
+                        </div>
+                      </ng-container>
+
+                      <ng-container *ngIf="selectedContent && !showAIQuizGenerator">
                         <ng-container [ngSwitch]="selectedContent.type">
                           <!-- PDF content -->
                           <div *ngSwitchCase="'pdf'">
@@ -117,7 +207,7 @@
                         </ng-container>
                       </ng-container>
   
-                      <ng-container *ngIf="!selectedContent && selectedQuiz">
+                      <ng-container *ngIf="!selectedContent && selectedQuiz && !showAIQuizGenerator">
                         <div class="quiz-display">
                           <h3>{{ selectedQuiz.title }}</h3>
                           <p>{{ selectedQuiz.description }}</p>
@@ -192,7 +282,7 @@
                         </div>
                       </ng-container>
   
-                      <ng-container *ngIf="!selectedContent && !selectedQuiz">
+                      <ng-container *ngIf="!selectedContent && !selectedQuiz && !showAIQuizGenerator">
                         <div class="empty-content">Select a content item or quiz to view</div>
                       </ng-container>
                     </div>
@@ -223,5 +313,62 @@
       height: 200px;
       font-size: 16px;
       color: #666;
+    }
+
+    .ai-quiz-btn-container {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+
+    .ai-quiz-button {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ai-quiz-container {
+      width: 100%;
+      max-width: 900px;
+      padding: 20px;
+    }
+
+    .full-width {
+      width: 100%;
+    }
+
+    .options-container {
+      margin: 15px 0;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .checkbox-option {
+      margin-bottom: 10px;
+    }
+
+    .question-item {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .questions-container {
+      margin-top: 20px;
+    }
+
+    .points {
+      color: #666;
+      font-style: italic;
+    }
+
+    mat-card-actions {
+      padding: 15px;
     }
   </style>
