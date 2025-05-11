@@ -25,6 +25,48 @@ export class AuthService {
     );
   }
 
+  registerStudent(studentData: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/students`, studentData).pipe(
+      tap(user => this.storeUserData(user)),
+      catchError(error => {
+        console.error('Student registration failed:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  registerTeacher(teacherData: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/teachers`, teacherData).pipe(
+      tap(user => this.storeUserData(user)),
+      catchError(error => {
+        console.error('Teacher registration failed:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  uploadProfilePicture(file: File): Observable<any> {
+    const userId = this.getUserId();
+    if (!userId) {
+      return throwError(() => new Error('User not logged in'));
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<any>(`${this.baseUrl}/users/${userId}/upload-profile-picture`, formData).pipe(
+      tap(response => {
+        const user = this.getCurrentUser();
+        user.profilePicture = response.profilePicture;
+        this.storeUserData(user);
+      }),
+      catchError(error => {
+        console.error('Profile picture upload failed:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   getEnrolledCourses(): Observable<any[]> {
     const userId = this.getUserId();
     if (!userId) {
