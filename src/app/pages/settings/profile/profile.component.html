@@ -1,6 +1,27 @@
 <div class="profile-container">
   <div class="profile-header">
-    <img *ngIf="profilePictureUrl" src="{{ profilePictureUrl }}" alt="User Profile Picture" class="profile-picture" />
+    <div class="profile-picture-container">
+      <img *ngIf="profilePictureUrl" src="{{ profilePictureUrl }}" alt="User Profile Picture" class="profile-picture" />
+      <div *ngIf="!profilePictureUrl" class="profile-picture default-avatar">
+        <mat-icon>account_circle</mat-icon>
+      </div>
+      
+      <div class="picture-upload-controls">
+        <button mat-raised-button color="primary" (click)="triggerFileInput()" [disabled]="isUploading">
+          <mat-icon>photo_camera</mat-icon>
+          <span *ngIf="!isUploading">Change Photo</span>
+          <span *ngIf="isUploading">Uploading...</span>
+        </button>
+        <input 
+          type="file" 
+          id="profilePictureInput" 
+          accept="image/*" 
+          style="display: none;"
+          (change)="handleFileInput($event)"
+        >
+      </div>
+    </div>
+    
     <h1>{{ userDetails?.fullName }}</h1>
     <p>Username: {{ userDetails?.username }}</p>
   </div>
