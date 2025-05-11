@@ -61,12 +61,13 @@ export class CourseService {
         // Generate prompt for summarization
         const prompt = this.createSummarizationPrompt(pdfText, contentTitle);
         
-        // Call AI service to generate summary
-        return from(this.aiService.generateText(prompt));
+        // Call AI service to generate summary using the pro model for better, more comprehensive summaries
+        console.log('Sending prompt to AI for a comprehensive summary using pro model...');
+        return from(this.aiService.generateText(prompt, true)); // true = use pro model
       }),
       catchError(error => {
         console.error('PDF summarization failed:', error);
-        return of('Failed to summarize the PDF content. Please try again later.');
+        return of('Failed to summarize the PDF content. The document might be too large or complex. Please try again with a different document.');
       })
     );
   }
@@ -108,22 +109,24 @@ export class CourseService {
   // Create a prompt for the AI to summarize the PDF content
   private createSummarizationPrompt(pdfText: string, contentTitle: string): string {
     // Trim the text if it's too long
-    const maxTextLength = 15000; // Adjust based on AI model limitations
+    const maxTextLength = 30000; // Doubled from 15000 to allow for more content
     const trimmedText = pdfText.length > maxTextLength 
       ? pdfText.substring(0, maxTextLength) + '...(content truncated due to length)'
       : pdfText;
     
-    return `Please provide a concise summary of the following PDF document titled "${contentTitle}".
+    return `Please provide a comprehensive summary of the following PDF document titled "${contentTitle}".
 Focus on the main concepts, key points, and important details. Format the summary in plain text with clean formatting.
+Make the summary detailed and thorough, approximately twice the length of what would be considered concise.
 
 PDF CONTENT:
 ${trimmedText}
 
 Please provide a well-structured summary that includes:
-1. Main topic overview (2-3 sentences)
-2. Key concepts (3-5 bullet points)
-3. Important details (3-5 bullet points)
-4. Conclusion (1-2 sentences)
+1. Main topic overview (4-6 sentences)
+2. Key concepts (5-8 bullet points with expanded explanations)
+3. Important details (5-8 bullet points with expanded explanations)
+4. Examples and applications (3-5 bullet points)
+5. Conclusion (3-4 sentences)
 
 IMPORTANT FORMATTING INSTRUCTIONS:
 - Do NOT use markdown formatting (no asterisks for bold/italic, no hash symbols for headers)

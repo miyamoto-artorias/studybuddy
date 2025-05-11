@@ -12,27 +12,38 @@ export class AiService {
     this.ai = new GoogleGenerativeAI(this.apiKey);
   }
 
-  async generateText(prompt: string): Promise<string> {
+  async generateText(prompt: string, usePro: boolean = false): Promise<string> {
     try {
-      const model = this.ai.getGenerativeModel({ model: "gemini-2.0-flash" });
+      // Use the more powerful pro model for PDF summarization and other complex tasks
+      const modelName = usePro ? "gemini-1.5-pro" : "gemini-2.0-flash";
+      console.log(`Using AI model: ${modelName}`);
+      
+      const model = this.ai.getGenerativeModel({ model: modelName });
       const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: prompt }] }]
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: usePro ? 0.2 : 0.7, // Lower temperature for more factual responses with the pro model
+          maxOutputTokens: usePro ? 8192 : 2048, // Allow longer outputs for the pro model
+        }
       });
       const response = await result.response;
       return response.text();
     } catch (error) {
       console.error('Error generating AI content:', error);
-      return this.generateTextAlternative(prompt);
+      return this.generateTextAlternative(prompt, usePro);
     }
   }
 
-  async generateTextAlternative(prompt: string): Promise<string> {
+  async generateTextAlternative(prompt: string, usePro: boolean = false): Promise<string> {
     try {
       console.log('Trying alternative API approach...');
       
+      // Use the more powerful pro model for summarization and complex tasks
+      const modelName = usePro ? "gemini-1.5-pro" : "gemini-2.0-flash";
+      
       // Direct fetch using the API endpoint
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${this.apiKey}`,
         {
           method: 'POST',
           headers: {
@@ -41,14 +52,18 @@ export class AiService {
           body: JSON.stringify({
             contents: [{
               parts: [{ text: prompt }]
-            }]
+            }],
+            generationConfig: {
+              temperature: usePro ? 0.2 : 0.7,
+              maxOutputTokens: usePro ? 8192 : 2048,
+            }
           })
         }
       );
       
       if (!response.ok) {
-        console.log(`First alternative failed with status ${response.status}, trying gemini-1.5-flash...`);
-        return this.generateTextThirdOption(prompt);
+        console.log(`First alternative failed with status ${response.status}, trying fallback model...`);
+        return this.generateTextThirdOption(prompt, usePro);
       }
       
       const data = await response.json();
@@ -62,19 +77,23 @@ export class AiService {
       }
     } catch (error) {
       console.error('Alternative method also failed:', error);
-      return this.generateTextThirdOption(prompt);
+      return this.generateTextThirdOption(prompt, usePro);
     }
   }
 
-  async generateTextThirdOption(prompt: string): Promise<string> {
+  async generateTextThirdOption(prompt: string, usePro: boolean = false): Promise<string> {
     try {
-      console.log('Trying third API approach with gemini-1.5-flash...');
+      console.log('Trying third API approach with fallback model...');
       
-      // Try a different model name
+      // Try a different model as fallback
       const model = this.ai.getGenerativeModel({ model: "gemini-1.5-flash" });
       
       const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: prompt }] }]
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.4,
+          maxOutputTokens: 4096,
+        }
       });
       
       const response = await result.response;
@@ -82,7 +101,7 @@ export class AiService {
     } catch (error) {
       console.error('Third method also failed:', error);
       
-      // Try the raw API with the newer model
+      // Try the raw API with the flash model as final fallback
       try {
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.apiKey}`,
@@ -94,7 +113,11 @@ export class AiService {
             body: JSON.stringify({
               contents: [{
                 parts: [{ text: prompt }]
-              }]
+              }],
+              generationConfig: {
+                temperature: 0.4,
+                maxOutputTokens: 4096,
+              }
             })
           }
         );
