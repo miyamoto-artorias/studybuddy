@@ -1,8 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError, forkJoin, of, from } from 'rxjs';
 import { tap, catchError, switchMap, map } from 'rxjs/operators';
-import * as pdfjs from 'pdfjs-dist';
+import { isPlatformBrowser } from '@angular/common';
+// Import PDF.js conditionally
+let pdfjs: any = null;
 import { AiService } from './ai.service';
 
 @Injectable({
@@ -11,13 +13,23 @@ import { AiService } from './ai.service';
 export class CourseService {
   constructor(
     private http: HttpClient,
-    private aiService: AiService
+    private aiService: AiService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    // Initialize PDF.js worker
-    const pdfjsLib = (pdfjs as any);
-    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-      const workerUrl = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-      pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+    // Initialize PDF.js worker only in browser environment
+    if (isPlatformBrowser(this.platformId)) {
+      // Dynamically import PDF.js
+      import('pdfjs-dist').then(pdf => {
+        pdfjs = pdf;
+        // Initialize PDF.js worker
+        const pdfjsLib = pdfjs;
+        if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+          const workerUrl = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+          pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+        }
+      }).catch(err => {
+        console.error('Error loading PDF.js:', err);
+      });
     }
   }
 
@@ -49,6 +61,11 @@ export class CourseService {
   summarizePdfContent(pdfBlob: Blob, contentTitle: string): Observable<string> {
     console.log('Starting PDF summarization for:', contentTitle);
     
+    // Check if we're in a browser environment
+    if (!isPlatformBrowser(this.platformId)) {
+      return of('PDF summarization is only available in browser environments.');
+    }
+    
     return from(this.extractTextFromPdf(pdfBlob)).pipe(
       switchMap(pdfText => {
         console.log('Extracted PDF text length:', pdfText.length);
@@ -75,9 +92,28 @@ export class CourseService {
   // Helper method to extract text from PDF blob
   private async extractTextFromPdf(pdfBlob: Blob): Promise<string> {
     try {
+      // If PDF.js is not available, return empty string
+      if (!pdfjs) {
+        await new Promise(resolve => {
+          const checkPdfjs = () => {
+            if (pdfjs) {
+              resolve(true);
+            } else {
+              setTimeout(checkPdfjs, 100);
+            }
+          };
+          checkPdfjs();
+        });
+        
+        if (!pdfjs) {
+          console.error('PDF.js is not available');
+          return '';
+        }
+      }
+      
       // Convert Blob to ArrayBuffer
       const arrayBuffer = await pdfBlob.arrayBuffer();
-      const pdfjsLib = (pdfjs as any);
+      const pdfjsLib = pdfjs;
       
       // Load the PDF document
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });

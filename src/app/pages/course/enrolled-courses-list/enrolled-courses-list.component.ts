@@ -53,7 +53,7 @@ export class EnrolledCoursesListComponent implements OnInit {
   }
 
   viewCourse(courseId: number): void {
-    this.router.navigate(['/courses/enrolled/view', courseId]);
+    this.router.navigate(['/pages/course/enrolled-courses-view', courseId]);
   }
 
   getProgressPercentage(course: any): number {

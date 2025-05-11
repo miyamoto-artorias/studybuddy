@@ -46,7 +46,7 @@ const routes: Routes = [
     component: EnrolledCoursesListComponent
   },
   {
-    path: 'enrolled-courses-view',
+    path: 'enrolled-courses-view/:id',
     component: EnrolledCourseViewComponent
   }
 ];

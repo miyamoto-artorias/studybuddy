@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, PLATFORM_ID, Inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { take } from 'rxjs';
 import {
@@ -12,7 +12,7 @@ import {
   TabPanelNavComponent
 } from '@elementar-ui/components';
 import { MatTooltip } from '@angular/material/tooltip';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CourseService } from '../../../services/course.service';
@@ -81,6 +81,7 @@ export interface Quiz {
     MatCheckboxModule,
     MatIconModule
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './enrolled-course-view.component.html',
   styleUrl: './enrolled-course-view.component.scss'
 })
@@ -94,6 +95,8 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
   selectedQuiz: any = null;
   loading = true;
   error: string | null = null;
+  isBrowser: boolean;
+
   // Add new properties for quiz attempts
   quizResponses: { [key: string]: string } = {};
   multiChoiceSelections: { [key: string]: Set<string> } = {};
@@ -124,8 +127,11 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     private courseService: CourseService,
     private authService: AuthService,
     private http: HttpClient,
-    private aiService: AiService
-  ) {}
+    private aiService: AiService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -212,6 +218,11 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     this.selectedContent = { ...content };
     this.resetAIQuiz();
     this.resetPdfSummary();
+
+    // Only process PDF and video content in browser environment
+    if (!this.isBrowser) {
+      return;
+    }
 
     if (content.type === 'pdf') {
       console.log('Processing PDF content');
