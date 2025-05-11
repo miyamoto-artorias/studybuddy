@@ -18,6 +18,9 @@ import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
+import { CourseRequestService } from '../../../services/course-request.service';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-requested-courses',
@@ -25,6 +28,8 @@ import { forkJoin } from 'rxjs';
     CommonModule,
     IconComponent,
     MatTooltip,
+    MatButtonModule,
+    MatSnackBarModule,
     PdfViewerWrapperComponent,
     TabPanelItemIconDirective,
     TabPanelItemComponent,
@@ -62,7 +67,9 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
     private sanitizer: DomSanitizer, 
     private courseService: CourseService,
     private authService: AuthService,
-    private http: HttpClient
+    private http: HttpClient,
+    private courseRequestService: CourseRequestService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -528,6 +535,55 @@ export class RequestedCoursesComponent implements OnInit, OnDestroy{
     } else {
       console.error('Video player is not initialized');
     }
+  }
+
+  // Add a method to get the course request ID if available
+  getCourseRequestId(courseId: number): number | null {
+    // Implement logic to find the request ID associated with this course
+    // This may need to be adjusted based on how your data is structured
+    const courseRequest = localStorage.getItem('courseRequests');
+    if (courseRequest) {
+      try {
+        const requests = JSON.parse(courseRequest);
+        const matchingRequest = requests.find((req: any) => req.courseId === courseId);
+        if (matchingRequest) {
+          return matchingRequest.id;
+        }
+      } catch (error) {
+        console.error('Error parsing course requests from localStorage:', error);
+      }
+    }
+    
+    // If request ID can't be determined, use course ID as fallback
+    return courseId;
+  }
+  
+  // Add a method to check if a course has 'accepted' status
+  isCourseAccepted(course: any): boolean {
+    return course?.status === 'accepted';
+  }
+
+  markCourseAsDone(course: any): void {
+    const requestId = this.getCourseRequestId(course.id);
+    if (!requestId) {
+      this.snackBar.open('Could not determine request ID for this course', 'Close', { duration: 3000 });
+      return;
+    }
+    
+    this.courseRequestService.markCourseAsDone(requestId).subscribe({
+      next: (response) => {
+        console.log('Course marked as done:', response);
+        // Update the course status locally
+        course.status = 'done';
+        this.snackBar.open('Course marked as done successfully!', 'Close', { duration: 3000 });
+        // Refresh the course list
+        this.loadRequestedCourses();
+      },
+      error: (err) => {
+        console.error('Error marking course as done:', err);
+        this.snackBar.open('Failed to mark course as done', 'Close', { duration: 3000 });
+      }
+    });
   }
 
 }

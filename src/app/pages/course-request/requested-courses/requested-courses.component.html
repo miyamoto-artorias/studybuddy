@@ -9,6 +9,7 @@
             matTooltipPosition="after"
             (click)="selectCourse(course)">
             <emr-icon name="ph:book-open" emrTabPanelItemIcon></emr-icon>
+            <span *ngIf="isCourseAccepted(course)" class="status-badge accepted-badge">Accepted</span>
           </emr-tab-panel-item>
         }
       </emr-tab-panel-nav>
@@ -18,6 +19,12 @@
     <emr-tab-panel-aside>
       @for (course of courses; track course.id) {
         <ng-template [emrTabPanelAsideContent]="'course-' + course.id">
+          <!-- Course status and action button -->
+          <div *ngIf="isCourseAccepted(course)" class="course-status-banner">
+            <div class="status-text">This course has been accepted and is ready to be marked as completed.</div>
+            <button mat-raised-button color="primary" (click)="markCourseAsDone(course)">Mark as Done</button>
+          </div>
+          
           <!-- Nested tab panel for chapters -->
           <emr-tab-panel [activeItemId]="selectedChapter ? 'chapter-' + selectedChapter.id : ''" compact class="h-full">
             <emr-tab-panel-header>

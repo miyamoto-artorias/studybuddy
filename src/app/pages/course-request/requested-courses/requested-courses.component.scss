@@ -251,3 +251,106 @@
       }
     }
   }
+
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 12px;
+    margin-left: 8px;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .accepted-badge {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  .course-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--text-color, #333);
+    }
+  }
+
+  .status-indicator {
+    font-size: 0.9rem;
+    color: var(--text-color, #666);
+    
+    .status-value {
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+    
+    .status-accepted {
+      background-color: #4caf50;
+      color: white;
+    }
+    
+    .status-done {
+      background-color: #2196f3;
+      color: white;
+    }
+  }
+
+  .course-status-banner {
+    background-color: rgba(76, 175, 80, 0.15);
+    border-left: 4px solid #4caf50;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    border-radius: 4px;
+  }
+
+  .status-text {
+    flex: 1;
+    margin-right: 16px;
+    color: #2e7d32;
+    font-size: 1rem;
+  }
+
+  .mark-done-button {
+    background-color: #4caf50 !important;
+    color: white !important;
+    font-weight: 500;
+    padding: 8px 16px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+    
+    &:hover {
+      background-color: #43a047 !important;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+    }
+  }
+
+  // Add responsive styling for smaller screens
+  @media (max-width: 768px) {
+    .course-header {
+      flex-direction: column;
+      align-items: flex-start;
+      
+      h2 {
+        margin-bottom: 8px;
+      }
+    }
+    
+    .course-status-banner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .status-text {
+      margin-right: 0;
+      margin-bottom: 12px;
+    }
+  }

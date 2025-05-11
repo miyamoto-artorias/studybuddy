@@ -107,18 +107,22 @@ export class ViewCourseRequestsComponent implements OnInit {
     
     this.courseRequestService.updateCourseRequestStatus(request.id, newStatus).subscribe({
       next: (updatedRequest) => {
+        // Get the status from the response if available, otherwise use the requested status
+        const responseStatus = updatedRequest?.status || newStatus;
+        console.log('Status from backend response:', responseStatus);
+        
         // Update the request in our local arrays
         if (this.sentRequests.some(r => r.id === request.id)) {
           const index = this.sentRequests.findIndex(r => r.id === request.id);
-          this.sentRequests[index] = { ...this.sentRequests[index], status: newStatus };
+          this.sentRequests[index] = { ...this.sentRequests[index], status: responseStatus };
         }
         
         if (this.receivedRequests.some(r => r.id === request.id)) {
           const index = this.receivedRequests.findIndex(r => r.id === request.id);
-          this.receivedRequests[index] = { ...this.receivedRequests[index], status: newStatus };
+          this.receivedRequests[index] = { ...this.receivedRequests[index], status: responseStatus };
         }
         
-        this.snackBar.open(`Request ${newStatus}`, 'Close', { duration: 3000 });
+        this.snackBar.open(`Request ${responseStatus}`, 'Close', { duration: 3000 });
         this.isLoading = false;
       },
       error: (error) => {
@@ -134,10 +138,13 @@ export class ViewCourseRequestsComponent implements OnInit {
     
     this.courseRequestService.acceptCourseRequest(request.id).subscribe({
       next: (result) => {
-        // Update the request in our local arrays
+        // Update the request in our local arrays using the status from the backend response
         if (this.receivedRequests.some(r => r.id === request.id)) {
           const index = this.receivedRequests.findIndex(r => r.id === request.id);
-          this.receivedRequests[index] = { ...this.receivedRequests[index], status: 'approved' };
+          // Use the status from the backend response if available, otherwise use 'accepted'
+          const newStatus = result?.status || 'accepted';
+          console.log('New status from backend:', newStatus);
+          this.receivedRequests[index] = { ...this.receivedRequests[index], status: newStatus };
         }
         
         // Create a course for the approved request
@@ -183,7 +190,10 @@ export class ViewCourseRequestsComponent implements OnInit {
         // Update the request in our local arrays
         if (this.receivedRequests.some(r => r.id === request.id)) {
           const index = this.receivedRequests.findIndex(r => r.id === request.id);
-          this.receivedRequests[index] = { ...this.receivedRequests[index], status: 'declined' };
+          // Use the status from the backend response if available, otherwise use 'rejected'
+          const newStatus = result?.status || 'rejected';
+          console.log('New status from backend:', newStatus);
+          this.receivedRequests[index] = { ...this.receivedRequests[index], status: newStatus };
         }
         
         this.snackBar.open('Request rejected', 'Close', { duration: 3000 });
@@ -197,13 +207,66 @@ export class ViewCourseRequestsComponent implements OnInit {
     });
   }
   
+  markRequestAsDone(request: any): void {
+    this.isLoading = true;
+    
+    // Log request details before sending
+    console.log('Marking request as done:', request);
+    console.log('Request ID:', request.id);
+    
+    this.courseRequestService.updateRequestStatusDirectly(request.id, 'done').subscribe({
+      next: (result) => {
+        console.log('Successfully marked request as done, response:', result);
+        
+        // Update the request in our local arrays
+        if (this.receivedRequests.some(r => r.id === request.id)) {
+          const index = this.receivedRequests.findIndex(r => r.id === request.id);
+          this.receivedRequests[index] = { ...this.receivedRequests[index], status: 'done' };
+        }
+        
+        if (this.sentRequests.some(r => r.id === request.id)) {
+          const index = this.sentRequests.findIndex(r => r.id === request.id);
+          this.sentRequests[index] = { ...this.sentRequests[index], status: 'done' };
+        }
+        
+        this.snackBar.open('Request marked as done successfully', 'Close', { duration: 3000 });
+        this.isLoading = false;
+        
+        // Reload requests to ensure UI is up to date
+        this.refreshRequests();
+      },
+      error: (error) => {
+        console.error('Failed to mark request as done:', error);
+        console.error('Error details:', error.error || error.message || error);
+        
+        // Show a more detailed error message
+        let errorMessage = 'Failed to mark request as done';
+        if (error.error?.message) {
+          errorMessage += `: ${error.error.message}`;
+        } else if (error.status) {
+          errorMessage += ` (Status: ${error.status})`;
+        }
+        
+        this.snackBar.open(errorMessage, 'Close', { duration: 5000 });
+        this.isLoading = false;
+      }
+    });
+  }
+  
   getStatusClass(status: string): string {
+    if (!status) return '';
+    
     switch (status.toLowerCase()) {
       case 'pending':
         return 'status-pending';
       case 'approved':
+      case 'accepted':
+      case 'completed':
+      case 'done':
         return 'status-approved';
       case 'declined':
+      case 'rejected':
+      case 'cancelled':
         return 'status-declined';
       default:
         return '';

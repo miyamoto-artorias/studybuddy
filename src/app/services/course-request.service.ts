@@ -81,4 +81,33 @@ export class CourseRequestService {
       })
     );
   }
+  
+  updateRequestStatusDirectly(requestId: number, status: string): Observable<any> {
+    // Format the request body exactly as expected by the API
+    const requestBody = {
+      "status": status
+    };
+    
+    // Use the correct endpoint URL
+    const url = `${this.baseUrl}/${requestId}/status`;
+    console.log(`Sending PUT request to: ${url}`);
+    console.log('Request body:', JSON.stringify(requestBody));
+    
+    return this.http.put(url, requestBody, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).pipe(
+      tap(response => console.log(`Updated course request ${requestId} to ${status}:`, response)),
+      catchError(error => {
+        console.error(`Error updating course request ${requestId} to ${status}:`, error);
+        console.error('Error details:', error.error);
+        return throwError(() => error);
+      })
+    );
+  }
+  
+  markCourseAsDone(requestId: number): Observable<any> {
+    return this.updateRequestStatusDirectly(requestId, 'done');
+  }
 }
