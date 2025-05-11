@@ -8,7 +8,7 @@ import { TeacherCoursesComponent } from './pages/course/teacher-courses/teacher-
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'pages/dashboard/basic',
+    redirectTo: 'pages/dashboard/playground',
     pathMatch: 'full'
   },
   {
