@@ -317,7 +317,7 @@
           <mat-spinner diameter="40"></mat-spinner>
           <p>Generating summary...</p>
         </div>
-        <div *ngIf="!generatingSummary" [innerHTML]="pdfSummaryContent"></div>
+        <div *ngIf="!generatingSummary" [innerHTML]="pdfSummaryHtml" class="formatted-summary"></div>
       </div>
     </div>
   </div>
@@ -449,6 +449,24 @@
       overflow-y: auto;
       max-height: calc(90vh - 80px);
       line-height: 1.6;
+    }
+    
+    .formatted-summary {
+      font-size: 16px;
+      color: #333;
+    }
+    
+    .formatted-summary p {
+      margin-bottom: 16px;
+    }
+    
+    .formatted-summary ul {
+      margin: 0 0 16px 0;
+      padding-left: 24px;
+    }
+    
+    .formatted-summary li {
+      margin-bottom: 8px;
     }
 
     .summary-loading {

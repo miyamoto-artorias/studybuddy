@@ -114,7 +114,7 @@ export class CourseService {
       : pdfText;
     
     return `Please provide a concise summary of the following PDF document titled "${contentTitle}".
-Focus on the main concepts, key points, and important details. Format the summary with headings and bullet points for clarity.
+Focus on the main concepts, key points, and important details. Format the summary in plain text with clean formatting.
 
 PDF CONTENT:
 ${trimmedText}
@@ -123,7 +123,15 @@ Please provide a well-structured summary that includes:
 1. Main topic overview (2-3 sentences)
 2. Key concepts (3-5 bullet points)
 3. Important details (3-5 bullet points)
-4. Conclusion (1-2 sentences)`;
+4. Conclusion (1-2 sentences)
+
+IMPORTANT FORMATTING INSTRUCTIONS:
+- Do NOT use markdown formatting (no asterisks for bold/italic, no hash symbols for headers)
+- Use plain text formatting with proper spacing
+- For bullet points, use simple dashes or bullets (•) followed by a space
+- Use clean paragraph breaks for sections
+- Avoid special characters and symbols that don't render well in plain text
+- No need to include the section titles ("Main Topic Overview", etc.) - just include the content`;
   }
 
   downloadFile(fileName: string): Observable<Blob> {

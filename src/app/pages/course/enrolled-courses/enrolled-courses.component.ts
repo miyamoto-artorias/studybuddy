@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { take } from 'rxjs';
 import {
   IconComponent,
@@ -115,6 +115,7 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
   showPdfSummary = false;
   generatingSummary = false;
   pdfSummaryContent: string = '';
+  pdfSummaryHtml: SafeHtml = '';
   pdfBlob: Blob | null = null;
 
   constructor(
@@ -339,20 +340,47 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
     this.generatingSummary = true;
     this.showPdfSummary = true;
     this.pdfSummaryContent = 'Generating summary...';
+    this.pdfSummaryHtml = this.sanitizer.bypassSecurityTrustHtml('Generating summary...');
 
     this.courseService.summarizePdfContent(this.pdfBlob, this.selectedContent.title)
       .subscribe({
         next: (summary) => {
           console.log('Received PDF summary');
           this.pdfSummaryContent = summary;
+          // Format the summary for better display with proper line breaks and paragraphs
+          const formattedSummary = this.formatSummaryText(summary);
+          this.pdfSummaryHtml = this.sanitizer.bypassSecurityTrustHtml(formattedSummary);
           this.generatingSummary = false;
         },
         error: (err) => {
           console.error('Error generating PDF summary:', err);
           this.pdfSummaryContent = 'Failed to generate summary. Please try again.';
+          this.pdfSummaryHtml = this.sanitizer.bypassSecurityTrustHtml('Failed to generate summary. Please try again.');
           this.generatingSummary = false;
         }
       });
+  }
+
+  // Format the summary text with proper HTML
+  private formatSummaryText(text: string): string {
+    if (!text) return '';
+    
+    // Replace line breaks with HTML breaks
+    let formatted = text.replace(/\n/g, '<br>');
+    
+    // Convert bullet points to HTML
+    formatted = formatted.replace(/• /g, '&bull; ');
+    formatted = formatted.replace(/- /g, '&bull; ');
+    
+    // Add paragraph formatting
+    formatted = formatted.replace(/<br><br>/g, '</p><p>');
+    formatted = `<p>${formatted}</p>`;
+    
+    // Clean up any remaining formatting issues
+    formatted = formatted.replace(/<p><br>/g, '<p>');
+    formatted = formatted.replace(/<br><\/p>/g, '</p>');
+    
+    return formatted;
   }
 
   closeSummary(): void {
@@ -363,6 +391,7 @@ export class EnrolledCoursesComponent implements OnInit, OnDestroy {
     this.showPdfSummary = false;
     this.generatingSummary = false;
     this.pdfSummaryContent = '';
+    this.pdfSummaryHtml = '';
   }
 
   // Add new methods for quiz functionality
