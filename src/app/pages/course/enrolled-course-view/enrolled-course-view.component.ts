@@ -14,7 +14,7 @@ import {
 import { MatTooltip } from '@angular/material/tooltip';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
@@ -29,6 +29,9 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { PdfViewerWrapperComponent } from '../enrolled-courses/pdf-viewer-wrapper/pdf-viewer-wrapper.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { catchError, filter, finalize, switchMap, takeUntil } from 'rxjs/operators';
+import { Subscription, Subject, of } from 'rxjs';
 
 export interface QuizQuestion {
   questionId?: number;
@@ -88,7 +91,7 @@ export interface Quiz {
 export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
   @ViewChild('videoPlayer', { static: false }) videoPlayer!: ElementRef<HTMLVideoElement>;
 
-  courseId!: number;
+  courseId: number = 0;
   course: any = null;
   selectedChapter: any = null;
   selectedContent: any = null;
@@ -121,79 +124,113 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
   pdfSummaryHtml: SafeHtml = '';
   pdfBlob: Blob | null = null;
 
+  private destroy$ = new Subject<void>();
+  private subscription = new Subscription();
+
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private sanitizer: DomSanitizer, 
     private courseService: CourseService,
     private authService: AuthService,
     private http: HttpClient,
     private aiService: AiService,
+    private snackBar: MatSnackBar,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        this.courseId = +id;
-        this.loadCourse();
-      } else {
-        this.error = 'Course ID not provided';
-        this.loading = false;
-      }
-    });
+    this.loadCourse();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.subscription.unsubscribe();
+    this.revokeBlobUrl();
   }
 
   loadCourse(): void {
     this.loading = true;
     this.error = null;
     
-    this.authService.getEnrolledCourses().subscribe({
-      next: (courses) => {
-        this.course = courses.find(c => c.id === this.courseId);
-        if (this.course) {
-          console.log('Course loaded:', this.course);
-          if (this.course.chapters && this.course.chapters.length > 0) {
-            this.selectChapter(this.course.chapters[0]);
+    this.subscription.add(
+      this.route.paramMap.pipe(
+        takeUntil(this.destroy$),
+        filter(params => !!params.get('id')),
+        switchMap(params => {
+          const id = params.get('id');
+          if (id) {
+            this.courseId = +id;
+            // First try getting the course from enrolled courses
+            return this.authService.getEnrolledCourses().pipe(
+              switchMap(courses => {
+                const enrolledCourse = courses.find(c => c.id === this.courseId);
+                if (enrolledCourse) {
+                  return of(enrolledCourse);
+                } else {
+                  // Fallback to getting the course directly
+                  return this.courseService.getCourseById(this.courseId);
+                }
+              }),
+              catchError(err => {
+                console.error('Error loading course:', err);
+                this.error = 'Failed to load course';
+                return of(null);
+              })
+            );
           }
-        } else {
-          this.error = 'Course not found';
+          this.error = 'Course ID not provided';
+          return of(null);
+        })
+      ).subscribe({
+        next: (course) => {
+          this.course = course;
+          console.log('Loaded course:', this.course);
+          
+          if (this.course && this.course.chapters && this.course.chapters.length > 0) {
+            this.selectChapter(this.course.chapters[0]);
+          } else {
+            console.error('Course has no chapters');
+            this.error = 'This course has no content yet';
+          }
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Subscription error:', err);
+          this.error = 'Failed to load course';
+          this.loading = false;
         }
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading course:', err);
-        this.error = 'Failed to load course';
-        this.loading = false;
-      }
-    });
+      })
+    );
   }
 
   selectChapter(chapter: any): void {
-    console.log('Chapter selected:', chapter);
+    console.log('Selecting chapter:', chapter);
     this.selectedChapter = chapter;
     this.selectedQuiz = null;
     this.resetAIQuiz();
     this.resetPdfSummary();
+    this.revokeBlobUrl();
+    
     // Initialize quizzes array if it doesn't exist
     if (!this.selectedChapter.quizzes) {
       this.selectedChapter.quizzes = [];
+      // Load quizzes for the selected chapter
+      this.loadChapterQuizzes(chapter.id);
     }
-    if (chapter.contents && chapter.contents.length) {
+    
+    // Auto-select first content if available
+    if (chapter.contents && chapter.contents.length > 0) {
       this.selectContent(chapter.contents[0]);
     } else {
       this.selectedContent = null;
-      this.revokeBlobUrl();
     }
-    // Load quizzes for the selected chapter
-    console.log('Loading quizzes for chapter:', chapter.id);
-    this.loadChapterQuizzes(chapter.id);
   }
 
   loadChapterQuizzes(chapterId: number): void {
-    console.log('Fetching quizzes for chapter:', chapterId);
     this.courseService.getChapterQuizzes(chapterId).subscribe({
       next: (quizzes) => {
         console.log('Received quizzes:', quizzes);
@@ -204,101 +241,106 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error loading quizzes:', err);
         this.selectedChapter.quizzes = [];
-        // Force change detection by creating a new reference
-        this.selectedChapter = { ...this.selectedChapter };
       }
     });
   }
 
   selectContent(content: any): void {
     console.log('Content selected:', content);
-    console.log('Selected Course:', this.course);
-    console.log('Selected Chapter:', this.selectedChapter);
     this.revokeBlobUrl();
     this.selectedContent = { ...content };
+    this.selectedQuiz = null;
     this.resetAIQuiz();
     this.resetPdfSummary();
 
-    // Only process PDF and video content in browser environment
-    if (!this.isBrowser) {
+    if (content.type === 'pdf') {
+      this.loadPdfContent(content);
+    } else if (content.type === 'video') {
+      this.loadVideoContent(content);
+    }
+  }
+
+  loadPdfContent(content: any): void {
+    if (!this.isBrowser) return;
+    
+    console.log('Loading PDF content');
+    const courseId = this.courseId;
+    const chapterId = this.selectedChapter?.id;
+    const contentId = content?.id;
+    
+    if (!courseId || !chapterId || !contentId) {
+      console.error('Missing required IDs:', { courseId, chapterId, contentId });
+      this.selectedContent = { ...this.selectedContent, error: true };
       return;
     }
 
-    if (content.type === 'pdf') {
-      console.log('Processing PDF content');
-      const courseId = this.course?.id;
-      const chapterId = this.selectedChapter?.id;
-      const contentId = content?.id;
-      
-      console.log('Course ID from course:', courseId);
-      console.log('Chapter ID from selectedChapter:', chapterId);
-      console.log('Content ID from content:', contentId);
-
-      if (!courseId || !chapterId || !contentId) {
-        console.error('Missing required IDs:', { courseId, chapterId, contentId });
-        this.selectedContent = { ...this.selectedContent, error: true };
-        return;
-      }
-
-      const url = `http://localhost:8081/api/course-content/course/${courseId}/chapter/${chapterId}/download/${contentId}`;
-      console.log('Download URL:', url);
-      
-      this.courseService.downloadContent(courseId, chapterId, contentId)
-        .pipe(take(1))
-        .subscribe({
-          next: (blob) => {
-            console.log('Received blob response:', blob);
-            if (blob instanceof Blob) {
-              this.pdfBlob = blob; // Store the PDF blob for summarization
-              const blobUrl = URL.createObjectURL(blob);
-              console.log('Created blob URL:', blobUrl);
-              this.selectedContent = {
-                ...this.selectedContent,
-                downloadUrl: blobUrl,
-                error: false
-              };
-              console.log('Updated selectedContent with blob URL:', this.selectedContent);
-            } else {
-              console.error('Invalid blob response:', blob);
-              this.selectedContent = { ...this.selectedContent, error: true };
-            }
-          },
-          error: (err) => {
-            console.error('PDF download failed:', err);
+    this.courseService.downloadContent(courseId, chapterId, contentId)
+      .pipe(take(1))
+      .subscribe({
+        next: (blob) => {
+          if (blob instanceof Blob) {
+            console.log('PDF blob received, size:', blob.size);
+            this.pdfBlob = blob; // Store for summarization
+            const blobUrl = URL.createObjectURL(blob);
+            this.selectedContent = {
+              ...this.selectedContent,
+              downloadUrl: blobUrl,
+              error: false
+            };
+            
+            // Show success notification
+            this.showNotification('PDF loaded successfully');
+          } else {
+            console.error('Invalid blob response');
             this.selectedContent = { ...this.selectedContent, error: true };
+            this.showNotification('Failed to load PDF');
           }
-        });
-    } else if (content.type === 'video') {
-      console.log('Processing video content');
-      const courseId = this.course?.id;
-      const chapterId = this.selectedChapter?.id;
-      const contentId = content?.id;
+        },
+        error: (err) => {
+          console.error('PDF download failed:', err);
+          this.selectedContent = { ...this.selectedContent, error: true };
+          this.showNotification('Failed to load PDF');
+        }
+      });
+  }
 
-      if (!courseId || !chapterId || !contentId) {
-        console.error('Missing required IDs:', { courseId, chapterId, contentId });
-        this.selectedContent = { ...this.selectedContent, error: true };
-        return;
-      }
-
-      this.streamVideo(courseId, chapterId, contentId);
+  loadVideoContent(content: any): void {
+    if (!this.isBrowser) return;
+    
+    console.log('Loading video content');
+    if (this.isYoutubeLink(content.content)) {
+      console.log('YouTube video detected');
+      return; // YouTube videos are handled directly in the template
     }
+    
+    const courseId = this.courseId;
+    const chapterId = this.selectedChapter?.id;
+    const contentId = content?.id;
+
+    if (!courseId || !chapterId || !contentId) {
+      console.error('Missing required IDs');
+      this.selectedContent = { ...this.selectedContent, error: true };
+      return;
+    }
+
+    this.streamVideo(courseId, chapterId, contentId);
   }
 
   streamVideo(courseId: number, chapterId: number, contentId: number): void {
     const url = `http://localhost:8081/api/course-content/course/${courseId}/chapter/${chapterId}/stream-video/${contentId}`;
-    const headers = new HttpHeaders({
-      'Range': 'bytes=0-'
-    });
-
-    this.http.get(url, { headers, responseType: 'blob' }).subscribe({
+    
+    this.http.get(url, { responseType: 'blob' }).subscribe({
       next: (blob) => {
-      const videoUrl: string = URL.createObjectURL(blob);
-      this.videoPlayer.nativeElement.src = videoUrl;
-      this.videoPlayer.nativeElement.load();
-      this.videoPlayer.nativeElement.play();
+        if (this.videoPlayer && this.videoPlayer.nativeElement) {
+          const videoUrl = URL.createObjectURL(blob);
+          this.videoPlayer.nativeElement.src = videoUrl;
+          this.videoPlayer.nativeElement.load();
+          this.videoPlayer.nativeElement.play();
+        }
       },
-      error: (error: any) => {
-      console.error('Video stream failed:', error);
+      error: (error) => {
+        console.error('Video stream failed:', error);
+        this.showNotification('Failed to load video');
       }
     });
   }
@@ -310,6 +352,7 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     this.revokeBlobUrl();
     this.resetAIQuiz();
     this.resetPdfSummary();
+    
     // Reset quiz state
     this.quizResponses = {};
     this.attemptInProgress = false;
@@ -317,39 +360,86 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     this.quizResult = null;
   }
 
-  isYoutubeLink(url: string): boolean {
-    return url.includes('youtube.com') || url.includes('youtu.be');
+  startQuizAttempt(): void {
+    if (!this.selectedChapter || !this.selectedQuiz) return;
+    this.attemptInProgress = true;
+    this.quizResponses = {};
+    this.multiChoiceSelections = {};
   }
 
-  getSafeYoutubeUrl(url: string): SafeResourceUrl {
-    if (url.includes('youtube.com/watch')) {
-      const videoId = url.split('v=')[1]?.split('&')[0];
-      url = `https://www.youtube.com/embed/${videoId}`;
+  updateResponse(questionId: number | undefined, response: string): void {
+    if (questionId === undefined) return;
+    this.quizResponses[questionId.toString()] = response;
+  }
+
+  onTextAnswerChange(event: Event, questionId: number | undefined): void {
+    if (questionId === undefined) return;
+    const target = event.target as HTMLInputElement;
+    if (target) {
+      this.updateResponse(questionId, target.value);
     }
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
-  private revokeBlobUrl(): void {
-    if (this.selectedContent?.downloadUrl) {
-      URL.revokeObjectURL(this.selectedContent.downloadUrl);
-      this.selectedContent.downloadUrl = null;
+  onMultipleChoiceChange(event: Event, questionId: number | undefined, option: string): void {
+    if (questionId === undefined) return;
+
+    const qId = questionId.toString();
+    if (!this.multiChoiceSelections[qId]) {
+      this.multiChoiceSelections[qId] = new Set<string>();
+    }
+
+    const target = event.target as HTMLInputElement;
+    if (target.checked) {
+      this.multiChoiceSelections[qId].add(option);
+    } else {
+      this.multiChoiceSelections[qId].delete(option);
+    }
+
+    // Convert Set to comma-separated string
+    if (this.multiChoiceSelections[qId].size > 0) {
+      this.quizResponses[qId] = Array.from(this.multiChoiceSelections[qId]).join(',');
+    } else {
+      delete this.quizResponses[qId];
     }
   }
 
-  ngOnDestroy(): void {
-    this.revokeBlobUrl();
+  submitQuiz(): void {
+    if (!this.selectedChapter || !this.selectedQuiz || !this.attemptInProgress) return;
+
+    const userId = JSON.parse(localStorage.getItem('currentUser') || '{}').id;
+    if (!userId) {
+      this.showNotification('User ID not found');
+      return;
+    }
+
+    this.courseService.submitQuizResponses(
+      this.selectedChapter.id,
+      this.selectedQuiz.quizId,
+      userId,
+      this.quizResponses
+    ).subscribe({
+      next: (result) => {
+        this.quizSubmitted = true;
+        this.quizResult = result;
+        this.attemptInProgress = false;
+        this.showNotification('Quiz submitted successfully');
+      },
+      error: (err) => {
+        console.error('Failed to submit quiz:', err);
+        this.showNotification('Failed to submit quiz');
+      }
+    });
   }
 
   // PDF Summarization methods
   summarizePdf(): void {
     if (!this.pdfBlob || !this.selectedContent || this.selectedContent.type !== 'pdf') {
-      console.error('No PDF content available for summarization');
+      this.showNotification('No PDF content available for summarization');
       return;
     }
 
     this.generatingSummary = true;
     this.showPdfSummary = true;
-    this.pdfSummaryContent = 'Generating summary...';
     this.pdfSummaryHtml = this.sanitizer.bypassSecurityTrustHtml('Generating summary...');
 
     this.courseService.summarizePdfContent(this.pdfBlob, this.selectedContent.title)
@@ -364,9 +454,9 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Error generating PDF summary:', err);
-          this.pdfSummaryContent = 'Failed to generate summary. Please try again.';
           this.pdfSummaryHtml = this.sanitizer.bypassSecurityTrustHtml('Failed to generate summary. Please try again.');
           this.generatingSummary = false;
+          this.showNotification('Failed to generate PDF summary');
         }
       });
   }
@@ -404,107 +494,6 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     this.pdfSummaryHtml = '';
   }
 
-  // Add new methods for quiz functionality
-  startQuizAttempt(): void {
-    if (!this.selectedChapter || !this.selectedQuiz) return;
-    this.attemptInProgress = true;
-    this.quizResponses = {};
-    this.multiChoiceSelections = {};
-  }
-
-  updateResponse(questionId: number | undefined, response: string): void {
-    if (questionId === undefined) {
-      console.error('Question ID is undefined');
-      return;
-    }
-    this.quizResponses[questionId.toString()] = response;
-    console.log('Updated responses:', this.quizResponses);
-  }
-
-  onTextAnswerChange(event: Event, questionId: number | undefined): void {
-    if (questionId === undefined) {
-      console.error('Question ID is undefined');
-      return;
-    }
-    const target = event.target as HTMLInputElement;
-    if (target) {
-      this.updateResponse(questionId, target.value);
-    }
-  }
-
-  onMultipleChoiceChange(event: Event, questionId: number | undefined, option: string): void {
-    if (questionId === undefined) {
-      console.error('Question ID is undefined');
-      return;
-    }
-
-    const qId = questionId.toString();
-    if (!this.multiChoiceSelections[qId]) {
-      this.multiChoiceSelections[qId] = new Set<string>();
-    }
-
-    const target = event.target as HTMLInputElement;
-    if (target.checked) {
-      this.multiChoiceSelections[qId].add(option);
-    } else {
-      this.multiChoiceSelections[qId].delete(option);
-    }
-
-    // Convert Set to comma-separated string
-    if (this.multiChoiceSelections[qId].size > 0) {
-      this.quizResponses[qId] = Array.from(this.multiChoiceSelections[qId]).join(',');
-    } else {
-      delete this.quizResponses[qId];
-    }
-
-    console.log('Updated responses:', this.quizResponses);
-  }
-
-  submitQuiz(): void {
-    if (!this.selectedChapter || !this.selectedQuiz || !this.attemptInProgress) return;
-
-    const userId = JSON.parse(localStorage.getItem('currentUser') || '{}').id;
-    if (!userId) {
-      console.error('No user ID found');
-      return;
-    }
-
-    console.log('Submitting responses:', this.quizResponses);
-    this.courseService.submitQuizResponses(
-      this.selectedChapter.id,
-      this.selectedQuiz.quizId,
-      userId,
-      this.quizResponses
-    ).subscribe({
-      next: (result) => {
-        console.log('Quiz submitted successfully:', result);
-        this.quizSubmitted = true;
-        this.quizResult = result;
-        this.attemptInProgress = false;
-      },
-      error: (err) => {
-        console.error('Failed to submit quiz:', err);
-        // Handle error appropriately
-      }
-    });
-  }
-
-  getVideoUrl(contentPath: string): string {
-    // Ensure the video is served from the assets folder or a server
-    return contentPath.startsWith('http') ? contentPath : `assets/videos/${contentPath}`;
-  }
-
-  playVideo(contentPath: string): void {
-    const videoUrl = this.getVideoUrl(contentPath);
-    if (this.videoPlayer && this.videoPlayer.nativeElement) {
-      this.videoPlayer.nativeElement.src = videoUrl;
-      this.videoPlayer.nativeElement.load();
-      this.videoPlayer.nativeElement.play();
-    } else {
-      console.error('Video player is not initialized');
-    }
-  }
-
   // AI Quiz Generation methods
   toggleAIQuizGenerator(): void {
     this.showAIQuizGenerator = !this.showAIQuizGenerator;
@@ -529,7 +518,7 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     this.aiQuizErrorMessage = '';
   }
 
-  async generateAIQuiz(): Promise<void> {
+  generateAIQuiz(): void {
     if (!this.aiQuizPrompt.trim()) {
       this.aiQuizErrorMessage = 'Please enter a topic for the quiz';
       return;
@@ -540,38 +529,46 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     this.generatedAIQuiz = null;
     this.aiQuizUserResponses = {};
 
-    try {
-      const courseTitle = this.course?.title || '';
-      const courseDescription = this.course?.description || '';
-      const chapterTitle = this.selectedChapter?.title || '';
-      const chapterDescription = this.selectedChapter?.description || '';
-      
-      const prompt = this.createQuizPrompt(this.aiQuizPrompt, courseTitle, courseDescription, chapterTitle, chapterDescription);
-      const response = await this.aiService.generateText(prompt);
-      
+    const courseTitle = this.course?.title || '';
+    const courseDescription = this.course?.description || '';
+    const chapterTitle = this.selectedChapter?.title || '';
+    const chapterDescription = this.selectedChapter?.description || '';
+    
+    const prompt = this.createQuizPrompt(this.aiQuizPrompt, courseTitle, courseDescription, chapterTitle, chapterDescription);
+    
+    this.aiService.generateText(prompt).then(response => {
       console.log('Raw AI response:', response);
       
-      // Extract the JSON from the response
-      const jsonResponse = this.extractJsonFromResponse(response);
-      
-      if (jsonResponse) {
-        this.generatedAIQuiz = jsonResponse as Quiz;
+      try {
+        // Extract the JSON from the response
+        const jsonResponse = this.extractJsonFromResponse(response);
         
-        // Assign questionId to each question (for tracking responses)
-        this.generatedAIQuiz.questions.forEach((question, index) => {
-          question.questionId = index + 1;
-        });
-        
-        console.log('Parsed quiz:', this.generatedAIQuiz);
-      } else {
-        throw new Error('Failed to parse AI response as JSON');
+        if (jsonResponse) {
+          this.generatedAIQuiz = jsonResponse;
+          
+          // Assign questionId to each question (for tracking responses)
+          if (this.generatedAIQuiz.questions) {
+            this.generatedAIQuiz.questions.forEach((question: any, index: number) => {
+              question.questionId = index + 1;
+            });
+          }
+          
+          this.showNotification('Quiz generated successfully');
+        } else {
+          throw new Error('Failed to parse AI response as JSON');
+        }
+      } catch (error) {
+        console.error('Error generating quiz:', error);
+        this.aiQuizErrorMessage = 'Failed to generate quiz. Please try again.';
+        this.generatingAIQuiz = false;
+        this.showNotification('Failed to generate quiz');
       }
-    } catch (error) {
-      console.error('Error generating quiz:', error);
+    }).catch(error => {
+      console.error('Error calling AI service:', error);
       this.aiQuizErrorMessage = 'Failed to generate quiz. Please try again.';
-    } finally {
       this.generatingAIQuiz = false;
-    }
+      this.showNotification('Failed to generate quiz');
+    });
   }
 
   private createQuizPrompt(topic: string, courseTitle: string, courseDescription: string, chapterTitle: string, chapterDescription: string): string {
@@ -611,16 +608,16 @@ The questions should be formatted like this:
 Please create a balanced quiz with interesting questions related to the topic. Return ONLY the JSON with no additional text.`;
   }
 
-  private extractJsonFromResponse(response: string): Quiz | null {
+  private extractJsonFromResponse(response: string): any {
     try {
       // First try to directly parse the entire response
-      return JSON.parse(response) as Quiz;
+      return JSON.parse(response);
     } catch (e) {
       // If direct parsing fails, try to extract JSON from the text
       const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
+      if (jsonMatch && jsonMatch[0]) {
         try {
-          return JSON.parse(jsonMatch[0]) as Quiz;
+          return JSON.parse(jsonMatch[0]);
         } catch (innerError) {
           console.error('Error parsing extracted JSON:', innerError);
           return null;
@@ -632,7 +629,6 @@ Please create a balanced quiz with interesting questions related to the topic. R
 
   updateAISingleChoiceResponse(questionId: number, answer: string) {
     this.aiQuizUserResponses[questionId] = answer;
-    console.log('Updated AI quiz responses:', this.aiQuizUserResponses);
   }
   
   updateAIMultipleChoiceResponse(questionId: number, option: string, isChecked: boolean) {
@@ -653,8 +649,6 @@ Please create a balanced quiz with interesting questions related to the topic. R
         responses.splice(index, 1);
       }
     }
-    
-    console.log('Updated AI quiz responses:', this.aiQuizUserResponses);
   }
   
   isAIMultipleChoiceOptionSelected(questionId: number, option: string): boolean {
@@ -663,13 +657,13 @@ Please create a balanced quiz with interesting questions related to the topic. R
   }
   
   checkAIQuizAnswers() {
-    if (!this.generatedAIQuiz) return;
+    if (!this.generatedAIQuiz || !this.generatedAIQuiz.questions) return;
     
     let correctCount = 0;
     let totalPoints = 0;
     
-    this.generatedAIQuiz.questions.forEach(question => {
-      const userAnswer = this.aiQuizUserResponses[question.questionId!];
+    this.generatedAIQuiz.questions.forEach((question: any) => {
+      const userAnswer = this.aiQuizUserResponses[question.questionId];
       
       if (question.questionType === 'MULTIPLE_CHOICE_SINGLE') {
         if (userAnswer === question.correctAnswer) {
@@ -692,8 +686,42 @@ Please create a balanced quiz with interesting questions related to the topic. R
     });
     
     const totalQuestions = this.generatedAIQuiz.questions.length;
-    const maxPoints = this.generatedAIQuiz.questions.reduce((sum, q) => sum + q.points, 0);
+    const maxPoints = this.generatedAIQuiz.questions.reduce((sum: number, q: any) => sum + q.points, 0);
     
-    alert(`You got ${correctCount} out of ${totalQuestions} questions correct (${totalPoints}/${maxPoints} points).`);
+    this.showNotification(`You got ${correctCount} out of ${totalQuestions} questions correct (${totalPoints}/${maxPoints} points).`);
+  }
+
+  isYoutubeLink(url: string): boolean {
+    if (!url) return false;
+    return url.includes('youtube.com') || url.includes('youtu.be');
+  }
+
+  getSafeYoutubeUrl(url: string): SafeResourceUrl {
+    if (!url) return this.sanitizer.bypassSecurityTrustResourceUrl('');
+    
+    if (url.includes('youtube.com/watch')) {
+      const videoId = url.split('v=')[1]?.split('&')[0];
+      url = `https://www.youtube.com/embed/${videoId}`;
+    } else if (url.includes('youtu.be/')) {
+      const videoId = url.split('youtu.be/')[1];
+      url = `https://www.youtube.com/embed/${videoId}`;
+    }
+    
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  private revokeBlobUrl(): void {
+    if (this.selectedContent?.downloadUrl) {
+      URL.revokeObjectURL(this.selectedContent.downloadUrl);
+      this.selectedContent.downloadUrl = null;
+    }
+  }
+
+  showNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+    });
   }
 }

@@ -1,283 +1,297 @@
-<p>enrolled-course-view works!</p>
-
-<!-- Nested tab panel for chapters -->
-<emr-tab-panel [activeItemId]="selectedChapter ? 'chapter-' + selectedChapter.id : ''" compact class="h-full border-t border-t-default border-b border-b-default border-s border-s-default overflow-x-hidden">
-  <emr-tab-panel-header>
-    <emr-tab-panel-nav>
+<div class="course-view-container">
+  <!-- Chapter navigation tabs -->
+  <div class="chapter-tabs">
+    <nav class="chapter-nav">
       @for (chapter of course?.chapters || []; track chapter.id) {
-        <emr-tab-panel-item 
-          [for]="'chapter-' + chapter.id" 
+        <div 
+          class="chapter-tab" 
+          [class.active]="selectedChapter?.id === chapter.id"
+          (click)="selectChapter(chapter)"
           [matTooltip]="chapter.title" 
-          matTooltipPosition="after"
-          (click)="selectChapter(chapter)">
-          <emr-icon name="ph:folder-open" emrTabPanelItemIcon></emr-icon>
-        </emr-tab-panel-item>
+          matTooltipPosition="right">
+          <mat-icon>folder</mat-icon>
+          <span class="chapter-title">{{ chapter.title }}</span>
+        </div>
       }
-    </emr-tab-panel-nav>
-  </emr-tab-panel-header>
+    </nav>
+  </div>
 
-  <!-- Aside content for chapters -->
-  <emr-tab-panel-aside>
-    @for (chapter of course?.chapters || []; track chapter.id) {
-      <ng-template [emrTabPanelAsideContent]="'chapter-' + chapter.id">
-        <!-- Content list and display -->
-        <div class="content-container">
-          <!-- Content list -->
-          <div class="content-list">
-            <h3>Contents</h3>
-            <ul>
-              @for (content of chapter.contents; track content.id) {
-                <li 
-                  [class.active]="selectedContent?.id === content.id"
-                  (click)="selectContent(content)">
-                  {{ content.title }}
-                </li>
-              }
-            </ul>
-            <h3>Quizzes</h3>
-            <div *ngIf="chapter.quizzes && chapter.quizzes.length > 0; else noQuizzes">
-              <ul>
-                @for (quiz of chapter.quizzes; track quiz.quizId) {
-                  <li 
-                    [class.active]="selectedQuiz?.quizId === quiz.quizId"
-                    (click)="selectQuiz(quiz)">
-                    {{ quiz.title }}
-                  </li>
-                }
-              </ul>
-            </div>
-            <ng-template #noQuizzes>
-              <p class="no-quizzes">No quizzes available for this chapter</p>
+  <!-- Main content area -->
+  <div class="main-content">
+    <!-- Content list sidebar -->
+    <div class="content-sidebar" *ngIf="selectedChapter">
+      <h3 class="sidebar-heading">Contents</h3>
+      <ul class="content-list">
+        @for (content of selectedChapter.contents || []; track content.id) {
+          <li 
+            [class.active]="selectedContent?.id === content.id"
+            (click)="selectContent(content)">
+            <mat-icon *ngIf="content.type === 'pdf'">picture_as_pdf</mat-icon>
+            <mat-icon *ngIf="content.type === 'video'">videocam</mat-icon>
+            <span>{{ content.title }}</span>
+          </li>
+        }
+      </ul>
+      
+      <h3 class="sidebar-heading">Quizzes</h3>
+      <div *ngIf="selectedChapter.quizzes && selectedChapter.quizzes.length > 0; else noQuizzes">
+        <ul class="quiz-list">
+          @for (quiz of selectedChapter.quizzes || []; track quiz.quizId) {
+            <li 
+              [class.active]="selectedQuiz?.quizId === quiz.quizId"
+              (click)="selectQuiz(quiz)">
+              <mat-icon>quiz</mat-icon>
+              <span>{{ quiz.title }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+      <ng-template #noQuizzes>
+        <p class="no-quizzes">No quizzes available for this chapter</p>
+      </ng-template>
+
+      <!-- AI Quiz Generator Button -->
+      <div class="ai-quiz-btn-container">
+        <button mat-raised-button color="primary" (click)="toggleAIQuizGenerator()" class="ai-quiz-button">
+          <mat-icon>psychology</mat-icon>
+          <span>AI Quiz Generator</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Content display area -->
+    <div class="content-viewer">
+      <!-- Loading state -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading content...</p>
+      </div>
+
+      <!-- Error state -->
+      <div *ngIf="error && !loading" class="error-container">
+        <mat-icon color="warn">error</mat-icon>
+        <p>{{ error }}</p>
+      </div>
+
+      <!-- AI Quiz Generator -->
+      <ng-container *ngIf="showAIQuizGenerator">
+        <div class="ai-quiz-container">
+          <h2>AI Quiz Generator</h2>
+          
+          <!-- Quiz Generator Form -->
+          <div *ngIf="!generatedAIQuiz" class="quiz-form">
+            <mat-card>
+              <mat-card-content>
+                <p class="description">Enter a topic and the AI will generate a quiz based on this chapter's content.</p>
+                
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Quiz Topic</mat-label>
+                  <input matInput [(ngModel)]="aiQuizPrompt" placeholder="e.g., HTML Basics, CSS Selectors, JavaScript Functions">
+                </mat-form-field>
+                
+                <div class="error-message" *ngIf="aiQuizErrorMessage">{{ aiQuizErrorMessage }}</div>
+                
+                <button mat-raised-button color="primary" (click)="generateAIQuiz()" [disabled]="generatingAIQuiz">
+                  <mat-spinner *ngIf="generatingAIQuiz" diameter="20"></mat-spinner>
+                  <span *ngIf="!generatingAIQuiz">Generate Quiz</span>
+                </button>
+              </mat-card-content>
+            </mat-card>
+          </div>
+          
+          <!-- Generated Quiz Display -->
+          <div *ngIf="generatedAIQuiz" class="quiz-display">
+            <mat-card>
+              <mat-card-header>
+                <mat-card-title>{{ generatedAIQuiz.title }}</mat-card-title>
+                <mat-card-subtitle>{{ generatedAIQuiz.description }}</mat-card-subtitle>
+              </mat-card-header>
+              
+              <mat-card-content>
+                <div class="quiz-info">
+                  <p><strong>Time Limit:</strong> {{ generatedAIQuiz.timeLimit }} minutes</p>
+                  <p><strong>Passing Score:</strong> {{ generatedAIQuiz.passingScore }}</p>
+                  <p><strong>Max Attempts:</strong> {{ generatedAIQuiz.maxAttempts }}</p>
+                </div>
+                
+                <mat-divider></mat-divider>
+                
+                <!-- Questions -->
+                <div class="questions-container">
+                  <div *ngFor="let question of generatedAIQuiz.questions" class="question-item">
+                    <h3>Question {{ question.questionId }}: {{ question.questionText }}</h3>
+                    <p class="points">({{ question.points }} points)</p>
+                    
+                    <!-- Multiple Choice Single -->
+                    <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_SINGLE'" class="options-container">
+                      <mat-radio-group aria-label="Select an option" class="radio-group"
+                                    (change)="updateAISingleChoiceResponse(question.questionId!, $event.value)">
+                        <mat-radio-button *ngFor="let option of question.options" [value]="option">
+                          {{ option }}
+                        </mat-radio-button>
+                      </mat-radio-group>
+                    </div>
+                    
+                    <!-- Multiple Choice Multiple -->
+                    <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_MULTIPLE'" class="options-container">
+                      <div *ngFor="let option of question.options" class="checkbox-option">
+                        <mat-checkbox 
+                          [checked]="isAIMultipleChoiceOptionSelected(question.questionId!, option)"
+                          (change)="updateAIMultipleChoiceResponse(question.questionId!, option, $event.checked)">
+                          {{ option }}
+                        </mat-checkbox>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </mat-card-content>
+              
+              <mat-card-actions align="end">
+                <button mat-raised-button color="accent" (click)="checkAIQuizAnswers()">Check Answers</button>
+                <button mat-button (click)="resetAIQuiz()">New Quiz</button>
+              </mat-card-actions>
+            </mat-card>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Content Display -->
+      <ng-container *ngIf="selectedContent && !showAIQuizGenerator">
+        <ng-container [ngSwitch]="selectedContent.type">
+          <!-- PDF content -->
+          <div *ngSwitchCase="'pdf'" class="pdf-container">
+            <ng-container *ngIf="isBrowser && selectedContent.downloadUrl; else pdfLoading">
+              <app-pdf-viewer-wrapper
+                [src]="selectedContent.downloadUrl"
+                [renderText]="true"
+                [originalSize]="false"
+                [showAll]="true"
+                customStyle="width: 100%; height: 80vh;">
+              </app-pdf-viewer-wrapper>
+            </ng-container>
+            <ng-template #pdfLoading>
+              <div class="loading-message">
+                {{ selectedContent.error ? 'Error loading content' : 'Loading PDF...' }}
+              </div>
             </ng-template>
+          </div>
 
-            <!-- AI Quiz Generator Button -->
-            <div class="ai-quiz-btn-container">
-              <button mat-raised-button color="primary" (click)="toggleAIQuizGenerator()" class="ai-quiz-button">
-                <mat-icon>psychology</mat-icon>
-                <span>AI Quiz Generator</span>
+          <!-- Video content -->
+          <div *ngSwitchCase="'video'" class="video-container">
+            <ng-container *ngIf="isBrowser && isYoutubeLink(selectedContent.content); else localVideo">
+              <iframe 
+                width="100%" 
+                height="100%"
+                [src]="getSafeYoutubeUrl(selectedContent.content)"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+              </iframe>
+            </ng-container>
+            <ng-template #localVideo>
+              <video *ngIf="isBrowser" #videoPlayer controls style="width: 100%; height: 100%;">
+                <source [src]="selectedContent.content" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+              <div *ngIf="!isBrowser" class="loading-message">
+                Video will be available after page loads
+              </div>
+            </ng-template>
+          </div>
+
+          <!-- Fallback -->
+          <div *ngSwitchDefault>
+            <div class="empty-content">No content available</div>
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <!-- Quiz Display -->
+      <ng-container *ngIf="!selectedContent && selectedQuiz && !showAIQuizGenerator">
+        <div class="quiz-display">
+          <h3>{{ selectedQuiz.title }}</h3>
+          <p>{{ selectedQuiz.description }}</p>
+          <div class="quiz-details">
+            <p>Time Limit: {{ selectedQuiz.timeLimit }} minutes</p>
+            <p>Passing Score: {{ selectedQuiz.passingScore }}</p>
+            <p>Max Attempts: {{ selectedQuiz.maxAttempts }}</p>
+          </div>
+
+          <!-- Quiz attempt section -->
+          <div class="quiz-attempt" *ngIf="!quizSubmitted">
+            <button *ngIf="!attemptInProgress" 
+                    (click)="startQuizAttempt()" 
+                    class="btn-primary">
+              Start Quiz
+            </button>
+
+            <div *ngIf="attemptInProgress" class="quiz-questions">
+              <div *ngFor="let question of selectedQuiz.questions" class="question-item">
+                <h4>{{ question.questionText }}</h4>
+                <p class="points">Points: {{ question.points }}</p>
+
+                <!-- Multiple Choice Single Answer -->
+                <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_SINGLE'" class="options">
+                  <div *ngFor="let option of question.options; let i = index" class="option">
+                    <input type="radio" 
+                          [id]="'q' + question.questionId + 'opt' + i"
+                          [name]="'question' + question.questionId"
+                          [value]="option"
+                          (change)="updateResponse(question.questionId, option)">
+                    <label [for]="'q' + question.questionId + 'opt' + i">{{ option }}</label>
+                  </div>
+                </div>
+
+                <!-- Multiple Choice Multiple Answers -->
+                <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_MULTIPLE'" class="options">
+                  <div *ngFor="let option of question.options; let i = index" class="option">
+                    <input type="checkbox" 
+                          [id]="'q' + question.questionId + 'opt' + i"
+                          [value]="option"
+                          (change)="onMultipleChoiceChange($event, question.questionId, option)">
+                    <label [for]="'q' + question.questionId + 'opt' + i">{{ option }}</label>
+                  </div>
+                </div>
+
+                <!-- Short Text Answer -->
+                <div *ngIf="question.questionType === 'SHORT_TEXT'" class="text-answer">
+                  <input type="text" 
+                        [id]="'q' + question.questionId"
+                        (input)="onTextAnswerChange($event, question.questionId)"
+                        placeholder="Enter your answer">
+                </div>
+              </div>
+
+              <button (click)="submitQuiz()" 
+                      class="btn-primary submit-quiz"
+                      [disabled]="!Object.keys(quizResponses).length">
+                Submit Quiz
               </button>
             </div>
           </div>
 
-          <!-- Content/Quiz display -->
-          <div class="content-display">
-            <!-- AI Quiz Generator -->
-            <ng-container *ngIf="showAIQuizGenerator">
-              <div class="ai-quiz-container">
-                <h2>AI Quiz Generator</h2>
-                
-                <!-- Quiz Generator Form -->
-                <div *ngIf="!generatedAIQuiz" class="quiz-form">
-                  <mat-card>
-                    <mat-card-content>
-                      <p class="description">Enter a topic and the AI will generate a quiz based on this chapter's content.</p>
-                      
-                      <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>Quiz Topic</mat-label>
-                        <input matInput [(ngModel)]="aiQuizPrompt" placeholder="e.g., HTML Basics, CSS Selectors, JavaScript Functions">
-                      </mat-form-field>
-                      
-                      <div class="error-message" *ngIf="aiQuizErrorMessage">{{ aiQuizErrorMessage }}</div>
-                      
-                      <button mat-raised-button color="primary" (click)="generateAIQuiz()" [disabled]="generatingAIQuiz">
-                        <mat-spinner *ngIf="generatingAIQuiz" diameter="20"></mat-spinner>
-                        <span *ngIf="!generatingAIQuiz">Generate Quiz</span>
-                      </button>
-                    </mat-card-content>
-                  </mat-card>
-                </div>
-                
-                <!-- Generated Quiz Display -->
-                <div *ngIf="generatedAIQuiz" class="quiz-display">
-                  <mat-card>
-                    <mat-card-header>
-                      <mat-card-title>{{ generatedAIQuiz.title }}</mat-card-title>
-                      <mat-card-subtitle>{{ generatedAIQuiz.description }}</mat-card-subtitle>
-                    </mat-card-header>
-                    
-                    <mat-card-content>
-                      <div class="quiz-info">
-                        <p><strong>Time Limit:</strong> {{ generatedAIQuiz.timeLimit }} minutes</p>
-                        <p><strong>Passing Score:</strong> {{ generatedAIQuiz.passingScore }}</p>
-                        <p><strong>Max Attempts:</strong> {{ generatedAIQuiz.maxAttempts }}</p>
-                      </div>
-                      
-                      <mat-divider></mat-divider>
-                      
-                      <!-- Questions -->
-                      <div class="questions-container">
-                        <div *ngFor="let question of generatedAIQuiz.questions" class="question-item">
-                          <h3>Question {{ question.questionId }}: {{ question.questionText }}</h3>
-                          <p class="points">({{ question.points }} points)</p>
-                          
-                          <!-- Multiple Choice Single -->
-                          <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_SINGLE'" class="options-container">
-                            <mat-radio-group aria-label="Select an option" class="radio-group"
-                                          (change)="updateAISingleChoiceResponse(question.questionId!, $event.value)">
-                              <mat-radio-button *ngFor="let option of question.options" [value]="option">
-                                {{ option }}
-                              </mat-radio-button>
-                            </mat-radio-group>
-                          </div>
-                          
-                          <!-- Multiple Choice Multiple -->
-                          <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_MULTIPLE'" class="options-container">
-                            <div *ngFor="let option of question.options" class="checkbox-option">
-                              <mat-checkbox 
-                                [checked]="isAIMultipleChoiceOptionSelected(question.questionId!, option)"
-                                (change)="updateAIMultipleChoiceResponse(question.questionId!, option, $event.checked)">
-                                {{ option }}
-                              </mat-checkbox>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </mat-card-content>
-                    
-                    <mat-card-actions align="end">
-                      <button mat-raised-button color="accent" (click)="checkAIQuizAnswers()">Check Answers</button>
-                      <button mat-button (click)="resetAIQuiz()">New Quiz</button>
-                    </mat-card-actions>
-                  </mat-card>
-                </div>
-              </div>
-            </ng-container>
-
-            <ng-container *ngIf="selectedContent && !showAIQuizGenerator">
-              <ng-container [ngSwitch]="selectedContent.type">
-                <!-- PDF content -->
-                <div *ngSwitchCase="'pdf'">
-                  <ng-container *ngIf="isBrowser && selectedContent.downloadUrl; else pdfLoading">
-                    <app-pdf-viewer-wrapper
-                      [src]="selectedContent.downloadUrl"
-                      [renderText]="true"
-                      [originalSize]="false"
-                      customStyle="width: 1100px; height: 700px;">
-                    </app-pdf-viewer-wrapper>
-                  </ng-container>
-                  <ng-template #pdfLoading>
-                    <div class="loading-message">
-                      {{ selectedContent.error ? 'Error loading content' : 'Loading PDF...' }}
-                    </div>
-                  </ng-template>
-                </div>
-
-                <!-- Video content -->
-                <div *ngSwitchCase="'video'" class="video-container" style="width: 900px; height: 500px;">
-                  <ng-container *ngIf="isBrowser && isYoutubeLink(selectedContent.content); else localVideo">
-                    <iframe 
-                      width="100%" 
-                      height="100%"
-                      [src]="getSafeYoutubeUrl(selectedContent.content)"
-                      frameborder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowfullscreen>
-                    </iframe>
-                  </ng-container>
-                  <ng-template #localVideo>
-                    <video *ngIf="isBrowser" #videoPlayer controls style="width: 100%; height: 100%;">
-                      <source [src]="selectedContent.content" type="video/mp4">
-                      Your browser does not support the video tag.
-                    </video>
-                    <div *ngIf="!isBrowser" class="loading-message">
-                      Video will be available after page loads
-                    </div>
-                  </ng-template>
-                </div>
-
-                <!-- Fallback -->
-                <div *ngSwitchDefault>
-                  <div class="empty-content">No content available</div>
-                </div>
-              </ng-container>
-            </ng-container>
-
-            <ng-container *ngIf="!selectedContent && selectedQuiz && !showAIQuizGenerator">
-              <div class="quiz-display">
-                <h3>{{ selectedQuiz.title }}</h3>
-                <p>{{ selectedQuiz.description }}</p>
-                <div class="quiz-details">
-                  <p>Time Limit: {{ selectedQuiz.timeLimit }} minutes</p>
-                  <p>Passing Score: {{ selectedQuiz.passingScore }}</p>
-                  <p>Max Attempts: {{ selectedQuiz.maxAttempts }}</p>
-                </div>
-
-                <!-- Quiz attempt section -->
-                <div class="quiz-attempt" *ngIf="!quizSubmitted">
-                  <button *ngIf="!attemptInProgress" 
-                          (click)="startQuizAttempt()" 
-                          class="btn-primary">
-                    Start Quiz
-                  </button>
-
-                  <div *ngIf="attemptInProgress" class="quiz-questions">
-                    <div *ngFor="let question of selectedQuiz.questions" class="question-item">
-                      <h4>{{ question.questionText }}</h4>
-                      <p class="points">Points: {{ question.points }}</p>
-
-                      <!-- Multiple Choice Single Answer -->
-                      <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_SINGLE'" class="options">
-                        <div *ngFor="let option of question.options; let i = index" class="option">
-                          <input type="radio" 
-                                [id]="'q' + question.questionId + 'opt' + i"
-                                [name]="'question' + question.questionId"
-                                [value]="option"
-                                (change)="updateResponse(question.questionId, option)">
-                          <label [for]="'q' + question.questionId + 'opt' + i">{{ option }}</label>
-                        </div>
-                      </div>
-
-                      <!-- Multiple Choice Multiple Answers -->
-                      <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_MULTIPLE'" class="options">
-                        <div *ngFor="let option of question.options; let i = index" class="option">
-                          <input type="checkbox" 
-                                [id]="'q' + question.questionId + 'opt' + i"
-                                [value]="option"
-                                (change)="onMultipleChoiceChange($event, question.questionId, option)">
-                          <label [for]="'q' + question.questionId + 'opt' + i">{{ option }}</label>
-                        </div>
-                      </div>
-
-                      <!-- Short Text Answer -->
-                      <div *ngIf="question.questionType === 'SHORT_TEXT'" class="text-answer">
-                        <input type="text" 
-                              [id]="'q' + question.questionId"
-                              (input)="onTextAnswerChange($event, question.questionId)"
-                              placeholder="Enter your answer">
-                      </div>
-                    </div>
-
-                    <button (click)="submitQuiz()" 
-                            class="btn-primary submit-quiz"
-                            [disabled]="!Object.keys(quizResponses).length">
-                      Submit Quiz
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Quiz Results -->
-                <div *ngIf="quizSubmitted && quizResult" class="quiz-results">
-                  <h4>Quiz Results</h4>
-                  <p>Score: {{ quizResult.score }}</p>
-                  <p>Status: {{ quizResult.passed ? 'Passed' : 'Failed' }}</p>
-                  <button (click)="selectQuiz(selectedQuiz)" class="btn-secondary">
-                    Try Again
-                  </button>
-                </div>
-              </div>
-            </ng-container>
-
-            <ng-container *ngIf="!selectedContent && !selectedQuiz && !showAIQuizGenerator">
-              <div class="empty-content">Select a content item or quiz to view</div>
-            </ng-container>
+          <!-- Quiz Results -->
+          <div *ngIf="quizSubmitted && quizResult" class="quiz-results">
+            <h4>Quiz Results</h4>
+            <p>Score: {{ quizResult.score }}</p>
+            <p>Status: {{ quizResult.passed ? 'Passed' : 'Failed' }}</p>
+            <button (click)="selectQuiz(selectedQuiz)" class="btn-secondary">
+              Try Again
+            </button>
           </div>
         </div>
-      </ng-template>
-    }
-  </emr-tab-panel-aside>
-</emr-tab-panel>
+      </ng-container>
 
-<!-- PDF Summarization Button (only shown for PDF content in browser) -->
+      <!-- Empty state -->
+      <div *ngIf="!selectedContent && !selectedQuiz && !showAIQuizGenerator && !loading && !error" class="empty-state">
+        <mat-icon>school</mat-icon>
+        <p>Select content or quiz from the sidebar to begin learning</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PDF Summarization Button (only shown for PDF content) -->
 <div *ngIf="isBrowser && selectedContent?.type === 'pdf' && selectedContent?.downloadUrl && !showPdfSummary" class="pdf-summarize-btn">
   <button mat-fab color="primary" (click)="summarizePdf()" [disabled]="generatingSummary" matTooltip="Summarize this PDF" aria-label="Summarize PDF">
     <mat-icon>summarize</mat-icon>
@@ -304,15 +318,154 @@
 </div>
 
 <style>
-  .pdf-info {
-    background-color: #f5f5f5;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    color: #666;
+  .course-view-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
   }
-  
+
+  .chapter-tabs {
+    width: 60px;
+    background-color: #f5f5f5;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+  }
+
+  .chapter-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0;
+  }
+
+  .chapter-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 0;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .chapter-tab.active {
+    color: #1976d2;
+    background-color: #e3f2fd;
+  }
+
+  .chapter-tab .chapter-title {
+    font-size: 10px;
+    margin-top: 5px;
+    text-align: center;
+    max-width: 55px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .content-sidebar {
+    width: 260px;
+    border-right: 1px solid #e0e0e0;
+    padding: 15px;
+    overflow-y: auto;
+    background-color: #fafafa;
+  }
+
+  .sidebar-heading {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 20px 0 10px 0;
+    color: #424242;
+  }
+
+  .sidebar-heading:first-child {
+    margin-top: 0;
+  }
+
+  .content-list, .quiz-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .content-list li, .quiz-list li {
+    padding: 10px 12px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+  }
+
+  .content-list li mat-icon, .quiz-list li mat-icon {
+    margin-right: 8px;
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+  }
+
+  .content-list li:hover, .quiz-list li:hover {
+    background-color: #f1f1f1;
+  }
+
+  .content-list li.active, .quiz-list li.active {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    font-weight: 500;
+  }
+
+  .content-viewer {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    position: relative;
+  }
+
+  .pdf-container {
+    width: 100%;
+    min-height: 80vh;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .video-container {
+    width: 100%;
+    height: 70vh;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .loading-container, .error-container, .empty-state {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    color: #757575;
+  }
+
+  .loading-container p, .error-container p, .empty-state p {
+    margin-top: 15px;
+    font-size: 16px;
+  }
+
+  .error-container mat-icon, .empty-state mat-icon {
+    font-size: 48px;
+    height: 48px;
+    width: 48px;
+  }
+
   .loading-message {
     display: flex;
     justify-content: center;
@@ -342,44 +495,18 @@
     padding: 20px;
   }
 
-  .full-width {
-    width: 100%;
+  .quiz-display {
+    max-width: 800px;
+    margin: 0 auto;
   }
 
-  .options-container {
+  .quiz-details {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 4px;
     margin: 15px 0;
   }
 
-  .radio-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .checkbox-option {
-    margin-bottom: 10px;
-  }
-
-  .question-item {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e0e0e0;
-  }
-
-  .questions-container {
-    margin-top: 20px;
-  }
-
-  .points {
-    color: #666;
-    font-style: italic;
-  }
-
-  mat-card-actions {
-    padding: 15px;
-  }
-
-  /* PDF Summarization styles */
   .pdf-summarize-btn {
     position: fixed;
     bottom: 30px;
@@ -469,55 +596,6 @@
     color: #666;
   }
 
-  .content-container {
-    display: flex;
-    height: 100%;
-  }
-
-  .content-list {
-    width: 250px;
-    padding: 15px;
-    border-right: 1px solid #eee;
-    overflow-y: auto;
-  }
-
-  .content-list h3 {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    font-size: 16px;
-    font-weight: 500;
-  }
-
-  .content-list ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .content-list li {
-    padding: 8px 12px;
-    margin-bottom: 5px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .content-list li:hover {
-    background-color: #f5f5f5;
-  }
-
-  .content-list li.active {
-    background-color: #e3f2fd;
-    color: #1976d2;
-    font-weight: 500;
-  }
-
-  .content-display {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-  }
-
   .empty-content {
     display: flex;
     justify-content: center;
@@ -525,63 +603,6 @@
     height: 200px;
     color: #757575;
     font-style: italic;
-  }
-
-  .video-container {
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
-
-  .quiz-display {
-    max-width: 800px;
-  }
-
-  .quiz-details {
-    background-color: #f5f5f5;
-    padding: 15px;
-    border-radius: 4px;
-    margin: 15px 0;
-  }
-
-  .quiz-attempt {
-    margin-top: 20px;
-  }
-
-  .quiz-questions {
-    margin-top: 20px;
-  }
-
-  .options {
-    margin: 15px 0;
-  }
-
-  .option {
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-  }
-
-  .option input {
-    margin-right: 8px;
-  }
-
-  .text-answer input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-
-  .submit-quiz {
-    margin-top: 30px;
-  }
-
-  .quiz-results {
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #f5f5f5;
-    border-radius: 4px;
   }
 
   .btn-primary {
@@ -606,5 +627,9 @@
     border-radius: 4px;
     cursor: pointer;
     margin-top: 10px;
+  }
+
+  .full-width {
+    width: 100%;
   }
 </style>
