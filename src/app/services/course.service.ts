@@ -361,4 +361,15 @@ getTeacherRequestedCourses(teacherId: number): Observable<any[]> {
     })
   );
 }
+
+createCourseForRequest(requestId: number, teacherId: number, courseData: any): Observable<any> {
+  const url = `http://localhost:8081/api/courses/request/${requestId}/teacher/${teacherId}`;
+  return this.http.post(url, courseData).pipe(
+    tap(response => console.log(`Created course for request ${requestId}:`, response)),
+    catchError(error => {
+      console.error(`Error creating course for request ${requestId}:`, error);
+      return throwError(() => error);
+    })
+  );
+}
 }

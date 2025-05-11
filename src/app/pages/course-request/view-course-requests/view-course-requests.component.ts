@@ -10,6 +10,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBadgeModule } from '@angular/material/badge';
 import { CourseRequestService } from '../../../services/course-request.service';
+import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -42,6 +43,7 @@ export class ViewCourseRequestsComponent implements OnInit {
   
   constructor(
     private courseRequestService: CourseRequestService,
+    private courseService: CourseService,
     private authService: AuthService,
     private snackBar: MatSnackBar
   ) {
@@ -138,8 +140,32 @@ export class ViewCourseRequestsComponent implements OnInit {
           this.receivedRequests[index] = { ...this.receivedRequests[index], status: 'approved' };
         }
         
-        this.snackBar.open('Request accepted successfully', 'Close', { duration: 3000 });
-        this.isLoading = false;
+        // Create a course for the approved request
+        const courseData = {
+          title: request.subject,
+          description: "desc",
+          picture: "webdev.png",
+          price: request.price || 5,
+          categoryIds: request.categoryIds || [1, 2]
+        };
+        
+        // Extract category IDs from the request if available
+        if (request.categories && request.categories.length > 0) {
+          courseData.categoryIds = request.categories.map((cat: any) => cat.id);
+        }
+        
+        this.courseService.createCourseForRequest(request.id, this.currentUserId, courseData).subscribe({
+          next: (courseResult) => {
+            console.log('Course created for request:', courseResult);
+            this.snackBar.open('Request approved and course created successfully', 'Close', { duration: 3000 });
+            this.isLoading = false;
+          },
+          error: (error) => {
+            console.error('Failed to create course for request:', error);
+            this.snackBar.open('Request approved but failed to create course', 'Close', { duration: 3000 });
+            this.isLoading = false;
+          }
+        });
       },
       error: (error) => {
         console.error('Failed to accept request:', error);
