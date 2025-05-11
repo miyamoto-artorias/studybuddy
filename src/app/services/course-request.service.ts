@@ -61,4 +61,24 @@ export class CourseRequestService {
       })
     );
   }
+  
+  acceptCourseRequest(requestId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/${requestId}/accept`, {}).pipe(
+      tap(response => console.log(`Accepted course request ${requestId}:`, response)),
+      catchError(error => {
+        console.error(`Error accepting course request ${requestId}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+  
+  rejectCourseRequest(requestId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/${requestId}/reject`, {}).pipe(
+      tap(response => console.log(`Rejected course request ${requestId}:`, response)),
+      catchError(error => {
+        console.error(`Error rejecting course request ${requestId}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
 }

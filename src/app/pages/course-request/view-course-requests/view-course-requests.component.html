@@ -100,10 +100,10 @@
               </mat-card-content>
               
               <mat-card-actions align="end" *ngIf="request.status === 'pending'">
-                <button mat-button color="accent" (click)="updateRequestStatus(request, 'approved')">
+                <button mat-button color="accent" (click)="acceptRequest(request)">
                   Approve
                 </button>
-                <button mat-button color="warn" (click)="updateRequestStatus(request, 'declined')">
+                <button mat-button color="warn" (click)="rejectRequest(request)">
                   Decline
                 </button>
               </mat-card-actions>

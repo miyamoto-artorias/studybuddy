@@ -127,6 +127,50 @@ export class ViewCourseRequestsComponent implements OnInit {
     });
   }
   
+  acceptRequest(request: any): void {
+    this.isLoading = true;
+    
+    this.courseRequestService.acceptCourseRequest(request.id).subscribe({
+      next: (result) => {
+        // Update the request in our local arrays
+        if (this.receivedRequests.some(r => r.id === request.id)) {
+          const index = this.receivedRequests.findIndex(r => r.id === request.id);
+          this.receivedRequests[index] = { ...this.receivedRequests[index], status: 'approved' };
+        }
+        
+        this.snackBar.open('Request accepted successfully', 'Close', { duration: 3000 });
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to accept request:', error);
+        this.snackBar.open('Failed to accept request', 'Close', { duration: 3000 });
+        this.isLoading = false;
+      }
+    });
+  }
+  
+  rejectRequest(request: any): void {
+    this.isLoading = true;
+    
+    this.courseRequestService.rejectCourseRequest(request.id).subscribe({
+      next: (result) => {
+        // Update the request in our local arrays
+        if (this.receivedRequests.some(r => r.id === request.id)) {
+          const index = this.receivedRequests.findIndex(r => r.id === request.id);
+          this.receivedRequests[index] = { ...this.receivedRequests[index], status: 'declined' };
+        }
+        
+        this.snackBar.open('Request rejected', 'Close', { duration: 3000 });
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to reject request:', error);
+        this.snackBar.open('Failed to reject request', 'Close', { duration: 3000 });
+        this.isLoading = false;
+      }
+    });
+  }
+  
   getStatusClass(status: string): string {
     switch (status.toLowerCase()) {
       case 'pending':
