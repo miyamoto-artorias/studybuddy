@@ -31,7 +31,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { PdfViewerWrapperComponent } from '../enrolled-courses/pdf-viewer-wrapper/pdf-viewer-wrapper.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, filter, finalize, switchMap, takeUntil } from 'rxjs/operators';
-import { Subscription, Subject, of } from 'rxjs';
+import { Subscription, Subject, of, forkJoin } from 'rxjs';
 
 export interface QuizQuestion {
   questionId?: number;
@@ -113,6 +113,8 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
   loading = true;
   error: string | null = null;
   isBrowser: boolean;
+  // Enrollment ID for the current course
+  enrollmentId: number | null = null;
 
   // Add new properties for quiz attempts
   quizResponses: { [key: string]: string } = {};
@@ -158,6 +160,7 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadCourse();
+    this.loadEnrollmentId();
   }
 
   ngOnDestroy(): void {
@@ -222,6 +225,41 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     );
   }
 
+  // Load the enrollment ID for the current user and course
+  loadEnrollmentId(): void {
+    const userId = this.getUserId();
+    if (!userId) return;
+
+    this.route.paramMap.pipe(
+      takeUntil(this.destroy$),
+      filter(params => !!params.get('id')),
+      switchMap(params => {
+        const courseId = params.get('id');
+        if (!courseId) return of(null);
+        return this.http.get<any[]>(`http://localhost:8081/api/enrollments/user/${userId}`);
+      })
+    ).subscribe({
+      next: (enrollments) => {
+        if (enrollments) {
+          const enrollment = enrollments.find(e => e.courseId === this.courseId);
+          if (enrollment) {
+            this.enrollmentId = enrollment.id;
+            console.log('Found enrollment ID:', this.enrollmentId);
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Error loading enrollment:', err);
+      }
+    });
+  }
+
+  // Get the current user ID from localStorage
+  getUserId(): number {
+    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    return user.id || 0;
+  }
+
   selectChapter(chapter: any): void {
     console.log('Selecting chapter:', chapter);
     this.selectedChapter = chapter;
@@ -239,6 +277,8 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     
     // Auto-select first content if available
     if (chapter.contents && chapter.contents.length > 0) {
+      // Check completion status for all contents in this chapter
+      this.loadContentCompletionStatus(chapter.contents);
       this.selectContent(chapter.contents[0]);
     } else {
       this.selectedContent = null;
@@ -260,6 +300,89 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Load completion status for an array of contents
+  loadContentCompletionStatus(contents: any[]): void {
+    const userId = this.getUserId();
+    if (!userId || !this.enrollmentId) return;
+
+    // Create a batch of requests to check status of each content
+    const statusRequests = contents.map(content => 
+      this.http.get<any>(`http://localhost:8081/api/progress/user/${userId}/content/${content.id}/enrollment/${this.enrollmentId}/status`)
+        .pipe(
+          catchError(error => {
+            // On error, assume content is not completed
+            console.error(`Error checking completion status for content ${content.id}:`, error);
+            return of({ completed: false });
+          })
+        )
+    );
+
+    // Execute all requests and update content objects
+    forkJoin(statusRequests).subscribe(results => {
+      contents.forEach((content, index) => {
+        content.completed = results[index]?.completed || false;
+      });
+      // Force change detection
+      this.selectedChapter = { ...this.selectedChapter };
+    });
+  }
+
+  // Check completion status for a single content
+  checkContentCompletionStatus(content: any): void {
+    const userId = this.getUserId();
+    if (!userId || !this.enrollmentId) return;
+
+    this.http.get<any>(`http://localhost:8081/api/progress/user/${userId}/content/${content.id}/enrollment/${this.enrollmentId}/status`)
+      .pipe(
+        catchError(error => {
+          console.error(`Error checking completion status for content ${content.id}:`, error);
+          return of({ completed: false });
+        })
+      )
+      .subscribe(status => {
+        content.completed = status.completed || false;
+        // If this is the currently selected content, update it
+        if (this.selectedContent && this.selectedContent.id === content.id) {
+          this.selectedContent = { ...this.selectedContent, completed: content.completed };
+        }
+      });
+  }
+
+  // Toggle content completion status
+  toggleContentCompletion(content: any, event: Event): void {
+    // Prevent the click from triggering the selectContent function
+    event.stopPropagation();
+    
+    const userId = this.getUserId();
+    if (!userId || !this.enrollmentId) {
+      this.showNotification('User or enrollment information is missing');
+      return;
+    }
+
+    const url = content.completed
+      ? `http://localhost:8081/api/progress/user/${userId}/content/${content.id}/enrollment/${this.enrollmentId}/uncomplete`
+      : `http://localhost:8081/api/progress/user/${userId}/content/${content.id}/enrollment/${this.enrollmentId}/complete`;
+
+    this.http.post(url, {}).subscribe({
+      next: () => {
+        // Update the local content state
+        content.completed = !content.completed;
+        this.showNotification(content.completed 
+          ? `${content.title} marked as completed`
+          : `${content.title} marked as incomplete`);
+        
+        // If this is the currently selected content, update it
+        if (this.selectedContent && this.selectedContent.id === content.id) {
+          this.selectedContent = { ...this.selectedContent, completed: content.completed };
+        }
+      },
+      error: (err) => {
+        console.error('Error toggling content completion:', err);
+        this.showNotification('Failed to update content status');
+      }
+    });
+  }
+
   selectContent(content: any): void {
     console.log('Content selected:', content);
     this.revokeBlobUrl();
@@ -267,6 +390,9 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     this.selectedQuiz = null;
     this.resetAIQuiz();
     this.resetPdfSummary();
+
+    // Check content completion status
+    this.checkContentCompletionStatus(content);
 
     if (content.type === 'pdf') {
       this.loadPdfContent(content);

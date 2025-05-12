@@ -23,12 +23,23 @@
       <h3 class="sidebar-heading">Contents</h3>
       <ul class="content-list">
         @for (content of selectedChapter.contents || []; track content.id) {
-          <li 
-            [class.active]="selectedContent?.id === content.id"
-            (click)="selectContent(content)">
-            <mat-icon *ngIf="content.type === 'pdf'">picture_as_pdf</mat-icon>
-            <mat-icon *ngIf="content.type === 'video'">videocam</mat-icon>
-            <span>{{ content.title }}</span>
+          <li>
+            <div 
+              class="content-item" 
+              [class.active]="selectedContent?.id === content.id"
+              (click)="selectContent(content)">
+              <mat-icon *ngIf="content.type === 'pdf'">picture_as_pdf</mat-icon>
+              <mat-icon *ngIf="content.type === 'video'">videocam</mat-icon>
+              <span class="content-title">{{ content.title }}</span>
+            </div>
+            <button 
+              class="completion-button" 
+              mat-icon-button 
+              [color]="content.completed ? 'primary' : ''" 
+              (click)="toggleContentCompletion(content, $event)"
+              [matTooltip]="content.completed ? 'Mark as Incomplete' : 'Mark as Complete'">
+              <mat-icon>{{ content.completed ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+            </button>
           </li>
         }
       </ul>
@@ -157,6 +168,26 @@
 
       <!-- Content Display -->
       <ng-container *ngIf="selectedContent && !showAIQuizGenerator">
+        <div class="content-header">
+          <h2>{{ selectedContent.title }}</h2>
+          <div class="content-status">
+            <span class="status-text" *ngIf="selectedContent.completed">
+              <mat-icon color="primary">check_circle</mat-icon>
+              Completed
+            </span>
+            <span class="status-text" *ngIf="!selectedContent.completed">
+              <mat-icon>radio_button_unchecked</mat-icon>
+              Not completed
+            </span>
+            <button 
+              mat-raised-button
+              [color]="selectedContent.completed ? 'warn' : 'primary'"
+              (click)="toggleContentCompletion(selectedContent, $event)">
+              {{ selectedContent.completed ? 'Mark as Incomplete' : 'Mark as Complete' }}
+            </button>
+          </div>
+        </div>
+        
         <ng-container [ngSwitch]="selectedContent.type">
           <!-- PDF content -->
           <div *ngSwitchCase="'pdf'" class="pdf-container">
@@ -404,6 +435,25 @@
     transition: background-color 0.2s;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+  }
+
+  .content-item {
+    display: flex;
+    align-items: center;
+    flex: 1;
+  }
+
+  .content-title {
+    margin-left: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+
+  .completion-button {
+    margin-left: 4px;
   }
 
   .content-list li mat-icon, .quiz-list li mat-icon {
@@ -417,7 +467,7 @@
     background-color: #f1f1f1;
   }
 
-  .content-list li.active, .quiz-list li.active {
+  .content-list li .content-item.active, .quiz-list li.active {
     background-color: #e3f2fd;
     color: #1976d2;
     font-weight: 500;
@@ -632,5 +682,37 @@
 
   .full-width {
     width: 100%;
+  }
+
+  .content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .content-header h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+  }
+
+  .content-status {
+    display: flex;
+    align-items: center;
+  }
+
+  .status-text {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+    font-size: 14px;
+    color: #666;
+  }
+
+  .status-text mat-icon {
+    margin-right: 5px;
   }
 </style>

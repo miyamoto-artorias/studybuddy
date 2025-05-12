@@ -78,9 +78,24 @@ export class AuthService {
         if (!enrollments.length) {
           return of([]);
         }
-        const courseRequests = enrollments.map(enrollment => 
-          this.http.get(`${this.baseUrl}/courses/${enrollment.courseId}`)
+        
+        // Create an object to store enrollment data by courseId for easy lookup
+        const enrollmentMap = new Map(
+          enrollments.map(enrollment => [enrollment.courseId, enrollment])
         );
+        
+        // Fetch course details for each enrollment
+        const courseRequests = enrollments.map(enrollment => 
+          this.http.get(`${this.baseUrl}/courses/${enrollment.courseId}`).pipe(
+            // Merge enrollment data (including progress) with course data
+            map(course => ({
+              ...course,
+              // Include progress from enrollment
+              progress: enrollmentMap.get(enrollment.courseId)?.progress || 0
+            }))
+          )
+        );
+        
         return forkJoin(courseRequests);
       }),
       catchError(error => {

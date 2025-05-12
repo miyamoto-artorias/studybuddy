@@ -57,6 +57,12 @@ export class EnrolledCoursesListComponent implements OnInit {
   }
 
   getProgressPercentage(course: any): number {
+    // Use the progress attribute from the enrollment data if available
+    if (course.progress !== undefined) {
+      return course.progress;
+    }
+    
+    // Fallback to manual calculation if progress attribute is not available
     if (!course.chapters || course.chapters.length === 0) {
       return 0;
     }
