@@ -1,1 +1,16 @@
+<div class="quote-container">
+  <div *ngIf="isLoadingQuote" class="quote-loading">
+    <mat-spinner diameter="30"></mat-spinner> Loading inspiration...
+  </div>
+  <div *ngIf="!isLoadingQuote && motivationalQuote" class="quote-display">
+    <blockquote>
+      <p>{{ motivationalQuote }}</p>
+      <button mat-icon-button (click)="generateMotivationalQuote()" matTooltip="Get new quote">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </blockquote>
+  </div>
+</div>
+
 <h1>Basic Comp</h1 >
+<app-enrolled-courses-list></app-enrolled-courses-list>
