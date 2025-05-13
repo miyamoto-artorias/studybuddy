@@ -28,7 +28,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
-import { PdfViewerWrapperComponent } from '../enrolled-courses/pdf-viewer-wrapper/pdf-viewer-wrapper.component';
+import { PdfViewerWrapperComponent } from './pdf-viewer-wrapper/pdf-viewer-wrapper.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, filter, finalize, switchMap, takeUntil } from 'rxjs/operators';
 import { Subscription, Subject, of, forkJoin } from 'rxjs';

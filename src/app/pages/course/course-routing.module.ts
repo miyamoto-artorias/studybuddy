@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { CourseListComponent } from './course-list/course-list.component';
 import { CourseDetailComponent } from './course-detail/course-detail.component';
-import { TeacherProfileComponent } from './teacher-profile/teacher-profile.component';
 import { EnrolledCoursesListComponent } from './enrolled-courses-list/enrolled-courses-list.component';
 import { EnrolledCourseViewComponent } from './enrolled-course-view/enrolled-course-view.component';
 
@@ -13,11 +12,6 @@ const routes: Routes = [
     redirectTo: 'basic',
   },
 
-  {
-    path: 'enrolled-courses',
-    title: 'Enrolled Courses',
-    loadComponent: () => import('./enrolled-courses/enrolled-courses.component').then(c => c.EnrolledCoursesComponent)
-  },
 
   {
     path: 'addcourse',
@@ -37,10 +31,7 @@ const routes: Routes = [
     path: 'course/:id',
     component: CourseDetailComponent
   },
-  {
-    path: 'teacher/:id',
-    component: TeacherProfileComponent
-  },
+
   {
     path: 'enrolled-courses-list',
     component: EnrolledCoursesListComponent

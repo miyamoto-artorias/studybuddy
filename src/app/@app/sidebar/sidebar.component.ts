@@ -138,18 +138,8 @@ export class SidebarComponent implements OnInit {
           name: 'My Enrolled Courses',
           link: '/pages/course/enrolled-courses-list'
         },
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'Enrolled Courses View',
-          link: '/pages/course/enrolled-courses-view'
-        },
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'Enrolled_Courses',
-          link: '/pages/course/enrolled-courses'
-        },
+
+
         {
           key: uuid(),
           type: 'link',
@@ -165,12 +155,7 @@ export class SidebarComponent implements OnInit {
           type: 'link',
           name: 'courses',
           link: '/pages/course/courses'
-        },        {
-          key: uuid(),
-          type: 'link',
-          name: 'teacher',
-          link: `/pages/course/teacher/${this.authService.getUserId()}`
-        }
+        },     
       ]
     },
 
