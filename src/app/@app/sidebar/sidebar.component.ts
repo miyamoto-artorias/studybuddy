@@ -108,8 +108,7 @@ export class SidebarComponent implements OnInit {
     }
   ];
   navItems: NavigationItem[] = [
-    {
-      key: 'Teacher_pages',
+    {      key: 'Teacher_pages',
       type: 'group',
       name: 'Teacher pages',
       icon: 'school', // Changed the icon to 'school' to better represent teacher-related content
@@ -118,13 +117,19 @@ export class SidebarComponent implements OnInit {
           key: uuid(),
           type: 'link',
           name: 'Teacher Courses',
-          link: '/pages/course/teacher-courses-list'
+          link: '/pages/teacher/teacher-courses-list'
         },
         {
           key: uuid(),
           type: 'link',
           name: 'Add Course',
-          link: '/pages/course/addcourse'
+          link: '/pages/teacher/addcourse'
+        },
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Manage Courses',
+          link: '/pages/teacher/teachercourses'
         },
         {
           key: uuid(),

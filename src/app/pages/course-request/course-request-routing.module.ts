@@ -27,7 +27,7 @@ const routes: Routes = [
    {
     path: 'requested-courses-teacher',
     title: 'Requested Courses Teacher',
-    loadComponent: () => import('./requested-courses-teacher/requested-courses-teacher.component').then(c => c.RequestedCoursesTeacherComponent),
+    loadComponent: () => import('../teacher/requested-courses-teacher/requested-courses-teacher.component').then(c => c.RequestedCoursesTeacherComponent),
     canActivate: [TeacherGuard]
    }
 

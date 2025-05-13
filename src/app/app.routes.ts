@@ -3,7 +3,6 @@ import { CourseDetailComponent } from './pages/course/course-detail/course-detai
 import { BasicComponent } from './pages/dashboard/basic/basic.component';
 import { CourseListComponent } from './pages/course/course-list/course-list.component';
 import { LoginComponent } from './auth/login/login.component';
-import { TeacherCoursesComponent } from './pages/course/teacher-courses/teacher-courses.component';
 import { RegisterComponent } from './auth/register/register.component';
 
 export const routes: Routes = [
@@ -27,10 +26,8 @@ export const routes: Routes = [
   { path: 'courses', component: CourseListComponent },
   { path: 'course/:id', component: CourseDetailComponent },
   { path: 'basic', component: BasicComponent },
-  { path: 'login', component: LoginComponent },
-  {path:'register',component:RegisterComponent},
+  { path: 'login', component: LoginComponent },  {path:'register',component:RegisterComponent},
   {path:'coursedetail',component:CourseDetailComponent},
-  {path:'teachercourses',component:TeacherCoursesComponent},
   {
     path: '**',
     title: 'Page Not Found',
