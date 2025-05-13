@@ -161,6 +161,8 @@ The document concludes by emphasizing the critical importance of ${contentTitle}
 
 
   uploadContent(courseId: number, chapterId: number, content: { title: string; type: string; content?: string }, file?: File): Observable<any> {
+    console.log(`Uploading ${content.type} content for course ${courseId}, chapter ${chapterId}:`, content.title);
+    
     if (content.type === 'pdf' && file) {
       // Handle PDF upload
       const formData = new FormData();
@@ -169,10 +171,19 @@ The document concludes by emphasizing the critical importance of ${contentTitle}
       formData.append('file', file);
 
       const url = `${this.baseUrl}/course/${courseId}/chapter/${chapterId}/upload`;
+      console.log('PDF upload URL:', url);
+      
       return this.http.post(url, formData).pipe(
         tap(response => console.log('PDF upload response:', response)),
         catchError(error => {
           console.error('PDF upload failed:', error);
+          // Log more detailed error information
+          if (error.error) {
+            console.error('Error details:', error.error);
+          }
+          if (error.status === 403) {
+            console.error('Access forbidden. This might be related to course visibility settings.');
+          }
           throw error;
         })
       );
@@ -185,10 +196,20 @@ The document concludes by emphasizing the critical importance of ${contentTitle}
       };
 
       const url = `${this.baseUrl}/course/${courseId}/chapter/${chapterId}`;
+      console.log('Video content URL:', url);
+      console.log('Video content data:', videoData);
+      
       return this.http.post(url, videoData).pipe(
         tap(response => console.log('Video content response:', response)),
         catchError(error => {
           console.error('Video content upload failed:', error);
+          // Log more detailed error information
+          if (error.error) {
+            console.error('Error details:', error.error);
+          }
+          if (error.status === 403) {
+            console.error('Access forbidden. This might be related to course visibility settings.');
+          }
           throw error;
         })
       );
@@ -201,13 +222,22 @@ The document concludes by emphasizing the critical importance of ${contentTitle}
 
 // Add to CourseService
 createChapter(courseId: number, chapterData: any): Observable<any> {
+  console.log(`Creating chapter for course ID ${courseId}:`, chapterData);
+  
   return this.http.post(
     `http://localhost:8081/api/course-chapters/course/${courseId}`,
     chapterData
   ).pipe(
-    tap(response => console.log('Chapter created:', response)),
+    tap(response => console.log('Chapter created successfully:', response)),
     catchError(error => {
       console.error('Chapter creation failed:', error);
+      // Log more detailed error information if available
+      if (error.error) {
+        console.error('Error details:', error.error);
+      }
+      if (error.status === 403) {
+        console.error('Access forbidden. This might be related to course visibility settings.');
+      }
       throw error;
     })
   );
@@ -347,7 +377,11 @@ submitQuizResponses(chapterId: number, quizId: number, userId: number, responses
 }
 
 uploadVideo(courseId: number, chapterId: number, file: File, title: string): Observable<any> {
+  console.log(`Uploading video file for course ${courseId}, chapter ${chapterId}:`, title);
+  
   const url = `http://localhost:8081/api/course-content/course/${courseId}/chapter/${chapterId}/upload-video`;
+  console.log('Video upload URL:', url);
+  
   const formData = new FormData();
   formData.append('file', file);
   formData.append('title', title);
@@ -356,6 +390,13 @@ uploadVideo(courseId: number, chapterId: number, file: File, title: string): Obs
     tap(response => console.log('Video uploaded successfully:', response)),
     catchError(error => {
       console.error('Video upload failed:', error);
+      // Log more detailed error information
+      if (error.error) {
+        console.error('Error details:', error.error);
+      }
+      if (error.status === 403) {
+        console.error('Access forbidden. This might be related to course visibility settings.');
+      }
       throw error;
     })
   );
@@ -509,5 +550,22 @@ getFullImageUrl(imagePath: string | null): string {
   
   // Construct the full URL using the API server base URL
   return `http://localhost:8081/${cleanPath}`;
+}
+
+// Update course public status
+updateCoursePublicStatus(courseId: number, isPublic: boolean): Observable<any> {
+  const url = `${this.coursesbaseUrl}/${courseId}/public`;
+  console.log(`Updating course ${courseId} public status to: ${isPublic}`);
+  
+  return this.http.patch(url, { isPublic }).pipe(
+    tap(response => console.log('Course public status updated:', response)),
+    catchError(error => {
+      console.error('Failed to update course public status:', error);
+      if (error.error) {
+        console.error('Error details:', error.error);
+      }
+      throw error;
+    })
+  );
 }
 }

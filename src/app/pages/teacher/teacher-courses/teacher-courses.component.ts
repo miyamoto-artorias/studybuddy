@@ -90,6 +90,12 @@ export class TeacherCoursesComponent implements OnInit {
     this.courseService.getCourseById(courseId).subscribe({
       next: (course) => {
         // Set this course as the selected course and add it to the teacher courses array
+        console.log('Loaded course details:', course);
+        console.log('Original isPublic status:', course.isPublic);
+        
+        // IMPORTANT: Debug override to test editing
+        // Uncomment the line below to force public status for testing
+        console.log('Course isPublic status:', course.isPublic);
         this.selectedCourse = course;
         this.teacherCourses = [course];
       },
@@ -106,6 +112,8 @@ export class TeacherCoursesComponent implements OnInit {
     }
     
     // If already in single course mode, just update the selection
+    console.log('Selected course for editing:', course);
+    console.log('Course isPublic status:', course.isPublic);
     this.selectedCourse = { ...course };
     this.selectedChapter = null;
     this.showChapterForm = false;
@@ -119,6 +127,8 @@ export class TeacherCoursesComponent implements OnInit {
   }
 // Add method to show content form
 showAddContentForm(): void {
+  console.log('Attempting to show add content form for chapter:', this.selectedChapter?.title);
+  console.log('Parent course isPublic status:', this.selectedCourse?.isPublic);
   this.showContentForm = true;
   // Reset form when opening
   this.contentForm.reset();
@@ -126,6 +136,8 @@ showAddContentForm(): void {
 }
   
   showAddChapterForm(): void {
+    console.log('Attempting to show add chapter form for course:', this.selectedCourse?.title);
+    console.log('Course isPublic status:', this.selectedCourse?.isPublic);
     this.showChapterForm = true;
   }
   
@@ -141,9 +153,17 @@ showAddContentForm(): void {
   addChapter(): void {
     if (this.chapterForm.invalid || !this.selectedCourse) return;
 
-    this.courseService.createChapter(this.selectedCourse.id, this.chapterForm.value)
+    // Debug information about the course
+    console.log('Adding chapter to course:', this.selectedCourse);
+    console.log('Course isPublic status:', this.selectedCourse.isPublic);
+    
+    const chapterData = this.chapterForm.value;
+    console.log('Chapter data being sent:', chapterData);
+    
+    this.courseService.createChapter(this.selectedCourse.id, chapterData)
       .subscribe({
         next: (newChapter) => {
+          console.log('Successfully added chapter:', newChapter);
           this.selectedCourse.chapters = this.selectedCourse.chapters || [];
           this.selectedCourse.chapters.push(newChapter);
           this.updateLocalCourses();
@@ -152,7 +172,8 @@ showAddContentForm(): void {
         },
         error: (err) => {
           console.error('Error adding chapter:', err);
-          alert('Failed to add chapter');
+          console.error('Error details:', err.error);
+          alert('Failed to add chapter: ' + (err.error?.message || 'Unknown error'));
         }
       });
   }
@@ -160,14 +181,22 @@ showAddContentForm(): void {
   addContent(): void {
     if (this.contentForm.invalid || !this.selectedChapter) return;
 
+    // Debug information
+    console.log('Adding content to chapter:', this.selectedChapter);
+    console.log('Parent course isPublic status:', this.selectedCourse?.isPublic);
+
     const contentType = this.contentForm.value.type;
     const contentTitle = this.contentForm.value.title;
+    console.log('Content data:', { type: contentType, title: contentTitle });
 
     if (contentType === 'video' && this.fileToUpload) {
       // Use the uploadVideo method for video uploads
+      console.log('Uploading video file:', this.fileToUpload.name);
+      
       this.courseService.uploadVideo(this.selectedCourse.id, this.selectedChapter.id, this.fileToUpload, contentTitle)
         .subscribe({
           next: (newContent) => {
+            console.log('Successfully uploaded video:', newContent);
             this.selectedChapter.contents = this.selectedChapter.contents || [];
             this.selectedChapter.contents.push(newContent);
             this.updateLocalCourses();
@@ -177,6 +206,7 @@ showAddContentForm(): void {
           },
           error: (err) => {
             console.error('Error uploading video:', err);
+            console.error('Error details:', err.error);
             alert('Failed to upload video: ' + (err.error?.message || 'Unknown error'));
           }
         });
@@ -186,10 +216,12 @@ showAddContentForm(): void {
         title: contentTitle,
         url: this.contentForm.value.videoUrl
       };
+      console.log('Adding YouTube link:', youtubeLinkData);
 
       this.courseService.addYouTubeLink(this.selectedCourse.id, this.selectedChapter.id, youtubeLinkData)
         .subscribe({
           next: (newContent) => {
+            console.log('Successfully added YouTube link:', newContent);
             this.selectedChapter.contents = this.selectedChapter.contents || [];
             this.selectedChapter.contents.push(newContent);
             this.updateLocalCourses();
@@ -198,16 +230,20 @@ showAddContentForm(): void {
           },
           error: (err) => {
             console.error('Error adding YouTube link:', err);
+            console.error('Error details:', err.error);
             alert('Failed to add YouTube link: ' + (err.error?.message || 'Unknown error'));
           }
         });
     } else if (contentType === 'pdf' && this.fileToUpload) {
       // Handle PDF upload
+      console.log('Uploading PDF file:', this.fileToUpload.name);
+      
       this.courseService.uploadContent(this.selectedCourse.id, this.selectedChapter.id, {
         title: contentTitle,
         type: contentType
       }, this.fileToUpload).subscribe({
         next: (newContent) => {
+          console.log('Successfully uploaded PDF:', newContent);
           this.selectedChapter.contents = this.selectedChapter.contents || [];
           this.selectedChapter.contents.push(newContent);
           this.updateLocalCourses();
@@ -217,6 +253,7 @@ showAddContentForm(): void {
         },
         error: (err) => {
           console.error('Error uploading PDF:', err);
+          console.error('Error details:', err.error);
           alert('Failed to upload PDF: ' + (err.error?.message || 'Unknown error'));
         }
       });
@@ -306,5 +343,32 @@ showAddContentForm(): void {
   // Helper method to check if we're in single course mode
   isSingleCourseMode(): boolean {
     return !!this.route.snapshot.paramMap.get('id');
+  }
+
+  // Add method to toggle course public status
+  toggleCoursePublicStatus(): void {
+    if (!this.selectedCourse) return;
+    
+    const newStatus = !this.selectedCourse.isPublic;
+    console.log(`Toggling course public status from ${this.selectedCourse.isPublic} to ${newStatus}`);
+    
+    this.courseService.updateCoursePublicStatus(this.selectedCourse.id, newStatus).subscribe({
+      next: (response) => {
+        console.log('Course status updated successfully:', response);
+        this.selectedCourse.isPublic = newStatus;
+        // Update the course in the teacherCourses array as well
+        const index = this.teacherCourses.findIndex(c => c.id === this.selectedCourse.id);
+        if (index !== -1) {
+          this.teacherCourses[index].isPublic = newStatus;
+        }
+        
+        // Refresh the course details to ensure all data is updated
+        this.loadSingleCourse(this.selectedCourse.id);
+      },
+      error: (error) => {
+        console.error('Failed to update course public status:', error);
+        alert('Failed to update course visibility. Please try again.');
+      }
+    });
   }
 }

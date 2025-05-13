@@ -21,6 +21,16 @@
 <section class="chapters-section" *ngIf="selectedCourse">
   <header>
     <h2>{{ selectedCourse.title }}</h2>
+    <div class="course-status">
+      <span [ngClass]="{'public': selectedCourse.isPublic, 'private': !selectedCourse.isPublic}">
+        Status: {{ selectedCourse.isPublic ? 'Public' : 'Private' }}
+      </span>
+      <button class="btn-visibility" (click)="toggleCoursePublicStatus()">
+        <emr-icon [name]="selectedCourse.isPublic ? 'ph:eye-slash' : 'ph:eye'"></emr-icon>
+        {{ selectedCourse.isPublic ? 'Make Private' : 'Make Public' }}
+      </button>
+    </div>
+    
     <button class="btn-secondary" (click)="showAddChapterForm()">
       <emr-icon name="ph:plus"></emr-icon> Add Chapter
     </button>
@@ -70,6 +80,7 @@
   <section class="content-section" *ngIf="selectedChapter">
     <div class="section-header">
       <h3>{{ selectedChapter.title }} Content</h3>
+      
       <button class="btn-secondary" (click)="showAddContentForm()">
         <emr-icon name="ph:plus"></emr-icon> Add Content
       </button>
@@ -96,6 +107,7 @@
   <section class="quiz-section" *ngIf="selectedChapter">
     <header class="section-header">
       <h3>{{ selectedChapter.title }} Quizzes</h3>
+      
       <button class="btn-secondary" (click)="showAddQuizForm()">
         <emr-icon name="ph:plus"></emr-icon> Add Quiz
       </button>
