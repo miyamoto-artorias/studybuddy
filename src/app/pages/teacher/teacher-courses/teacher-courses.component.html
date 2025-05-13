@@ -10,76 +10,79 @@
       </li>
     </ul>
   </aside>
+  
   <!-- Center Panel: Chapters List (for the selected course) -->
-<section class="chapters-section" *ngIf="selectedCourse">
-  <header>
-    <h2>{{ selectedCourse.title }}</h2>
-    <div class="course-status">
-      <span [ngClass]="{'public': selectedCourse.isPublic, 'private': !selectedCourse.isPublic}">
-        Status: {{ selectedCourse.isPublic ? 'Public' : 'Private' }}
-      </span>
-      <button class="btn-visibility" (click)="toggleCoursePublicStatus()">
-        <emr-icon [name]="selectedCourse.isPublic ? 'ph:eye-slash' : 'ph:eye'"></emr-icon>
-        {{ selectedCourse.isPublic ? 'Make Private' : 'Make Public' }}
-      </button>
+  <section class="chapters-section" *ngIf="selectedCourse">
+    <header>
+      <h2>{{ selectedCourse.title }}</h2>
+      <div class="header-actions">
+        <button class="btn-visibility" (click)="toggleCoursePublicStatus()">
+          <emr-icon [name]="selectedCourse.isPublic ? 'ph:eye-slash' : 'ph:eye'"></emr-icon>
+          {{ selectedCourse.isPublic ? 'Make Private' : 'Make Public' }}
+        </button>
+        <button class="btn-secondary" (click)="showAddChapterForm()">
+          <emr-icon name="ph:plus"></emr-icon> Add Chapter
+        </button>
+      </div>
+    </header>
+    
+    <!-- Chapter Form (visible when showChapterForm is true) -->
+    <div class="chapter-form" *ngIf="showChapterForm">
+      <form [formGroup]="chapterForm" (ngSubmit)="addChapter()">
+        <div class="form-group">
+          <label for="chapterTitle">Title</label>
+          <input id="chapterTitle" type="text" formControlName="title" placeholder="Chapter Title">
+        </div>
+        
+        <div class="form-group">
+          <label for="chapterDescription">Description</label>
+          <input id="chapterDescription" type="text" formControlName="description" placeholder="Chapter Description">
+        </div>
+        
+        <div class="form-group">
+          <label for="chapterType">Type</label>
+          <input id="chapterType" type="text" formControlName="type" placeholder="Chapter Type">
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn-outline" (click)="showChapterForm = false">
+            Cancel
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="chapterForm.invalid">
+            Add Chapter
+          </button>
+        </div>
+      </form>
     </div>
     
-    <button class="btn-secondary" (click)="showAddChapterForm()">
-      <emr-icon name="ph:plus"></emr-icon> Add Chapter
-    </button>
-  </header>
-  
-  <!-- Chapter Form (visible when showChapterForm is true) -->
-  <div class="chapter-form" *ngIf="showChapterForm">
-    <form [formGroup]="chapterForm" (ngSubmit)="addChapter()">
-      <div class="form-group">
-        <label for="chapterTitle">Title</label>
-        <input id="chapterTitle" type="text" formControlName="title" placeholder="Chapter Title">
-      </div>
-      
-      <div class="form-group">
-        <label for="chapterDescription">Description</label>
-        <input id="chapterDescription" type="text" formControlName="description" placeholder="Chapter Description">
-      </div>
-      
-      <div class="form-group">
-        <label for="chapterType">Type</label>
-        <input id="chapterType" type="text" formControlName="type" placeholder="Chapter Type">
-      </div>
-      
-      <div class="form-actions">
-        <button type="button" class="btn-outline" (click)="showChapterForm = false">
-          Cancel
-        </button>
-        <button type="submit" class="btn-primary" [disabled]="chapterForm.invalid">
-          Add Chapter
-        </button>
-      </div>
-    </form>
-  </div>
-  
-  <!-- List of existing chapters -->
-  <ul>
-    <li *ngFor="let chapter of selectedCourse.chapters"
-        [class.active]="selectedChapter && selectedChapter.id === chapter.id"
-        (click)="selectChapter(chapter)">
-      {{ chapter.title }}
-    </li>
-  </ul>
-</section>
-
+    <!-- List of existing chapters -->
+    <div class="chapters-list-container">
+      <h3 class="section-title">Chapters</h3>
+      <ul class="chapters-list">
+        <li *ngFor="let chapter of selectedCourse.chapters"
+            [class.active]="selectedChapter && selectedChapter.id === chapter.id"
+            (click)="selectChapter(chapter)">
+          {{ chapter.title }}
+        </li>
+        <li *ngIf="!selectedCourse.chapters || selectedCourse.chapters.length === 0" class="empty-message">
+          No chapters available yet.
+        </li>
+      </ul>
+    </div>
+  </section>
 
   <!-- Right Panel: Content Section (for the selected chapter) -->
   <section class="content-section" *ngIf="selectedChapter">
     <div class="section-header">
       <h3>{{ selectedChapter.title }} Content</h3>
-      
-      <button class="btn-secondary" (click)="showAddContentForm()">
-        <emr-icon name="ph:plus"></emr-icon> Add Content
-      </button>
-      <button class="btn-secondary" (click)="showAddQuizForm()" style="margin-left: 8px;">
-        <emr-icon name="ph:plus"></emr-icon> Add Quiz
-      </button>
+      <div class="header-actions">
+        <button class="btn-secondary" (click)="showAddContentForm()">
+          <emr-icon name="ph:plus"></emr-icon> Add Content
+        </button>
+        <button class="btn-secondary" (click)="showAddQuizForm()">
+          <emr-icon name="ph:plus"></emr-icon> Add Quiz
+        </button>
+      </div>
     </div>
 
     <!-- Content List rendered as cards -->
@@ -87,36 +90,34 @@
       <div class="content-card" *ngFor="let content of selectedChapter.contents">
         <h4>{{ content.title }}</h4>
         <p class="type-label">Type: {{ content.type }}</p>
-        <!-- Here you could add preview images or icons if available -->
       </div>
       <!-- Show a friendly message if no content exists -->
       <div *ngIf="!selectedChapter.contents || !selectedChapter.contents.length" class="empty-message">
         No content available yet.
       </div>
     </div>
-  </section>
 
-  <!-- Quiz Section -->
-  <section class="quiz-section" *ngIf="selectedChapter">
-    <header class="section-header">
-      <h3>{{ selectedChapter.title }} Quizzes</h3>
-      
-      <button class="btn-secondary" (click)="showAddQuizForm()">
-        <emr-icon name="ph:plus"></emr-icon> Add Quiz
-      </button>
-    </header>
-    <div class="quiz-grid">
-      <div class="quiz-card" *ngFor="let quiz of selectedChapter.quizzes">
-        <h4>{{ quiz.title }}</h4>
-        <p class="description">{{ quiz.description }}</p>
-        <div class="quiz-details">
-          <span class="detail">Time Limit: {{ quiz.timeLimit }} min</span>
-          <span class="detail">Passing Score: {{ quiz.passingScore }}</span>
-          <span class="detail">Max Attempts: {{ quiz.maxAttempts }}</span>
-        </div>
+    <!-- Quiz Section -->
+    <div class="quiz-container">
+      <div class="section-header">
+        <h3>{{ selectedChapter.title }} Quizzes</h3>
+        <button class="btn-secondary" (click)="showAddQuizForm()">
+          <emr-icon name="ph:plus"></emr-icon> Add Quiz
+        </button>
       </div>
-      <div *ngIf="!selectedChapter.quizzes || !selectedChapter.quizzes.length" class="empty-message">
-        No quizzes available yet.
+      <div class="quiz-grid">
+        <div class="quiz-card" *ngFor="let quiz of selectedChapter.quizzes">
+          <h4>{{ quiz.title }}</h4>
+          <p class="description">{{ quiz.description }}</p>
+          <div class="quiz-details">
+            <span class="detail">Time Limit: {{ quiz.timeLimit }} min</span>
+            <span class="detail">Passing Score: {{ quiz.passingScore }}</span>
+            <span class="detail">Max Attempts: {{ quiz.maxAttempts }}</span>
+          </div>
+        </div>
+        <div *ngIf="!selectedChapter.quizzes || !selectedChapter.quizzes.length" class="empty-message">
+          No quizzes available yet.
+        </div>
       </div>
     </div>
   </section>

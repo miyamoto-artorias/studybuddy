@@ -345,7 +345,7 @@ showAddContentForm(): void {
     return !!this.route.snapshot.paramMap.get('id');
   }
 
-  // Add method to toggle course public status
+  // Method to toggle course public status
   toggleCoursePublicStatus(): void {
     if (!this.selectedCourse) return;
     
@@ -355,7 +355,10 @@ showAddContentForm(): void {
     this.courseService.updateCoursePublicStatus(this.selectedCourse.id, newStatus).subscribe({
       next: (response) => {
         console.log('Course status updated successfully:', response);
+        
+        // Update the course public status in UI
         this.selectedCourse.isPublic = newStatus;
+        
         // Update the course in the teacherCourses array as well
         const index = this.teacherCourses.findIndex(c => c.id === this.selectedCourse.id);
         if (index !== -1) {
