@@ -109,23 +109,7 @@
             </div>
           </mat-card-content>
           
-          <mat-card-actions align="end">
-            <button mat-button color="warn" *ngIf="request.status === 'pending'" 
-              (click)="updateRequestStatus(request, 'cancelled')">
-              Cancel Request
-            </button>
-            
-            <button mat-button color="primary" *ngIf="request.status === 'pending'" 
-              (click)="acceptRequest(request)">
-              Approve
-            </button>
-            
-            <!-- Add "Mark as Done" button for accepted sent requests -->
-            <button mat-button color="primary" *ngIf="request.status === 'accepted'" 
-              (click)="markRequestAsDone(request)">
-              Mark as Done
-            </button>
-          </mat-card-actions>
+   
         </mat-card>
       </div>
     </div>

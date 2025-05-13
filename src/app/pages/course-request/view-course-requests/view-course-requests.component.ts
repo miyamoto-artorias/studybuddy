@@ -97,88 +97,10 @@ export class ViewCourseRequestsComponent implements OnInit {
     });
   }
   
-  updateRequestStatus(request: any, newStatus: string): void {
-    this.isLoading = true;
-    
-    this.courseRequestService.updateCourseRequestStatus(request.id, newStatus).subscribe({
-      next: (updatedRequest) => {
-        // Get the status from the response if available, otherwise use the requested status
-        const responseStatus = updatedRequest?.status || newStatus;
-        console.log('Status from backend response:', responseStatus);
-        
-        // Update the request in our local array
-        if (this.sentRequests.some(r => r.id === request.id)) {
-          const index = this.sentRequests.findIndex(r => r.id === request.id);
-          this.sentRequests[index] = { ...this.sentRequests[index], status: responseStatus };
-        }
-        
-        this.snackBar.open(`Request ${responseStatus}`, 'Close', { duration: 3000 });
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error(`Failed to update request status to ${newStatus}:`, error);
-        this.snackBar.open(`Failed to update request status to ${newStatus}`, 'Close', { duration: 3000 });
-        this.isLoading = false;
-      }
-    });
-  }
   
-  markRequestAsDone(request: any): void {
-    this.isLoading = true;
-    
-    // Log request details before sending
-    console.log('Marking request as done:', request);
-    console.log('Request ID:', request.id);
-    
-    this.courseRequestService.updateRequestStatusDirectly(request.id, 'done').subscribe({
-      next: (result) => {
-        console.log('Successfully marked request as done, response:', result);
-        
-        // Update the request in our local array
-        if (this.sentRequests.some(r => r.id === request.id)) {
-          const index = this.sentRequests.findIndex(r => r.id === request.id);
-          this.sentRequests[index] = { ...this.sentRequests[index], status: 'done' };
-        }
-        
-        this.snackBar.open('Request marked as done successfully', 'Close', { duration: 3000 });
-        this.isLoading = false;
-        
-        // Reload requests to ensure UI is up to date
-        this.refreshRequests();
-      },
-      error: (error) => {
-        console.error('Failed to mark request as done:', error);
-        console.error('Error details:', error.error || error.message || error);
-        
-        // Show a more detailed error message
-        let errorMessage = 'Failed to mark request as done';
-        if (error.error?.message) {
-          errorMessage += `: ${error.error.message}`;
-        } else if (error.status) {
-          errorMessage += ` (Status: ${error.status})`;
-        }
-        
-        this.snackBar.open(errorMessage, 'Close', { duration: 5000 });
-        this.isLoading = false;
-      }
-    });
-  }
   
-  acceptRequest(request: any): void {
-    // Store the selected request
-    this.selectedRequest = request;
-    
-    // Pre-fill the form with request data
-    this.courseForm.patchValue({
-      title: request.subject || '',
-      description: '',
-      price: request.price || 5
-    });
-    
-    // Show the course creation form
-    this.showCourseForm = true;
-  }
   
+
   // Method to handle file input
   onFileSelected(event: Event): void {
     const element = event.target as HTMLInputElement;
