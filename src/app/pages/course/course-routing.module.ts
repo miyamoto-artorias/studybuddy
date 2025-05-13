@@ -5,6 +5,7 @@ import { CourseDetailComponent } from './course-detail/course-detail.component';
 import { EnrolledCoursesListComponent } from './enrolled-courses-list/enrolled-courses-list.component';
 import { EnrolledCourseViewComponent } from './enrolled-course-view/enrolled-course-view.component';
 import { TeacherGuard } from '../../guards/teacher.guard';
+import { TeacherCoursesListComponent } from '../course-request/teacher-courses-list/teacher-courses-list.component';
 
 const routes: Routes = [
   {
@@ -42,6 +43,10 @@ const routes: Routes = [
   {
     path: 'enrolled-courses-view/:id',
     component: EnrolledCourseViewComponent
+  },
+  {
+    path: 'teacher-courses-list',
+    component: TeacherCoursesListComponent
   }
 ];
 
