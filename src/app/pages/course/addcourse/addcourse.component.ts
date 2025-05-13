@@ -12,15 +12,16 @@ import { CommonModule } from '@angular/common';
   templateUrl: './addcourse.component.html',
   styleUrls: ['./addcourse.component.scss']
 })
-export class AddcourseComponent implements OnInit {
-  course = {
+export class AddcourseComponent implements OnInit {  course = {
     title: '',
     description: '',
-    picture: '',
     price: 0,
     categoryIds: [] as number[],
     tags: [] as string[]
   };
+  
+  pictureFile: File | null = null;
+  imagePreview: string | null = null;
   categories: any[] = [];
   teacherId = 0;
   isLoading = false;
@@ -65,7 +66,6 @@ export class AddcourseComponent implements OnInit {
       this.course.categoryIds.splice(index, 1);
     }
   }
-
   onSubmit(form: NgForm): void {
     if (!this.isAuthorized) return;
 
@@ -83,20 +83,29 @@ export class AddcourseComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    // Format the course data
-    const courseData = {
-      title: this.course.title,
-      description: this.course.description,
-      picture: this.course.picture || 'default-course.png', // Provide a default image if none is specified
-      price: Number(this.course.price), // Ensure price is a number
-      categoryIds: this.course.categoryIds,
-      tags: this.course.tags
-    };
+    // Create FormData object for multipart/form-data
+    const formData = new FormData();
+    formData.append('title', this.course.title);
+    formData.append('description', this.course.description);
+    formData.append('price', this.course.price.toString());
+    
+    // Add picture file if selected
+    if (this.pictureFile) {
+      formData.append('pictureFile', this.pictureFile);
+    }
+    
+    // Add all category IDs
+    this.course.categoryIds.forEach(categoryId => {
+      formData.append('categoryIds', categoryId.toString());
+    });
+    
+    // Add all tags
+    this.course.tags.forEach(tag => {
+      formData.append('tags', tag);
+    });
 
-    console.log('Submitting course data:', courseData);
-
-    this.courseService.createCourse(this.teacherId, courseData).subscribe({
-      next: (response) => {
+    console.log('Submitting course data with image');    this.courseService.createCourseWithImage(this.teacherId, formData).subscribe({
+      next: (response: any) => {
         this.isLoading = false;
         this.successMessage = 'Course created successfully!';
         console.log('Course created by teacher ID:', this.teacherId, response);
@@ -106,7 +115,7 @@ export class AddcourseComponent implements OnInit {
           this.router.navigate(['/courses']);
         }, 5000);
       },
-      error: (error) => {
+      error: (error: any) => {
         this.isLoading = false;
         this.errorMessage = error.error?.message || 'Failed to create course';
         console.error('Course creation failed:', error);
@@ -121,11 +130,23 @@ export class AddcourseComponent implements OnInit {
       this.course.tags.push(this.newTag.trim());
       this.newTag = '';
     }
-  }
-  removeTag(tag: string): void {
+  }  removeTag(tag: string): void {
     const index = this.course.tags.indexOf(tag);
     if (index !== -1) {
       this.course.tags.splice(index, 1);
+    }
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.pictureFile = input.files[0];
+      // Create a preview of the image
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result as string;
+      };
+      reader.readAsDataURL(this.pictureFile);
     }
   }
 

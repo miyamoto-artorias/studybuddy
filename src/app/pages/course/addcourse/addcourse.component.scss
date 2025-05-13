@@ -242,6 +242,26 @@ small.text-danger {
   opacity: 1;
 }
 
+.file-upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.image-preview {
+  max-width: 300px;
+  margin-top: 1rem;
+  border: 1px solid var(--gray-medium);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 .selected-categories-container {
   display: flex;
   flex-wrap: wrap;

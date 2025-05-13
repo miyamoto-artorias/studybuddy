@@ -46,22 +46,24 @@
       <small *ngIf="courseForm.controls['description']?.invalid && courseForm.controls['description']?.touched" class="text-danger">
         Description is required (10-500 characters)
       </small>
-    </div>
-
-    <div class="form-group">
-      <label for="picture">Course Image URL</label>
-      <input 
-        type="url" 
-        id="picture" 
-        name="picture" 
-        [(ngModel)]="course.picture" 
-        class="form-control"
-        placeholder="https://example.com/course-image.jpg"
-        pattern="https?://.+"
-      >
-      <small *ngIf="courseForm.controls['picture']?.invalid && courseForm.controls['picture']?.touched" class="text-danger">
-        Please enter a valid URL starting with http:// or https://
-      </small>
+    </div>    <div class="form-group">
+      <label for="picture">Course Image</label>
+      <div class="file-upload-container">
+        <input 
+          type="file" 
+          id="pictureFile" 
+          name="pictureFile"
+          (change)="onFileSelected($event)"
+          class="form-control"
+          accept="image/*"
+        >
+        <div class="image-preview" *ngIf="imagePreview">
+          <img [src]="imagePreview" alt="Course image preview">
+        </div>
+        <small class="text-muted">
+          Select an image file for your course (JPG, PNG, GIF).
+        </small>
+      </div>
     </div>
 
     <div class="form-group">

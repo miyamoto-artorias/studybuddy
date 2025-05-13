@@ -447,4 +447,37 @@ createCourseForRequest(requestId: number, teacherId: number, courseData: any): O
     })
   );
 }
+
+// Add to CourseService at the end
+
+createCourseWithImage(teacherId: number, formData: FormData): Observable<any> {
+  const url = `${this.coursesbaseUrl}/${teacherId}`;
+  
+  // No need to set Content-Type header, the browser will set it automatically with boundary
+  return this.http.post(url, formData).pipe(
+    tap(response => {
+      console.log('Course with image created successfully:', response);
+      // Refresh teacher courses after creation
+      this.http.get(`${this.coursesbaseUrl}/teacher/${teacherId}`).pipe(
+        tap(courses => {
+          console.log('Updated teacher courses:', courses);
+          // Update localStorage directly
+          const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+          if (currentUser.userType === 'TEACHER') {
+            localStorage.setItem('teacherCourses', JSON.stringify(courses));
+            // Also update the current user object in storage
+            localStorage.setItem('currentUser', JSON.stringify({
+              ...currentUser,
+              courses
+            }));
+          }
+        })
+      ).subscribe();
+    }),
+    catchError(error => {
+      console.error('Course creation with image failed:', error);
+      throw error;
+    })
+  );
+}
 }
