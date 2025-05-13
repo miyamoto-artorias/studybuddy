@@ -481,6 +481,18 @@ createCourseWithImage(teacherId: number, formData: FormData): Observable<any> {
   );
 }
 
+// Get teacher courses
+getTeacherCourses(teacherId: number): Observable<any[]> {
+  const url = `${this.coursesbaseUrl}/teacher/${teacherId}`;
+  return this.http.get<any[]>(url).pipe(
+    tap(courses => console.log('Fetched teacher courses:', courses)),
+    catchError(error => {
+      console.error('Error fetching teacher courses:', error);
+      return throwError(() => error);
+    })
+  );
+}
+
 // Get full image URL for course images
 getFullImageUrl(imagePath: string | null): string {
   if (!imagePath) {
