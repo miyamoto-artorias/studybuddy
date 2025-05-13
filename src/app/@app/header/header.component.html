@@ -122,9 +122,13 @@
     <emr-dicebear key="PS" class="size-14"/>
     <div class="-mt-0.5">
       <div class="flex items-center gap-2">
-        omar soussi
+        {{ getCurrentUser().firstName || getCurrentUser().username || 'User' }} 
+        {{ getCurrentUser().lastName || '' }}
+        <span *ngIf="getCurrentUser().userType" class="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+          {{ getCurrentUser().userType }}
+        </span>
       </div>
-      <div class="text-xs text-gray-500 mt-0.5 dark:text-gray-400">omar&#64;mail.com</div>
+      <div class="text-xs text-gray-500 mt-0.5 dark:text-gray-400">{{ getCurrentUser().email || 'No email available' }}</div>
     </div>
   </div>
   <div class="px-4 pb-4">
@@ -134,7 +138,7 @@
     </button>
   </div>
   <mat-divider/>
-  <a mat-menu-item>
+  <a mat-menu-item routerLink="/pages/settings/profile">
     <mat-icon>tune</mat-icon>
     <span>Settings</span>
   </a>
@@ -156,7 +160,7 @@
     <span>Add Account</span>
   </a>
   <mat-divider></mat-divider>
-  <a mat-menu-item>
+  <a mat-menu-item (click)="logout()">
     <mat-icon>logout</mat-icon>
     <span>Logout</span>
   </a>

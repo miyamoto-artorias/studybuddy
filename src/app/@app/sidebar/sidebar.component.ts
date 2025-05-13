@@ -131,7 +131,7 @@ export class SidebarComponent implements OnInit {
         {
           key: uuid(),
           type: 'link',
-          name: 'Basic',
+          name: 'Welcom page',
           link: '/pages/dashboard/basic'
         },          
        {

@@ -11,6 +11,7 @@ import { LayoutApiService } from '@elementar-ui/components';
 import { DicebearComponent } from '@elementar-ui/components';
 import { AssistantSearchComponent, NotificationsPopoverComponent } from '@store/header';
 import { PopoverTriggerForDirective } from '@elementar-ui/components';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -41,6 +42,7 @@ import { PopoverTriggerForDirective } from '@elementar-ui/components';
 export class HeaderComponent {
   protected _themeManager = inject(ThemeManagerService);
   private _layoutApi = inject(LayoutApiService);
+  private authService = inject(AuthService);
 
   sidebarShown= computed(() => {
     return this._layoutApi.isSidebarShown('root')
@@ -52,5 +54,20 @@ export class HeaderComponent {
     } else {
       this._layoutApi.showSidebar('root');
     }
+  }
+
+  /**
+   * Log out the current user
+   * Clears all storage and redirects to login page
+   */
+  logout(): void {
+    this.authService.logout();
+  }
+
+  /**
+   * Get the current user's information
+   */
+  getCurrentUser(): any {
+    return this.authService.getCurrentUser();
   }
 }

@@ -171,7 +171,10 @@ export class AuthService {
 
   logout() {
     console.log('Performing full logout');
+    // Clear all storage
     localStorage.clear();
+    sessionStorage.clear();
+    // Navigate to the login page with full URL
     this.router.navigate(['/login']);
   }
 
