@@ -5,6 +5,7 @@ import { AuthService } from '../../../services/auth.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from "../../../../../projects/components/src/icon/icon/icon.component";
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   imports: [CommonModule, ReactiveFormsModule, IconComponent],
@@ -27,12 +28,12 @@ export class TeacherCoursesComponent implements OnInit {
   contentForm: FormGroup;
   fileToUpload: File | null = null;
   // Quiz Form
-  quizForm: FormGroup;
-
-  constructor(
+  quizForm: FormGroup;  constructor(
     private courseService: CourseService,
     private authService: AuthService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    public route: ActivatedRoute, // Changed to public for template access
+    private router: Router
   ) {
     this.chapterForm = this.fb.group({
       title: ['', Validators.required],
@@ -55,9 +56,19 @@ export class TeacherCoursesComponent implements OnInit {
       questions: this.fb.array([])
     });
   }
-
   ngOnInit(): void {
-    this.loadTeacherCourses();
+    // Check if there's an ID parameter in the route
+    this.route.paramMap.subscribe(params => {
+      const courseId = params.get('id');
+      
+      if (courseId) {
+        // If we have a course ID, load just that specific course
+        this.loadSingleCourse(parseInt(courseId, 10));
+      } else {
+        // Otherwise, load all teacher courses (original behavior)
+        this.loadTeacherCourses();
+      }
+    });
   }
 
   loadTeacherCourses(): void {
@@ -74,8 +85,27 @@ export class TeacherCoursesComponent implements OnInit {
       });
     }
   }
-
+  
+  loadSingleCourse(courseId: number): void {
+    this.courseService.getCourseById(courseId).subscribe({
+      next: (course) => {
+        // Set this course as the selected course and add it to the teacher courses array
+        this.selectedCourse = course;
+        this.teacherCourses = [course];
+      },
+      error: (err) => {
+        console.error('Error loading course:', err);
+      }
+    });
+  }
   selectCourse(course: any): void {
+    // If in list mode, navigate to the specific course editing route
+    if (!this.route.snapshot.paramMap.get('id')) {
+      this.router.navigate(['/pages/course/teachercourses', course.id]);
+      return;
+    }
+    
+    // If already in single course mode, just update the selection
     this.selectedCourse = { ...course };
     this.selectedChapter = null;
     this.showChapterForm = false;
@@ -95,9 +125,13 @@ showAddContentForm(): void {
   this.fileToUpload = null;
 }
   
-
   showAddChapterForm(): void {
     this.showChapterForm = true;
+  }
+  
+  navigateToList(): void {
+    // Navigate back to the courses list
+    this.router.navigate(['/pages/course/teacher-courses-list']);
   }
 
   handleFileInput(event: any): void {
@@ -267,5 +301,10 @@ showAddContentForm(): void {
         alert('Failed to add quiz: ' + (err.error?.message || 'Unknown error'));
       }
     });
+  }
+
+  // Helper method to check if we're in single course mode
+  isSingleCourseMode(): boolean {
+    return !!this.route.snapshot.paramMap.get('id');
   }
 }

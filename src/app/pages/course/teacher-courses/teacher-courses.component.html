@@ -1,6 +1,13 @@
-<div class="teacher-courses-container">
+<div class="teacher-courses-container" [class.single-course-mode]="route.snapshot.paramMap.get('id')">
+  <!-- Back Navigation Button (visible when editing a specific course) -->
+  <div *ngIf="route.snapshot.paramMap.get('id')" class="back-navigation">
+    <button class="btn-secondary" (click)="navigateToList()">
+      <emr-icon name="ph:arrow-left"></emr-icon> Back to Courses
+    </button>
+  </div>
+  
   <!-- Left Panel: Teacher Courses List -->
-  <aside class="courses-list">
+  <aside class="courses-list" *ngIf="!route.snapshot.paramMap.get('id')">
     <h2>My Courses</h2>
     <ul>
       <li *ngFor="let course of teacherCourses" 
@@ -10,9 +17,7 @@
       </li>
     </ul>
   </aside>
-
   <!-- Center Panel: Chapters List (for the selected course) -->
-<!-- Center Panel: Chapters List (for the selected course) -->
 <section class="chapters-section" *ngIf="selectedCourse">
   <header>
     <h2>{{ selectedCourse.title }}</h2>

@@ -80,10 +80,9 @@ export class TeacherCoursesListComponent implements OnInit {
       }
     });
   }
-
   viewCourse(courseId: number): void {
-    // Navigate to course details/edit page
-    this.router.navigate(['/pages/course', courseId]);
+    // Navigate to course edit page in teacher courses component
+    this.router.navigate(['/pages/course/teachercourses', courseId]);
   }
 
   createNewCourse(): void {

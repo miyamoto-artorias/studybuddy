@@ -4,6 +4,15 @@
     height: 100vh;
     background: #f7f7f7;
     font-family: 'Segoe UI', sans-serif;
+  
+    &.single-course-mode {
+      grid-template-columns: 1fr !important; /* Override default grid layout */
+  
+      .chapters-section {
+        margin-left: 0;
+        max-width: 100%;
+      }
+    }
   }
   
   /* Left Panel: Courses list */
@@ -394,4 +403,19 @@
       }
     }
   }
-    
+  
+  .back-navigation {
+    margin-bottom: 20px;
+    padding: 10px 0;
+  
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+  
+      emr-icon {
+        font-size: 18px;
+      }
+    }
+  }

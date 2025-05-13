@@ -20,10 +20,15 @@ const routes: Routes = [
     title: 'addcourse Dashboard',
     loadComponent: () => import('./addcourse/addcourse.component').then(c => c.AddcourseComponent),
     canActivate: [TeacherGuard]
-  },
-  {
+  },  {
     path: 'teachercourses',
     title: 'teachercourses Dashboard',
+    loadComponent: () => import('./teacher-courses/teacher-courses.component').then(c => c.TeacherCoursesComponent),
+    canActivate: [TeacherGuard]
+  },
+  {
+    path: 'teachercourses/:id',
+    title: 'Edit Course',
     loadComponent: () => import('./teacher-courses/teacher-courses.component').then(c => c.TeacherCoursesComponent),
     canActivate: [TeacherGuard]
   },

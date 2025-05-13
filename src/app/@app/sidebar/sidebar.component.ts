@@ -82,7 +82,8 @@ export class SidebarComponent implements OnInit {
       type: 'link',
       name: 'Requested Courses Teacher',
       link: '/pages/course-request/requested-courses-teacher'
-    }
+    },
+    
   ];
 
   // Course items - will filter based on user type
@@ -95,27 +96,7 @@ export class SidebarComponent implements OnInit {
     }
   ];
 
-  // Teacher-only course items
-  teacherOnlyCourseItems: NavigationItem[] = [
-    {
-      key: uuid(),
-      type: 'link',
-      name: 'addcourse',
-      link: '/pages/course/addcourse'
-    },
-    {
-      key: uuid(),
-      type: 'link',
-      name: 'teachercourses',
-      link: '/pages/course/teachercourses'
-    },
-    {
-      key: uuid(),
-      type: 'link',
-      name: 'teacher-courses-list',
-      link: '/pages/course/teacher-courses-list'
-    }
-  ];
+
 
   // Common courses item that's visible to all
   commonCourseItems: NavigationItem[] = [
@@ -126,8 +107,34 @@ export class SidebarComponent implements OnInit {
       link: '/pages/course/courses'
     }
   ];
-
   navItems: NavigationItem[] = [
+    {
+      key: 'Teacher_pages',
+      type: 'group',
+      name: 'Teacher pages',
+      icon: 'school', // Changed the icon to 'school' to better represent teacher-related content
+      children: [
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Teacher Courses',
+          link: '/pages/course/teacher-courses-list'
+        },
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Add Course',
+          link: '/pages/course/addcourse'
+        },
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Teacher Requested courses',
+          link: '/pages/course-request/requested-courses-teacher'
+        }
+      ]
+    },
+    
     {
       key: 'dashboard',
       type: 'group',
@@ -175,6 +182,7 @@ export class SidebarComponent implements OnInit {
       name: 'Settings',
       icon: 'settings',
       children: [
+        
         {key: uuid(),
         type: 'link',
         name: 'Profile',
@@ -258,10 +266,16 @@ export class SidebarComponent implements OnInit {
   ];
   navItemLinks: NavigationItem[] = [];
   activeKey: null | string = null;
-
   ngOnInit() {
     // Check if user is a teacher
     this.isTeacher = this.authService.isUserTeacher();
+    
+    // Show/hide the Teacher pages section based on user role
+    const teacherPagesIndex = this.navItems.findIndex(item => item.key === 'Teacher_pages');
+    if (teacherPagesIndex !== -1 && !this.isTeacher) {
+      // Remove the Teacher pages section if user is not a teacher
+      this.navItems.splice(teacherPagesIndex, 1);
+    }
     
     // Populate Course Request items based on user type
     const courseRequestGroup = this.navItems.find(item => item.key === 'Course Request');
@@ -281,7 +295,7 @@ export class SidebarComponent implements OnInit {
       
       // Add teacher-only items if user is a teacher
       if (this.isTeacher) {
-        coursesGroup.children = [...this.courseItems, ...this.teacherOnlyCourseItems, ...this.commonCourseItems];
+        coursesGroup.children = [...this.courseItems, ...this.commonCourseItems];
       }
     }
 
