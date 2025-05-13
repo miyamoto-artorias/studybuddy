@@ -122,11 +122,26 @@ export class AddcourseComponent implements OnInit {
       this.newTag = '';
     }
   }
-
   removeTag(tag: string): void {
     const index = this.course.tags.indexOf(tag);
     if (index !== -1) {
       this.course.tags.splice(index, 1);
     }
+  }
+
+  onCategorySelect(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const categoryId = Number(selectElement.value);
+    
+    if (categoryId && !this.course.categoryIds.includes(categoryId)) {
+      this.course.categoryIds.push(categoryId);
+      // Reset the select element
+      selectElement.value = '';
+    }
+  }
+
+  getCategoryName(categoryId: number): string {
+    const category = this.categories.find(cat => cat.id === categoryId);
+    return category ? category.title : 'Unknown Category';
   }
 }
