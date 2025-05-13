@@ -557,7 +557,12 @@ updateCoursePublicStatus(courseId: number, isPublic: boolean): Observable<any> {
   const url = `${this.coursesbaseUrl}/${courseId}/public`;
   console.log(`Updating course ${courseId} public status to: ${isPublic}`);
   
-  return this.http.patch(url, { isPublic }).pipe(
+  // Create request body with exact format
+  const requestBody = {
+    "isPublic": isPublic
+  };
+  
+  return this.http.put(url, requestBody).pipe(
     tap(response => console.log('Course public status updated:', response)),
     catchError(error => {
       console.error('Failed to update course public status:', error);
