@@ -84,7 +84,7 @@ export class PaymentHistoryComponent implements OnInit {
   cellRenderers: DataViewCellRenderer[] = [
     {
       dataRenderer: 'author',                                                                             //    DvAuthorRendererComponent
-      component: () => import('../../../pages/content/_renderers/dv-author-renderer/dv-author-renderer.component').then(m => m.DvAuthorRendererComponent)
+      component: () => import('./dv-author-renderer/dv-author-renderer.component').then(m => m.DvAuthorRendererComponent)
     }
   ];
 
