@@ -76,15 +76,7 @@ export class SidebarComponent implements OnInit {
   ];
 
   // Teacher-only course request items
-  teacherOnlyCourseRequestItems: NavigationItem[] = [
-    {
-      key: uuid(),
-      type: 'link',
-      name: 'Requested Courses Teacher',
-      link: '/pages/course-request/requested-courses-teacher'
-    },
-    
-  ];
+
 
   // Course items - will filter based on user type
   courseItems: NavigationItem[] = [
@@ -294,9 +286,7 @@ export class SidebarComponent implements OnInit {
       courseRequestGroup.children = [...this.courseRequestItems];
       
       // Add teacher-only items if user is a teacher
-      if (this.isTeacher) {
-        courseRequestGroup.children = [...courseRequestGroup.children, ...this.teacherOnlyCourseRequestItems];
-      }
+
     }
     
     // Populate Courses items based on user type

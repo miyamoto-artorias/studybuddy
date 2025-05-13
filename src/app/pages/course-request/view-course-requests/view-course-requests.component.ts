@@ -12,7 +12,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { CourseRequestService } from '../../../services/course-request.service';
 import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
-import { forkJoin, of } from 'rxjs';
+import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 @Component({
@@ -35,9 +35,6 @@ import { catchError } from 'rxjs/operators';
 })
 export class ViewCourseRequestsComponent implements OnInit {
   sentRequests: any[] = [];
-  receivedRequests: any[] = [];
-  isStudent: boolean = true; // Default to true - everyone can send requests
-  isTeacher: boolean = false;
   isLoading: boolean = true;
   currentUserId: number;
   
@@ -48,8 +45,6 @@ export class ViewCourseRequestsComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {
     this.currentUserId = this.authService.getUserId();
-    // Everyone can send requests, so no need for isStudent check
-    this.isTeacher = this.authService.isUserTeacher();
   }
   
   ngOnInit(): void {
@@ -57,41 +52,18 @@ export class ViewCourseRequestsComponent implements OnInit {
   }
   
   loadRequests(): void {
-    // Create an array to hold our observables
-    const requests = [];
+    this.isLoading = true;
     
-    // Always load sent requests - everyone can send requests
-    requests.push(
-      this.courseRequestService.getCourseRequestsByStudentId(this.currentUserId).pipe(
-        catchError(error => {
-          console.error('Failed to load sent requests:', error);
-          this.snackBar.open('Failed to load sent requests', 'Close', { duration: 3000 });
-          return of([]);
-        })
-      )
-    );
-    
-    // If user is a teacher, also load received requests
-    if (this.isTeacher) {
-      requests.push(
-        this.courseRequestService.getCourseRequestsByTeacherId(this.currentUserId).pipe(
-          catchError(error => {
-            console.error('Failed to load received requests:', error);
-            this.snackBar.open('Failed to load received requests', 'Close', { duration: 3000 });
-            return of([]);
-          })
-        )
-      );
-    } else {
-      // Push an empty array for the second position if user is not a teacher
-      requests.push(of([]));
-    }
-    
-    // Execute all requests in parallel
-    forkJoin(requests).subscribe({
-      next: ([sentData, receivedData]) => {
+    // Load sent requests
+    this.courseRequestService.getCourseRequestsByStudentId(this.currentUserId).pipe(
+      catchError(error => {
+        console.error('Failed to load sent requests:', error);
+        this.snackBar.open('Failed to load sent requests', 'Close', { duration: 3000 });
+        return of([]);
+      })
+    ).subscribe({
+      next: (sentData) => {
         this.sentRequests = sentData || [];
-        this.receivedRequests = receivedData || [];
         this.isLoading = false;
       },
       error: (error) => {
@@ -111,15 +83,10 @@ export class ViewCourseRequestsComponent implements OnInit {
         const responseStatus = updatedRequest?.status || newStatus;
         console.log('Status from backend response:', responseStatus);
         
-        // Update the request in our local arrays
+        // Update the request in our local array
         if (this.sentRequests.some(r => r.id === request.id)) {
           const index = this.sentRequests.findIndex(r => r.id === request.id);
           this.sentRequests[index] = { ...this.sentRequests[index], status: responseStatus };
-        }
-        
-        if (this.receivedRequests.some(r => r.id === request.id)) {
-          const index = this.receivedRequests.findIndex(r => r.id === request.id);
-          this.receivedRequests[index] = { ...this.receivedRequests[index], status: responseStatus };
         }
         
         this.snackBar.open(`Request ${responseStatus}`, 'Close', { duration: 3000 });
@@ -128,80 +95,6 @@ export class ViewCourseRequestsComponent implements OnInit {
       error: (error) => {
         console.error(`Failed to update request status to ${newStatus}:`, error);
         this.snackBar.open(`Failed to update request status to ${newStatus}`, 'Close', { duration: 3000 });
-        this.isLoading = false;
-      }
-    });
-  }
-  
-  acceptRequest(request: any): void {
-    this.isLoading = true;
-    
-    this.courseRequestService.acceptCourseRequest(request.id).subscribe({
-      next: (result) => {
-        // Update the request in our local arrays using the status from the backend response
-        if (this.receivedRequests.some(r => r.id === request.id)) {
-          const index = this.receivedRequests.findIndex(r => r.id === request.id);
-          // Use the status from the backend response if available, otherwise use 'accepted'
-          const newStatus = result?.status || 'accepted';
-          console.log('New status from backend:', newStatus);
-          this.receivedRequests[index] = { ...this.receivedRequests[index], status: newStatus };
-        }
-        
-        // Create a course for the approved request
-        const courseData = {
-          title: request.subject,
-          description: "desc",
-          picture: "webdev.png",
-          price: request.price || 5,
-          categoryIds: request.categoryIds || [1, 2]
-        };
-        
-        // Extract category IDs from the request if available
-        if (request.categories && request.categories.length > 0) {
-          courseData.categoryIds = request.categories.map((cat: any) => cat.id);
-        }
-        
-        this.courseService.createCourseForRequest(request.id, this.currentUserId, courseData).subscribe({
-          next: (courseResult) => {
-            console.log('Course created for request:', courseResult);
-            this.snackBar.open('Request approved and course created successfully', 'Close', { duration: 3000 });
-            this.isLoading = false;
-          },
-          error: (error) => {
-            console.error('Failed to create course for request:', error);
-            this.snackBar.open('Request approved but failed to create course', 'Close', { duration: 3000 });
-            this.isLoading = false;
-          }
-        });
-      },
-      error: (error) => {
-        console.error('Failed to accept request:', error);
-        this.snackBar.open('Failed to accept request', 'Close', { duration: 3000 });
-        this.isLoading = false;
-      }
-    });
-  }
-  
-  rejectRequest(request: any): void {
-    this.isLoading = true;
-    
-    this.courseRequestService.rejectCourseRequest(request.id).subscribe({
-      next: (result) => {
-        // Update the request in our local arrays
-        if (this.receivedRequests.some(r => r.id === request.id)) {
-          const index = this.receivedRequests.findIndex(r => r.id === request.id);
-          // Use the status from the backend response if available, otherwise use 'rejected'
-          const newStatus = result?.status || 'rejected';
-          console.log('New status from backend:', newStatus);
-          this.receivedRequests[index] = { ...this.receivedRequests[index], status: newStatus };
-        }
-        
-        this.snackBar.open('Request rejected', 'Close', { duration: 3000 });
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Failed to reject request:', error);
-        this.snackBar.open('Failed to reject request', 'Close', { duration: 3000 });
         this.isLoading = false;
       }
     });
@@ -218,12 +111,7 @@ export class ViewCourseRequestsComponent implements OnInit {
       next: (result) => {
         console.log('Successfully marked request as done, response:', result);
         
-        // Update the request in our local arrays
-        if (this.receivedRequests.some(r => r.id === request.id)) {
-          const index = this.receivedRequests.findIndex(r => r.id === request.id);
-          this.receivedRequests[index] = { ...this.receivedRequests[index], status: 'done' };
-        }
-        
+        // Update the request in our local array
         if (this.sentRequests.some(r => r.id === request.id)) {
           const index = this.sentRequests.findIndex(r => r.id === request.id);
           this.sentRequests[index] = { ...this.sentRequests[index], status: 'done' };
