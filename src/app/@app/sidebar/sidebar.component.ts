@@ -201,70 +201,9 @@ export class SidebarComponent implements OnInit {
         link: '/pages/settings/payment-history'}
       ]
      },
-    {
-      key: 'applications',
-      type: 'group',
-      icon: 'apps',
-      name: 'Applications',
-      children: [
-      
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'File Manager',
-          link: '/pages/applications/file-manager'
-        },
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'Kanban Board',
-          link: '/pages/applications/kanban-board'
-        }
-      ]
-    },
     
     
     
-    {
-      key: 'content',
-      type: 'group',
-      icon: 'edit_note',
-      name: 'Content',
-      children: [
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'Post List',
-          link: '/pages/content/posts/list'
-        }
-      ]
-    },
-    {
-      key: 'error-pages',
-      type: 'group',
-      icon: 'error',
-      name: 'Error Pages',
-      children: [
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'Not Found (404)',
-          link: '/error/not-found'
-        },
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'Server Error (500)',
-          link: '/error/internal-server-error'
-        },
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'Forbidden (401)',
-          link: '/error/forbidden'
-        }
-      ]
-    },
     
   ];
   navItemLinks: NavigationItem[] = [];
