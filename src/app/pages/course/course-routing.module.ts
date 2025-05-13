@@ -16,6 +16,10 @@ const routes: Routes = [
     component: CourseListComponent
   },
   {
+    path: 'courses/:id',
+    component: CourseDetailComponent
+  },
+  {
     path: 'course/:id',
     component: CourseDetailComponent
   },

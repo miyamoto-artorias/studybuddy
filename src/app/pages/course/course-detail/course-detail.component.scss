@@ -261,3 +261,191 @@
     }
   }
 }
+
+.course-detail-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+
+  .course-header {
+    margin-bottom: 1.5rem;
+    
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    .course-meta {
+      display: flex;
+      gap: 1rem;
+      color: #666;
+
+      .price {
+        font-weight: bold;
+        color: #2ecc71;
+      }
+    }
+  }
+
+  .course-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .course-description {
+      h2 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        color: #333;
+      }
+
+      p {
+        line-height: 1.5;
+        color: #666;
+        font-size: 0.95rem;
+      }
+    }
+
+    .course-teacher {
+      h2 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        color: #333;
+      }
+
+      .teacher-info {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+
+        .teacher-avatar {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+
+        .teacher-details {
+          h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1rem;
+          }
+
+          p {
+            margin: 0.25rem 0 0;
+            color: #666;
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+
+    .course-meta-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      .meta-item {
+        .meta-label {
+          display: block;
+          font-size: 0.9rem;
+          font-weight: 500;
+          color: #555;
+          margin-bottom: 0.25rem;
+        }
+      }
+
+      .categories-list, .tags-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .category-badge {
+        background: #f8f9fa;
+        color: #2c3e50;
+        padding: 0.25rem 0.5rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        border: 1px solid #dee2e6;
+      }
+
+      .tag-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        background-color: #e1f5fe;
+        color: #0288d1;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        border: 1px solid #b3e5fc;
+      }
+    }
+
+    .course-actions {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      text-align: center;
+
+      .enrolled-message {
+        font-weight: 500;
+        color: #2ecc71;
+      }
+
+      .purchase-button {
+        background: #2ecc71;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s;
+
+        &:hover {
+          background: #27ae60;
+        }
+
+        &:disabled {
+          background: #95a5a6;
+          cursor: not-allowed;
+        }
+      }
+
+      .no-card-message {
+        color: #666;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+
+        .btn-primary {
+          display: inline-block;
+          margin-top: 0.75rem;
+          padding: 0.5rem 1rem;
+          background: #3498db;
+          color: white;
+          text-decoration: none;
+          border-radius: 4px;
+          transition: background 0.3s;
+          font-size: 0.9rem;
+
+          &:hover {
+            background: #2980b9;
+          }
+        }
+      }
+
+      .error-message {
+        color: #e74c3c;
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+      }
+    }
+  }
+}

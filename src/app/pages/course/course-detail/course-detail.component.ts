@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-course-detail',
@@ -11,7 +12,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule, RouterModule]
 })
-export class CourseDetailComponent implements OnInit {
+export class CourseDetailComponent implements OnInit, OnDestroy {
   course: any = null;
   loading = true;
   error: string | null = null;
@@ -19,6 +20,7 @@ export class CourseDetailComponent implements OnInit {
   userCard: any = null;
   isEnrolled = false;
   hasCard = false;
+  private routeSubscription: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -27,10 +29,29 @@ export class CourseDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const courseId = Number(this.route.snapshot.paramMap.get('id'));
-    this.loadCourseDetails(courseId);
-    this.checkEnrollmentStatus(courseId);
-    this.checkCardStatus();
+    // Debug log
+    console.log('CourseDetailComponent initialized, current route:', this.route);
+    
+    // Subscribe to route params to handle navigation between different courses
+    this.routeSubscription = this.route.paramMap.subscribe(params => {
+      console.log('Route params updated:', params);
+      const courseId = Number(params.get('id'));
+      console.log('Extracted courseId:', courseId);
+      
+      if (courseId) {
+        this.loadCourseDetails(courseId);
+        this.checkEnrollmentStatus(courseId);
+        this.checkCardStatus();
+      } else {
+        console.error('No course ID found in route params');
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
+    }
   }
 
   loadCourseDetails(courseId: number): void {

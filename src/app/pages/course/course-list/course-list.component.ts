@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
 import { forkJoin, of } from 'rxjs';
@@ -24,12 +24,26 @@ export class CourseListComponent implements OnInit {
   constructor(
     private courseService: CourseService,
     private authService: AuthService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    public router: Router
   ) {}
 
   ngOnInit(): void {
     this._fetchCourseData();
     this.loadEnrolledCourses();
+    
+    // Debug info
+    console.log('Current router URL at init:', this.router.url);
+    this.router.events.subscribe(event => {
+      console.log('Router event:', event);
+    });
+  }
+
+  // Helper method to navigate to course detail with the correct URL structure
+  navigateToCourse(courseId: number): void {
+    console.log('Navigating to course:', courseId);
+    // Navigate to the course detail page
+    this.router.navigate(['/pages/course/courses', courseId]);
   }
 
   // Get full image URL using the CourseService

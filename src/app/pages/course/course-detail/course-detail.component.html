@@ -1,9 +1,9 @@
-<div class="course-detail-container" *ngIf="!loading">
+<div class="course-detail-panel" *ngIf="!loading">
   <div class="course-header">
     <h1>{{ course?.title }}</h1>
     <div class="course-meta">
       <span class="price">${{ course?.price }}</span>
-      <span class="duration">{{ course?.duration }} hours</span>
+      <span class="duration" *ngIf="course?.duration">{{ course?.duration }} hours</span>
     </div>
   </div>
 
@@ -16,25 +16,17 @@
     <div class="course-teacher">
       <h2>Teacher</h2>
       <div class="teacher-info">
-        <img [src]="course?.teacher?.profile_picture" alt="Teacher" class="teacher-avatar">
+        <img [src]="course?.teacher?.profile_picture" alt="Teacher" class="teacher-avatar" *ngIf="course?.teacher?.profile_picture">
         <div class="teacher-details">
-          <h3>{{ course?.teacher?.name }}</h3>
-          <p>{{ course?.teacher?.bio }}</p>
+          <h3>{{ course?.teacher?.name || course?.teacher?.username }}</h3>
+          <p *ngIf="course?.teacher?.bio">{{ course?.teacher?.bio }}</p>
         </div>
       </div>
     </div>
 
-    <!-- New Course Meta Info Section -->
+    <!-- Course Meta Info Section -->
     <div class="course-meta-info">
-      <div class="meta-item">
-        <span class="meta-label">Price:</span>
-        <span class="meta-value price">${{ course.price }}</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">Teacher:</span>
-        <span class="meta-value">{{ course.teacher?.username || 'Unknown' }}</span>
-      </div>
-      <div class="meta-item" *ngIf="course.categories && course.categories.length > 0">
+      <div class="meta-item" *ngIf="course?.categories && course.categories.length > 0">
         <span class="meta-label">Categories:</span>
         <div class="categories-list">
           <span class="category-badge" *ngFor="let category of course.categories">
@@ -43,7 +35,7 @@
         </div>
       </div>
       <!-- Display tags -->
-      <div class="meta-item" *ngIf="course.tags && course.tags.length > 0">
+      <div class="meta-item" *ngIf="course?.tags && course.tags.length > 0">
         <span class="meta-label">Tags:</span>
         <div class="tags-list">
           <span class="tag-badge" *ngFor="let tag of course.tags">
@@ -86,5 +78,6 @@
 </div>
 
 <div class="loading-container" *ngIf="loading">
+  <div class="spinner"></div>
   <p>Loading course details...</p>
 </div>

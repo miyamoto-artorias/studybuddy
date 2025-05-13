@@ -12,13 +12,13 @@
   </div>
 
   <div class="courses-grid" *ngIf="!loading && !error && courses.length > 0">
-    <div class="course-card" *ngFor="let course of courses">      <div class="course-image">
+    <div class="course-card" *ngFor="let course of courses">      
+      <div class="course-image">
         <img [src]="course.fullImageUrl || getFullImageUrl(course.picture)" [alt]="course.title">
       </div>
       <div class="course-info">
         <h2 class="course-title">
-          <!-- Ensure course.id is available if linking to detail view; search results might not have it -->
-          <a [routerLink]="course.id ? ['/course', course.id] : null">{{ course.title }}</a>
+          <a (click)="navigateToCourse(course.id)" style="cursor: pointer;">{{ course.title }}</a>
         </h2>
         <p class="course-description">{{ course.description }}</p>
         <div class="course-meta">
@@ -35,7 +35,7 @@
           <span class="categories-label">Categories:</span>
           <div class="categories-list">
             <span class="category-badge" *ngFor="let category of course.categories">
-              {{ category.title }} <!-- Assumes category object has a title -->
+              {{ category.title }}
             </span>
           </div>
         </div>
@@ -56,7 +56,6 @@
 
   <div *ngIf="!loading && !error && courses.length === 0" class="empty-message-container">
     <p>No courses to display.</p>
-    <!-- You could add a more specific message if it was a search that yielded no results -->
     <p *ngIf="isSearchMode()">No courses found matching your search criteria.</p>
   </div>
 </div>
