@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../services/auth.service';
+import { CourseService } from '../../../services/course.service'; // Added CourseService import
 
 @Component({
   selector: 'app-enrolled-courses-list',
@@ -27,11 +28,17 @@ export class EnrolledCoursesListComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private courseService: CourseService, // Added CourseService
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadEnrolledCourses();
+  }
+
+  // Get full image URL using the CourseService
+  getFullImageUrl(imagePath: string | null): string {
+    return this.courseService.getFullImageUrl(imagePath);
   }
 
   loadEnrolledCourses(): void {
@@ -40,7 +47,15 @@ export class EnrolledCoursesListComponent implements OnInit {
     
     this.authService.getEnrolledCourses().subscribe({
       next: (courses) => {
-        this.courses = courses;
+        // Process course images
+        this.courses = courses.map(course => {
+          if (course.picture) {
+            course.fullImageUrl = this.courseService.getFullImageUrl(course.picture);
+          } else {
+            course.fullImageUrl = 'assets/default-course.jpg';
+          }
+          return course;
+        });
         this.loading = false;
       },
       error: (err) => {

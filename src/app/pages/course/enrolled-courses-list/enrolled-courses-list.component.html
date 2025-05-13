@@ -22,10 +22,9 @@
   
   <!-- Course list -->
   <div *ngIf="!loading && !error && courses.length > 0" class="course-list">
-    <div class="courses-grid">
-      <mat-card *ngFor="let course of courses" class="course-card">
-        <img *ngIf="course.picture" mat-card-image [src]="course.picture" [alt]="course.title" class="course-image">
-        <div *ngIf="!course.picture" class="course-image placeholder-img">
+    <div class="courses-grid">      <mat-card *ngFor="let course of courses" class="course-card">
+        <img mat-card-image [src]="course.fullImageUrl || getFullImageUrl(course.picture)" [alt]="course.title" class="course-image">
+        <div *ngIf="!course.picture && !course.fullImageUrl" class="course-image placeholder-img">
           <mat-icon>menu_book</mat-icon>
         </div>
         
