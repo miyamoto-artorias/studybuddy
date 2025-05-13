@@ -51,6 +51,9 @@ export class TeacherRequestComponent implements OnInit {
   selectedFile: File | null = null;
   filePreview: string | null = null;
   
+  // Track request IDs that already have courses
+  requestsWithCourses: Set<number> = new Set<number>();
+  
   constructor(
     private courseRequestService: CourseRequestService,
     private courseService: CourseService,
@@ -78,6 +81,7 @@ export class TeacherRequestComponent implements OnInit {
   ngOnInit(): void {
     this.loadRequests();
     this.loadCategories();
+    this.loadRequestCourses();
   }
   
   loadCategories(): void {
@@ -114,6 +118,28 @@ export class TeacherRequestComponent implements OnInit {
           this.isLoading = false;
         }
       });
+  }
+  
+  loadRequestCourses(): void {
+    this.courseRequestService.getTeacherRequestCourses(this.currentUserId).subscribe({
+      next: (courses) => {
+        // Extract request IDs from courses with courseRequest data
+        courses.forEach(course => {
+          if (course.courseRequest && course.courseRequest.id) {
+            this.requestsWithCourses.add(course.courseRequest.id);
+          }
+        });
+        console.log('Requests with courses:', Array.from(this.requestsWithCourses));
+      },
+      error: (error) => {
+        console.error('Failed to load request courses:', error);
+      }
+    });
+  }
+  
+  // Check if a course already exists for a request
+  hasExistingCourse(requestId: number): boolean {
+    return this.requestsWithCourses.has(requestId);
   }
   
   toggleCourseForm(requestId: number): void {

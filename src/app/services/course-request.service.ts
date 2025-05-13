@@ -134,4 +134,15 @@ export class CourseRequestService {
       })
     );
   }
+  
+  getTeacherRequestCourses(teacherId: number): Observable<any[]> {
+    const url = `${this.coursesBaseUrl}/request-teacher/${teacherId}`;
+    return this.http.get<any[]>(url).pipe(
+      tap(courses => console.log(`Fetched request courses for teacher ${teacherId}:`, courses)),
+      catchError(error => {
+        console.error(`Error fetching request courses for teacher ${teacherId}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
 }

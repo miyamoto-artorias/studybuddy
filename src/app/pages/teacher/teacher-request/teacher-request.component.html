@@ -112,7 +112,11 @@
         
         <!-- Add buttons for accepted requests -->
         <mat-card-actions align="end" *ngIf="request.status === 'accepted'">
-          <button mat-button color="primary" (click)="toggleCourseForm(request.id)">
+          <button 
+            *ngIf="!hasExistingCourse(request.id)"
+            mat-button 
+            color="primary" 
+            (click)="toggleCourseForm(request.id)">
             <mat-icon>add</mat-icon> Create Course
           </button>
           <button mat-button color="accent" (click)="markRequestAsDone(request)">
