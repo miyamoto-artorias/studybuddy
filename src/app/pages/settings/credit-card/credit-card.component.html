@@ -1,37 +1,100 @@
-<div class="credit-card-container">
-  <p *ngIf="loading">Loading credit card details...</p>
-  <p *ngIf="error" class="error">{{ error }}</p>
-
-  <!-- Display card details if available -->
-  <div *ngIf="!loading && !error && card" class="card-details">
-    <h2>Credit Card Details</h2>
-    <p><strong>Email:</strong> {{ card.user?.email }}</p>
-    <p><strong>Balance:</strong> {{ card.balance | number:'1.2-2' }}</p>
-    <p>
-      <strong>Valid:</strong>
-      <span [class.valid]="card.valid" [class.invalid]="!card.valid">
-        {{ card.valid ? 'Yes' : 'No' }}
-      </span>
+<div class="credit-card-page">  <div class="page-header">
+    <div class="header-content">
+      <h1>Payment Method</h1>
+      <button *ngIf="!loading" class="refresh-button" (click)="loadCardDetails()" title="Refresh card details">
+        <span class="refresh-icon">↻</span>
+      </button>
+    </div>
+    <p *ngIf="loading" class="loading-text">
+      <span class="loader"></span>Loading your card details...
     </p>
   </div>
+  
+  <!-- Error message -->
+  <div *ngIf="error" class="error-container">
+    <div class="error-message">
+      <i class="error-icon">!</i>
+      <span>{{ error }}</span>
+    </div>
+  </div>
 
-  <!-- Show form to add a card if no card is available -->
+  <!-- Credit Card Display -->
+  <div *ngIf="!loading && !error && card" class="card-container">
+    <div class="credit-card" [class.animate]="cardAnimation">
+      <div class="card-front">
+        <div class="card-logo">StudyBuddy</div>
+        <div class="chip"></div>
+        <div class="card-number">
+          <span class="hidden-digits">{{ card.maskedCardNumber || '••••' }}</span>
+          <span class="visible-digits">{{ card.lastFourDigits || '0000' }}</span>
+        </div>
+        <div class="card-info">
+          <div class="card-holder">
+            <span class="label">Card Holder</span>
+            <span class="value">{{ card.user?.email || 'Your Name' }}</span>
+          </div>
+          <div class="card-expiry">
+            <span class="label">Valid</span>
+            <span class="value" [class.invalid]="!card.valid">
+              {{ card.valid ? 'ACTIVE' : 'INACTIVE' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card-details-panel">
+      <h2>Card Information</h2>
+      <div class="info-row">
+        <span class="info-label">Email</span>
+        <span class="info-value">{{ card.user?.email || 'Not available' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Balance</span>
+        <span class="info-value balance">${{ card.balance | number:'1.2-2' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Status</span>
+        <span class="info-value status" [class.valid]="card.valid" [class.invalid]="!card.valid">
+          {{ card.valid ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Credit Card Form -->
   <div *ngIf="!loading && error" class="add-card-form">
     <h2>Add a Credit Card</h2>
+    <p class="form-instructions">Enter your card details to link a payment method to your account</p>
+    
     <form [formGroup]="cardForm" (ngSubmit)="addCard()">
       <div class="form-group">
         <label for="cardNumber">Card Number</label>
-        <input id="cardNumber" type="text" formControlName="cardNumber" placeholder="Enter 4-digit card number">
+        <div class="input-container">
+          <input id="cardNumber" type="text" formControlName="cardNumber" placeholder="Enter 4-digit card number">
+          <i class="card-icon"></i>
+        </div>
+        <div class="error-hint" *ngIf="cardForm.get('cardNumber')?.invalid && cardForm.get('cardNumber')?.touched">
+          Please enter a valid 4-digit card number
+        </div>
       </div>
 
       <div class="form-group">
         <label for="password">Password</label>
-        <input id="password" type="password" formControlName="password" placeholder="Enter card password">
+        <div class="input-container">
+          <input id="password" type="password" formControlName="password" placeholder="Enter card password">
+          <i class="password-icon"></i>
+        </div>
+        <div class="error-hint" *ngIf="cardForm.get('password')?.invalid && cardForm.get('password')?.touched">
+          Password is required
+        </div>
       </div>
 
       <div class="form-actions">
         <button type="submit" class="btn-primary" [disabled]="cardForm.invalid || addingCard">
-          {{ addingCard ? 'Adding...' : 'Add Card' }}
+          <span class="button-text">{{ addingCard ? 'Adding...' : 'Add Card' }}</span>
+          <span class="button-icon" *ngIf="!addingCard">→</span>
+          <span class="button-loader" *ngIf="addingCard"></span>
         </button>
       </div>
     </form>
