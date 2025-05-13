@@ -23,15 +23,8 @@ const routes: Routes = [
       },
    
     
-      {
-        path: 'applications',
-        loadChildren: () => import('./applications/applications.module').then(m => m.ApplicationsModule)
-      },
+  
    
-      {
-        path: 'content',
-        loadChildren: () => import('./content/content.module').then(m => m.ContentModule)
-      },
       {path: 'settings',
       loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule)},
       {path: 'course-request',
