@@ -9,6 +9,7 @@ import { throwError } from 'rxjs';
 })
 export class CourseRequestService {
   private baseUrl = 'http://localhost:8081/api/course-requests';
+  private coursesBaseUrl = 'http://localhost:8081/api/courses';
   
   constructor(private http: HttpClient) { }
   
@@ -109,5 +110,28 @@ export class CourseRequestService {
   
   markCourseAsDone(requestId: number): Observable<any> {
     return this.updateRequestStatusDirectly(requestId, 'done');
+  }
+  
+  createCourseFromRequest(requestId: number, teacherId: number, courseData: FormData, categoryIds: number[] = [], tags: string[] = []): Observable<any> {
+    let url = `${this.coursesBaseUrl}/request/${requestId}/teacher/${teacherId}`;
+    
+    // Add query parameters for categories and tags
+    if (categoryIds && categoryIds.length > 0) {
+      const categoryParams = categoryIds.map(id => `categoryIds=${id}`).join('&');
+      url += `?${categoryParams}`;
+    }
+    
+    if (tags && tags.length > 0) {
+      const tagParams = tags.map(tag => `tags=${tag}`).join('&');
+      url += url.includes('?') ? `&${tagParams}` : `?${tagParams}`;
+    }
+    
+    return this.http.post(url, courseData).pipe(
+      tap(response => console.log(`Created course for request ${requestId}:`, response)),
+      catchError(error => {
+        console.error(`Error creating course for request ${requestId}:`, error);
+        return throwError(() => error);
+      })
+    );
   }
 }

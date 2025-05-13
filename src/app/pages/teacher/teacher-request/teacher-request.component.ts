@@ -8,6 +8,11 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBadgeModule } from '@angular/material/badge';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { CourseRequestService } from '../../../services/course-request.service';
 import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
@@ -26,7 +31,12 @@ import { of } from 'rxjs';
     MatChipsModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatBadgeModule
+    MatBadgeModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule
   ],
   templateUrl: './teacher-request.component.html',
   styleUrl: './teacher-request.component.scss'
@@ -35,14 +45,29 @@ export class TeacherRequestComponent implements OnInit {
   receivedRequests: any[] = [];
   isLoading: boolean = true;
   currentUserId: number;
+  openRequestId: number | null = null;
+  courseForm: FormGroup;
+  categories: any[] = [];
+  selectedFile: File | null = null;
+  filePreview: string | null = null;
   
   constructor(
     private courseRequestService: CourseRequestService,
     private courseService: CourseService,
     private authService: AuthService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private fb: FormBuilder
   ) {
     this.currentUserId = this.authService.getUserId();
+    
+    // Initialize form
+    this.courseForm = this.fb.group({
+      title: ['', [Validators.required]],
+      description: ['', [Validators.required]],
+      price: [0, [Validators.required, Validators.min(0)]],
+      categoryIds: [[]],
+      tags: [''],
+    });
     
     // Check if user is a teacher, log a warning if not
     if (!this.authService.isUserTeacher()) {
@@ -52,6 +77,19 @@ export class TeacherRequestComponent implements OnInit {
   
   ngOnInit(): void {
     this.loadRequests();
+    this.loadCategories();
+  }
+  
+  loadCategories(): void {
+    this.courseService.getAllCategories().subscribe({
+      next: (data) => {
+        this.categories = data;
+      },
+      error: (error) => {
+        console.error('Failed to load categories:', error);
+        this.snackBar.open('Failed to load categories', 'Close', { duration: 3000 });
+      }
+    });
   }
   
   loadRequests(): void {
@@ -78,6 +116,106 @@ export class TeacherRequestComponent implements OnInit {
       });
   }
   
+  toggleCourseForm(requestId: number): void {
+    if (this.openRequestId === requestId) {
+      this.openRequestId = null;
+    } else {
+      this.openRequestId = requestId;
+      const request = this.receivedRequests.find(r => r.id === requestId);
+      
+      // Prefill form with request data
+      if (request) {
+        this.courseForm.patchValue({
+          title: request.subject || '',
+          description: request.message || '',
+          price: request.price || 0,
+          categoryIds: request.categories?.map((cat: any) => cat.id) || []
+        });
+      }
+    }
+  }
+  
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length) {
+      this.selectedFile = input.files[0];
+      
+      // Create file preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.filePreview = reader.result as string;
+      };
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+  
+  submitCourseForm(): void {
+    if (this.courseForm.invalid) {
+      this.snackBar.open('Please fill all required fields correctly', 'Close', { duration: 3000 });
+      return;
+    }
+    
+    if (!this.openRequestId) {
+      this.snackBar.open('No request selected', 'Close', { duration: 3000 });
+      return;
+    }
+    
+    // Get form values
+    const formValues = this.courseForm.value;
+    
+    // Create FormData object for multipart/form-data
+    const formData = new FormData();
+    formData.append('title', formValues.title);
+    formData.append('description', formValues.description);
+    formData.append('price', formValues.price.toString());
+    
+    // Add image file if selected
+    if (this.selectedFile) {
+      formData.append('pictureFile', this.selectedFile);
+    }
+    
+    // Get tags as array
+    let tags: string[] = [];
+    if (formValues.tags) {
+      tags = formValues.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag !== '');
+    }
+    
+    this.isLoading = true;
+    this.courseRequestService.createCourseFromRequest(
+      this.openRequestId, 
+      this.currentUserId, 
+      formData, 
+      formValues.categoryIds,
+      tags
+    ).subscribe({
+      next: (result) => {
+        console.log('Course created successfully:', result);
+        this.snackBar.open('Course created successfully', 'Close', { duration: 3000 });
+        this.resetForm();
+        // Mark request as done automatically
+        this.markRequestAsDone(this.receivedRequests.find(r => r.id === this.openRequestId));
+      },
+      error: (error) => {
+        console.error('Failed to create course:', error);
+        this.snackBar.open('Failed to create course: ' + (error.error?.message || error.message || 'Unknown error'), 'Close', { duration: 5000 });
+        this.isLoading = false;
+      }
+    });
+  }
+  
+  resetForm(): void {
+    this.courseForm.reset({
+      title: '',
+      description: '',
+      price: 0,
+      categoryIds: [],
+      tags: ''
+    });
+    this.selectedFile = null;
+    this.filePreview = null;
+    this.openRequestId = null;
+  }
+  
   acceptRequest(request: any): void {
     this.isLoading = true;
     
@@ -92,32 +230,8 @@ export class TeacherRequestComponent implements OnInit {
           this.receivedRequests[index] = { ...this.receivedRequests[index], status: newStatus };
         }
         
-        // Create a course for the approved request
-        const courseData = {
-          title: request.subject,
-          description: "desc",
-          picture: "webdev.png",
-          price: request.price || 5,
-          categoryIds: request.categoryIds || [1, 2]
-        };
-        
-        // Extract category IDs from the request if available
-        if (request.categories && request.categories.length > 0) {
-          courseData.categoryIds = request.categories.map((cat: any) => cat.id);
-        }
-        
-        this.courseService.createCourseForRequest(request.id, this.currentUserId, courseData).subscribe({
-          next: (courseResult) => {
-            console.log('Course created for request:', courseResult);
-            this.snackBar.open('Request approved and course created successfully', 'Close', { duration: 3000 });
-            this.isLoading = false;
-          },
-          error: (error) => {
-            console.error('Failed to create course for request:', error);
-            this.snackBar.open('Request approved but failed to create course', 'Close', { duration: 3000 });
-            this.isLoading = false;
-          }
-        });
+        this.snackBar.open('Request approved successfully', 'Close', { duration: 3000 });
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Failed to accept request:', error);

@@ -9,7 +9,71 @@
   <div *ngIf="isLoading" class="loading-spinner">
     <mat-spinner diameter="40"></mat-spinner>
   </div>
-  <div *ngIf="!isLoading" class="sent-requests-container">
+  
+  <!-- Course Creation Form -->
+  <div *ngIf="showCourseForm && selectedRequest" class="course-form-container">
+    <h2>Create Course for Request</h2>
+    <form [formGroup]="courseForm" (ngSubmit)="createCourse()">
+      <mat-card class="form-card">
+        <mat-card-header>
+          <mat-card-title>Course Information</mat-card-title>
+          <mat-card-subtitle>Request: {{ selectedRequest.subject }}</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="form-fields">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Course Title</mat-label>
+              <input matInput formControlName="title" required>
+              <mat-error *ngIf="courseForm.get('title')?.invalid && courseForm.get('title')?.touched">
+                Title is required
+              </mat-error>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Course Description</mat-label>
+              <textarea matInput formControlName="description" rows="4" required></textarea>
+              <mat-error *ngIf="courseForm.get('description')?.invalid && courseForm.get('description')?.touched">
+                Description is required
+              </mat-error>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+              <mat-label>Price ($)</mat-label>
+              <input matInput type="number" formControlName="price" min="1" required>
+              <mat-error *ngIf="courseForm.get('price')?.invalid && courseForm.get('price')?.touched">
+                Valid price is required
+              </mat-error>
+            </mat-form-field>
+            
+            <div class="file-upload">
+              <label>Course Image</label>
+              <input type="file" accept="image/*" (change)="onFileSelected($event)" id="pictureFile">
+              <div class="file-name" *ngIf="fileToUpload">
+                Selected file: {{ fileToUpload.name }}
+              </div>
+            </div>
+            
+            <div class="categories-info" *ngIf="selectedRequest.categories && selectedRequest.categories.length > 0">
+              <h3>Categories</h3>
+              <div class="category-chips">
+                <span class="category-chip" *ngFor="let category of selectedRequest.categories">
+                  {{ category.name }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+        
+        <mat-card-actions align="end">
+          <button mat-button type="button" (click)="cancelForm()">Cancel</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="courseForm.invalid">Create Course</button>
+        </mat-card-actions>
+      </mat-card>
+    </form>
+  </div>
+  
+  <div *ngIf="!isLoading && !showCourseForm" class="sent-requests-container">
     <!-- Sent Requests -->
     <div class="tab-content">
       <div *ngIf="sentRequests.length === 0" class="no-requests">
@@ -49,6 +113,11 @@
             <button mat-button color="warn" *ngIf="request.status === 'pending'" 
               (click)="updateRequestStatus(request, 'cancelled')">
               Cancel Request
+            </button>
+            
+            <button mat-button color="primary" *ngIf="request.status === 'pending'" 
+              (click)="acceptRequest(request)">
+              Approve
             </button>
             
             <!-- Add "Mark as Done" button for accepted sent requests -->

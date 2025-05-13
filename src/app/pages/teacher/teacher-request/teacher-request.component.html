@@ -42,6 +42,63 @@
 
             <p><strong>Date Requested:</strong> {{ request.createdAt | date:'medium' }}</p>
           </div>
+          
+          <!-- Course Form - only shown when openRequestId matches the current request id -->
+          <div class="course-form-container" *ngIf="openRequestId === request.id">
+            <mat-divider class="form-divider"></mat-divider>
+            <h3>Create Course</h3>
+            
+            <form [formGroup]="courseForm" (ngSubmit)="submitCourseForm()">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Course Title</mat-label>
+                <input matInput formControlName="title" required>
+                <mat-error *ngIf="courseForm.get('title')?.hasError('required')">Title is required</mat-error>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Description</mat-label>
+                <textarea matInput formControlName="description" rows="4" required></textarea>
+                <mat-error *ngIf="courseForm.get('description')?.hasError('required')">Description is required</mat-error>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Price ($)</mat-label>
+                <input matInput type="number" formControlName="price" min="0" required>
+                <mat-error *ngIf="courseForm.get('price')?.hasError('required')">Price is required</mat-error>
+                <mat-error *ngIf="courseForm.get('price')?.hasError('min')">Price must be positive</mat-error>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Categories</mat-label>
+                <mat-select formControlName="categoryIds" multiple>
+                  <mat-option *ngFor="let category of categories" [value]="category.id">
+                    {{ category.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Tags (comma-separated)</mat-label>
+                <input matInput formControlName="tags" placeholder="tag1, tag2, tag3">
+              </mat-form-field>
+              
+              <div class="image-upload">
+                <button type="button" mat-stroked-button (click)="fileInput.click()">
+                  <mat-icon>cloud_upload</mat-icon> Select Course Image
+                </button>
+                <input hidden #fileInput type="file" (change)="onFileSelected($event)" accept="image/*">
+                
+                <div class="file-preview" *ngIf="filePreview">
+                  <img [src]="filePreview" alt="Course image preview">
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="button" mat-button (click)="toggleCourseForm(request.id)">Cancel</button>
+                <button type="submit" mat-raised-button color="primary" [disabled]="courseForm.invalid">Create Course</button>
+              </div>
+            </form>
+          </div>
         </mat-card-content>
         
         <mat-card-actions align="end" *ngIf="request.status === 'pending'">
@@ -53,9 +110,12 @@
           </button>
         </mat-card-actions>
         
-        <!-- Add "Mark as Done" button for accepted requests -->
+        <!-- Add buttons for accepted requests -->
         <mat-card-actions align="end" *ngIf="request.status === 'accepted'">
-          <button mat-button color="primary" (click)="markRequestAsDone(request)">
+          <button mat-button color="primary" (click)="toggleCourseForm(request.id)">
+            <mat-icon>add</mat-icon> Create Course
+          </button>
+          <button mat-button color="accent" (click)="markRequestAsDone(request)">
             Mark as Done
           </button>
         </mat-card-actions>
