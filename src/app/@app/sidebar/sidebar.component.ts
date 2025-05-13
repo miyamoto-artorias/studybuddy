@@ -136,6 +136,12 @@ export class SidebarComponent implements OnInit {
           type: 'link',
           name: 'Teacher Requested courses',
           link: '/pages/course-request/requested-courses-teacher'
+        },
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Teacher Request',
+          link: '/pages/teacher/teacher-request'
         }
       ]
     },

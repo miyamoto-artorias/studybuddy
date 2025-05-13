@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { TeacherGuard } from '../../guards/teacher.guard';
 import { TeacherCoursesListComponent } from './teacher-courses-list/teacher-courses-list.component';
+import { TeacherRequestComponent } from './teacher-request/teacher-request.component';
 
 const routes: Routes = [
   {
@@ -34,7 +35,14 @@ const routes: Routes = [
   {
     path: 'teacher-courses-list',
     component: TeacherCoursesListComponent
-  }
+  },
+
+  {
+    path: 'teacher-request',
+    component: TeacherRequestComponent
+  },
+
+
 ];
 
 @NgModule({

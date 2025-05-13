@@ -1,0 +1,100 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  
+  h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.no-requests {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  margin: 20px 0;
+}
+
+.request-card-container {
+  margin-bottom: 20px;
+}
+
+.request-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  mat-card-header {
+    position: relative;
+    padding-right: 90px; // Make space for status chip
+  }
+  
+  .status-chip {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+}
+
+.status-pending {
+  background-color: #fff8e1;
+  color: #ff8f00;
+}
+
+.status-approved {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-declined {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.request-details {
+  margin-top: 16px;
+  
+  p {
+    margin: 8px 0;
+  }
+}
+
+.categories {
+  margin: 12px 0;
+  
+  .category-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  
+  .category-chip {
+    background-color: #e0e0e0;
+    color: #424242;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    display: inline-block;
+  }
+}
