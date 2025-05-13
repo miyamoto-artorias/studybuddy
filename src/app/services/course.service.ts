@@ -480,4 +480,22 @@ createCourseWithImage(teacherId: number, formData: FormData): Observable<any> {
     })
   );
 }
+
+// Get full image URL for course images
+getFullImageUrl(imagePath: string | null): string {
+  if (!imagePath) {
+    return 'assets/default-course.jpg';
+  }
+  
+  // If the path already starts with http:// or https://, it's already a full URL
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // Remove leading slash if present to avoid double slashes
+  const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+  
+  // Construct the full URL using the API server base URL
+  return `http://localhost:8081/${cleanPath}`;
+}
 }

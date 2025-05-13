@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CourseService } from '../../../services/course.service';
 import { AuthService } from '../../../services/auth.service';
 import { forkJoin, of } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators'; // Added tap
+import { switchMap, tap, map } from 'rxjs/operators'; // Added map
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
@@ -30,6 +30,11 @@ export class CourseListComponent implements OnInit {
   ngOnInit(): void {
     this._fetchCourseData();
     this.loadEnrolledCourses();
+  }
+
+  // Get full image URL using the CourseService
+  getFullImageUrl(imagePath: string | null): string {
+    return this.courseService.getFullImageUrl(imagePath);
   }
 
   private _fetchCourseData(): void {
@@ -85,6 +90,13 @@ export class CourseListComponent implements OnInit {
           const processedSearchResults = coursesFromServer.map(course => {
             const mappedCourse = { ...course }; // Create a new object
 
+            // Process course image URL
+            if (mappedCourse.picture) {
+              mappedCourse.fullImageUrl = this.courseService.getFullImageUrl(mappedCourse.picture);
+            } else {
+              mappedCourse.fullImageUrl = 'assets/default-course.jpg';
+            }
+
             // Ensure 'tags' is an array, even if missing or null from API
             mappedCourse.tags = Array.isArray(course.tags) ? course.tags : [];
 
@@ -98,9 +110,6 @@ export class CourseListComponent implements OnInit {
             } else if (!Array.isArray(mappedCourse.categories)) {
                 mappedCourse.categories = [];
             }
-            // If the search result *does* provide an ID, it could potentially be used,
-            // but the example shows it doesn't. If it did, we might reconsider calling getCourseWithCategories.
-            // For now, we assume search results are processed as-is after this mapping.
             return mappedCourse;
           });
           return of(processedSearchResults);
@@ -109,7 +118,16 @@ export class CourseListComponent implements OnInit {
           console.log('Processing all courses (non-search):', coursesFromServer);
           const courseObservables = coursesFromServer.map(course => {
             if (course && typeof course.id !== 'undefined') {
-              return this.courseService.getCourseWithCategories(course.id);
+              return this.courseService.getCourseWithCategories(course.id).pipe(
+                map(courseWithCategories => {
+                  if (courseWithCategories && courseWithCategories.picture) {
+                    courseWithCategories.fullImageUrl = this.courseService.getFullImageUrl(courseWithCategories.picture);
+                  } else {
+                    courseWithCategories.fullImageUrl = 'assets/default-course.jpg';
+                  }
+                  return courseWithCategories;
+                })
+              );
             } else {
               console.warn('Course object (non-search) is invalid or missing ID:', course);
               return of(null);

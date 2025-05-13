@@ -12,9 +12,8 @@
   </div>
 
   <div class="courses-grid" *ngIf="!loading && !error && courses.length > 0">
-    <div class="course-card" *ngFor="let course of courses">
-      <div class="course-image">
-        <img [src]="course.picture || 'assets/default-course.jpg'" [alt]="course.title">
+    <div class="course-card" *ngFor="let course of courses">      <div class="course-image">
+        <img [src]="course.fullImageUrl || getFullImageUrl(course.picture)" [alt]="course.title">
       </div>
       <div class="course-info">
         <h2 class="course-title">
