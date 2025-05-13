@@ -49,8 +49,77 @@ export class SidebarComponent implements OnInit {
   authService = inject(AuthService);
   height: string | null = '200px';
   compact = false;
+  isTeacher: boolean = false;
 
   readonly navigation = viewChild.required<any>('navigation');
+
+  // Course request items - will filter based on user type
+  courseRequestItems: NavigationItem[] = [
+    {
+      key: uuid(),
+      type: 'link',
+      name: 'Make course Request',
+      link: '/pages/course-request/make-courses-request'
+    },
+    {
+      key: uuid(),
+      type: 'link',
+      name: 'Requested Course',
+      link: '/pages/course-request/requested-courses'
+    },
+    {
+      key: uuid(),
+      type: 'link',
+      name: 'View Course Requests',
+      link: '/pages/course-request/view-course-requests'
+    }
+  ];
+
+  // Teacher-only course request items
+  teacherOnlyCourseRequestItems: NavigationItem[] = [
+    {
+      key: uuid(),
+      type: 'link',
+      name: 'Requested Courses Teacher',
+      link: '/pages/course-request/requested-courses-teacher'
+    }
+  ];
+
+  // Course items - will filter based on user type
+  courseItems: NavigationItem[] = [
+    {
+      key: uuid(),
+      type: 'link',
+      name: 'My Enrolled Courses',
+      link: '/pages/course/enrolled-courses-list'
+    }
+  ];
+
+  // Teacher-only course items
+  teacherOnlyCourseItems: NavigationItem[] = [
+    {
+      key: uuid(),
+      type: 'link',
+      name: 'addcourse',
+      link: '/pages/course/addcourse'
+    },
+    {
+      key: uuid(),
+      type: 'link',
+      name: 'teachercourses',
+      link: '/pages/course/teachercourses'
+    }
+  ];
+
+  // Common courses item that's visible to all
+  commonCourseItems: NavigationItem[] = [
+    {
+      key: uuid(),
+      type: 'link',
+      name: 'courses',
+      link: '/pages/course/courses'
+    }
+  ];
 
   navItems: NavigationItem[] = [
     {
@@ -58,32 +127,7 @@ export class SidebarComponent implements OnInit {
       type: 'group',
       icon: 'view_quilt',
       name: 'Course Request',
-      children: [
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'Make course Request',
-          link: '/pages/course-request/make-courses-request'
-        },
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'Requested Course',
-          link: '/pages/course-request/requested-courses'
-        },
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'View Course Requests',
-          link: '/pages/course-request/view-course-requests'
-        },
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'Requested Courses Teacher',
-          link: '/pages/course-request/requested-courses-teacher'
-        } 
-      ]
+      children: []  // Will be populated in ngOnInit based on user type
     },
     
     {
@@ -126,38 +170,14 @@ export class SidebarComponent implements OnInit {
         name: 'Payment History',   
         link: '/pages/settings/payment-history'}
       ]
-     }
-    ,{
+     },
+     {
       key: 'Courses',
       type: 'group',
       icon: 'apps',
       name: 'Courses',
-      children: [        {
-          key: uuid(),
-          type: 'link',
-          name: 'My Enrolled Courses',
-          link: '/pages/course/enrolled-courses-list'
-        },
-
-
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'addcourse',
-          link: '/pages/course/addcourse'
-        },            {
-          key: uuid(),
-          type: 'link',
-          name: 'teachercourses',
-          link: '/pages/course/teachercourses'
-        },        {
-          key: uuid(),
-          type: 'link',
-          name: 'courses',
-          link: '/pages/course/courses'
-        },     
-      ]
-    },
+      children: []  // Will be populated in ngOnInit based on user type
+     },
 
     {
       key: 'applications',
@@ -229,6 +249,33 @@ export class SidebarComponent implements OnInit {
   activeKey: null | string = null;
 
   ngOnInit() {
+    // Check if user is a teacher
+    this.isTeacher = this.authService.isUserTeacher();
+    
+    // Populate Course Request items based on user type
+    const courseRequestGroup = this.navItems.find(item => item.key === 'Course Request');
+    if (courseRequestGroup) {
+      courseRequestGroup.children = [...this.courseRequestItems];
+      
+      // Add teacher-only items if user is a teacher
+      if (this.isTeacher) {
+        courseRequestGroup.children = [...courseRequestGroup.children, ...this.teacherOnlyCourseRequestItems];
+      }
+    }
+    
+    // Populate Courses items based on user type
+    const coursesGroup = this.navItems.find(item => item.key === 'Courses');
+    if (coursesGroup) {
+      coursesGroup.children = [...this.courseItems, ...this.commonCourseItems];
+      
+      // Add teacher-only items if user is a teacher
+      if (this.isTeacher) {
+        coursesGroup.children = [...this.courseItems, ...this.teacherOnlyCourseItems, ...this.commonCourseItems];
+      }
+    }
+
+    // Process all navigation items for the sidebar
+    this.navItemLinks = [];
     this.navItems.forEach(navItem => {
       this.navItemLinks.push(navItem);
 
@@ -236,6 +283,7 @@ export class SidebarComponent implements OnInit {
         this.navItemLinks = this.navItemLinks.concat(navItem.children as NavigationItem[]);
       }
     });
+    
     this._activateLink();
     this.router.events
       .pipe(

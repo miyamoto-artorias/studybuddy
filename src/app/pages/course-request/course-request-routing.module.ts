@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { TeacherGuard } from '../../guards/teacher.guard';
 
 const routes: Routes = [
   {
@@ -26,7 +27,8 @@ const routes: Routes = [
    {
     path: 'requested-courses-teacher',
     title: 'Requested Courses Teacher',
-    loadComponent: () => import('./requested-courses-teacher/requested-courses-teacher.component').then(c => c.RequestedCoursesTeacherComponent)
+    loadComponent: () => import('./requested-courses-teacher/requested-courses-teacher.component').then(c => c.RequestedCoursesTeacherComponent),
+    canActivate: [TeacherGuard]
    }
 
  
