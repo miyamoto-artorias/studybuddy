@@ -123,14 +123,6 @@ export class SidebarComponent implements OnInit {
 
   navItems: NavigationItem[] = [
     {
-      key: 'Course Request',
-      type: 'group',
-      icon: 'view_quilt',
-      name: 'Course Request',
-      children: []  // Will be populated in ngOnInit based on user type
-    },
-    
-    {
       key: 'dashboard',
       type: 'group',
       name: 'Dashboard',
@@ -150,6 +142,27 @@ export class SidebarComponent implements OnInit {
        }
       ]
     },
+
+    {
+      key: 'Courses',
+      type: 'group',
+      icon: 'apps',
+      name: 'Courses',
+      children: []  // Will be populated in ngOnInit based on user type
+     },
+
+    {
+      key: 'Course Request',
+      type: 'group',
+      icon: 'view_quilt',
+      name: 'Course Request',
+      children: []  // Will be populated in ngOnInit based on user type
+    },
+    
+  
+
+
+     
      {
       key: 'Settings',  
       type: 'group',
@@ -171,14 +184,6 @@ export class SidebarComponent implements OnInit {
         link: '/pages/settings/payment-history'}
       ]
      },
-     {
-      key: 'Courses',
-      type: 'group',
-      icon: 'apps',
-      name: 'Courses',
-      children: []  // Will be populated in ngOnInit based on user type
-     },
-
     {
       key: 'applications',
       type: 'group',
