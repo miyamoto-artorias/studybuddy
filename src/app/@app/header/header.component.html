@@ -7,9 +7,7 @@
       <emr-assistant-search/> 
     </div>
     <div class="ms-auto flex items-center gap-3">
-      <button mat-icon-button [matMenuTriggerFor]="appsMenu" matTooltip="Applications">
-        <mat-icon>apps</mat-icon>
-      </button>
+
       <button mat-icon-button matTooltip="Notifications"
               [emrPopoverTriggerFor]="notificationsPopover" position="below-end">
         <mat-icon matBadge="1">notifications</mat-icon>
@@ -22,8 +20,13 @@
           <mat-icon>dark_mode</mat-icon>
         }
       </button>
-      <emr-dicebear key="PS" [clickable]="true"
-                    [matMenuTriggerFor]="accountMenu" matTooltip="Account" class="size-10"/>
+      <div class="size-10 rounded-full overflow-hidden cursor-pointer" [matMenuTriggerFor]="accountMenu" matTooltip="Account">
+        @if (profilePictureUrl) {
+          <img [src]="profilePictureUrl" alt="Profile" class="size-10 object-cover">
+        } @else {
+          <emr-dicebear key="PS" [clickable]="true" class="size-10"/>
+        }
+      </div>
     </div>
   </div>
 </div>
@@ -119,7 +122,13 @@
 
 <mat-menu xPosition="before" #accountMenu="matMenu">
   <div class="flex items-center px-4 pb-4 pt-2 gap-3">
-    <emr-dicebear key="PS" class="size-14"/>
+    <div class="size-14 rounded-full overflow-hidden">
+      @if (profilePictureUrl) {
+        <img [src]="profilePictureUrl" alt="Profile" class="size-14 object-cover">
+      } @else {
+        <emr-dicebear key="PS" class="size-14"/>
+      }
+    </div>
     <div class="-mt-0.5">
       <div class="flex items-center gap-2">
         {{ getCurrentUser().firstName || getCurrentUser().username || 'User' }} 
@@ -131,26 +140,27 @@
       <div class="text-xs text-gray-500 mt-0.5 dark:text-gray-400">{{ getCurrentUser().email || 'No email available' }}</div>
     </div>
   </div>
-  <div class="px-4 pb-4">
-    <button mat-stroked-button class="w-full">
-      <mat-icon>workspace_premium</mat-icon>
-      Upgrade
-    </button>
-  </div>
+
   <mat-divider/>
   <a mat-menu-item routerLink="/pages/settings/profile">
     <mat-icon>tune</mat-icon>
     <span>Settings</span>
   </a>
-  <a mat-menu-item>
-    <mat-icon>contrast</mat-icon>
-    <span>Appearance</span>
+  <a mat-menu-item routerLink="/pages/dashboard">
+    <mat-icon>dashboard</mat-icon>
+    <span>Dashboard</span>
   </a>
-  <a mat-menu-item>
-    <mat-icon>question_mark</mat-icon>
-    <span>Help Center</span>
+  <a mat-menu-item routerLink="/pages/course">
+    <mat-icon>school</mat-icon>
+    <span>Courses</span>
   </a>
-  <mat-divider></mat-divider>
+  @if (getCurrentUser().userType === 'TEACHER') {
+    <a mat-menu-item routerLink="/pages/course/enrolled-courses-list">
+      <mat-icon>assignment</mat-icon>
+      <span>My Courses</span>
+    </a>
+  }
+
   <a mat-menu-item>
     <mat-icon>translate</mat-icon>
     <span>Language</span>
