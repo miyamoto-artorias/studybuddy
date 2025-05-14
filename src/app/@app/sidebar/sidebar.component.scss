@@ -63,8 +63,90 @@
     align-items: center;
     justify-content: center;
 
-    --emr-sidebar-footer-padding: calc(var(--spacing) * 6) calc(var(--spacing) * 7);
-    --emr-sidebar-footer-compact-padding: calc(var(--spacing) * 3) calc(var(--spacing) * 7);
+    --emr-sidebar-footer-padding: calc(var(--spacing) * 6) calc(var(--spacing) * 4);
+    --emr-sidebar-footer-compact-padding: calc(var(--spacing) * 3) calc(var(--spacing) * 4);
+    
+    .footer-content {
+      width: 100%;
+    }
+    
+    .user-avatar {
+      .profile-image {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+    }
+    
+    .profile-section {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: var(--sys-surface-container);
+      
+      .user-info-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        
+        .profile-image {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+        
+        .user-details {
+          .user-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--sys-on-surface);
+          }
+          
+          .user-type {
+            font-size: 12px;
+            color: var(--sys-on-surface-variant);
+            text-transform: capitalize;
+          }
+        }
+      }
+      
+      .footer-navigation {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        width: 100%;
+        
+        .nav-icon-link {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          transition: all 0.2s ease;
+          color: var(--sys-on-surface-variant);
+          
+          &:hover {
+            background-color: var(--sys-primary-container);
+            color: var(--sys-primary);
+            transform: translateY(-2px);
+          }
+          
+          &:active {
+            transform: translateY(0);
+          }
+          
+          mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -76,6 +158,19 @@
         --emr-navigation-group-toggle-active-bg: var(--color-neutral-800);
         --emr-navigation-nested-item-hover-bg: var(--color-neutral-800);
         --emr-navigation-group-tree-lines-color: var(--color-neutral-700);
+      }
+    }
+
+    .profile-section {
+      background-color: var(--sys-surface-container-low);
+      
+      .footer-navigation {
+        .nav-icon-link {
+          &:hover {
+            background-color: var(--sys-primary-container);
+            color: var(--sys-primary);
+          }
+        }
       }
     }
   }

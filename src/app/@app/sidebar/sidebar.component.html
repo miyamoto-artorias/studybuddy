@@ -1,8 +1,8 @@
 <emr-sidebar [compact]="compact" class="sidebar">
   <emr-sidebar-header class="header">
     <div class="h-20 flex items-center w-full justify-between border-b border-b-default">
-      <a emr-logo routerLink="/" emrSidebarCompactViewMode>SB</a>
-      <a emr-logo routerLink="/" emrSidebarFullViewMode><img src="logo.png" height="130" width="200"></a>
+      <a emr-logo routerLink="/pages/dashboard/basic" emrSidebarCompactViewMode>SB</a>
+      <a emr-logo routerLink="/pages/dashboard/basic" emrSidebarFullViewMode><img src="assets/logo.png" alt="StudyBuddy Logo" height="130" width="200"></a>
       <button mat-icon-button (click)="compact = !compact" class="sidebar-toggle">
         @if (compact) {
           <mat-icon>keyboard_double_arrow_right</mat-icon>
@@ -16,11 +16,42 @@
     <emr-sidebar-nav [activeKey]="activeKey" [navItems]="navItems"/>
   </emr-sidebar-body>
   <emr-sidebar-footer class="footer">
-    <div emrSidebarCompactViewMode>
-      <emr-dicebear src="assets/avatars/1.svg"/>
+    <div emrSidebarCompactViewMode class="user-avatar">
+      @if (profilePictureUrl) {
+        <img [src]="profilePictureUrl" alt="Profile" class="profile-image">
+      } @else {
+        <emr-dicebear src="assets/avatars/1.svg"/>
+      }
     </div>
-    <div emrSidebarFullViewMode>
-      <emr-sidebar-toolbar/>
+    <div emrSidebarFullViewMode class="footer-content">
+      <div class="profile-section" *ngIf="profilePictureUrl || authService.isLoggedIn()">
+        <div class="user-info-container">
+          @if (profilePictureUrl) {
+            <img [src]="profilePictureUrl" alt="Profile" class="profile-image">
+          } @else {
+            <emr-dicebear src="assets/avatars/1.svg"/>
+          }
+          <div class="user-details">
+            <div class="user-name">{{ authService.getCurrentUser().firstName || authService.getCurrentUser().username || 'User' }}</div>
+            <div class="user-type">{{ authService.getCurrentUser().userType }}</div>
+          </div>
+        </div>
+        <div class="footer-navigation">
+          <a routerLink="/pages/settings/profile" class="nav-icon-link" title="Profile">
+            <mat-icon>person</mat-icon>
+          </a>
+          <a routerLink="/pages/settings/credit-card" class="nav-icon-link" title="Payment">
+            <mat-icon>credit_card</mat-icon>
+          </a>
+          <a routerLink="/pages/course/enrolled-courses-list" class="nav-icon-link" title="My Courses">
+            <mat-icon>school</mat-icon>
+          </a>
+          <a routerLink="/pages/course-request/view-course-requests" class="nav-icon-link" title="Course Requests">
+            <mat-icon>assignment</mat-icon>
+          </a>
+        </div>
+      </div>
+      <emr-sidebar-toolbar *ngIf="!profilePictureUrl && !authService.isLoggedIn()"/>
     </div>
   </emr-sidebar-footer>
 </emr-sidebar>

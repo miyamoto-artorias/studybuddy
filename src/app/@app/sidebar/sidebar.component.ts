@@ -2,7 +2,7 @@ import { Component, inject, OnInit, viewChild } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs';
-import { Location } from '@angular/common';
+import { Location, NgIf, CommonModule } from '@angular/common';
 import { LogoComponent, NavigationItem } from '@elementar-ui/components';
 import { v7 as uuid } from 'uuid';
 import {
@@ -18,6 +18,8 @@ import { DicebearComponent } from '@elementar-ui/components';
 import { MatIconButton } from '@angular/material/button';
 import { ToolbarComponent } from '@store/sidebar';
 import { AuthService } from '../../services/auth.service';
+import { ProfileService } from '../../services/profile.service';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-sidebar',
@@ -34,7 +36,9 @@ import { AuthService } from '../../services/auth.service';
     SidebarNavComponent,
     DicebearComponent,
     MatIconButton,
-    LogoComponent
+    LogoComponent,
+    NgIf,
+    CommonModule
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
@@ -47,9 +51,13 @@ export class SidebarComponent implements OnInit {
   router = inject(Router);
   location = inject(Location);
   authService = inject(AuthService);
+  profileService = inject(ProfileService);
+  private sanitizer = inject(DomSanitizer);
+  
   height: string | null = '200px';
   compact = false;
   isTeacher: boolean = false;
+  profilePictureUrl: SafeUrl | null = null;
 
   readonly navigation = viewChild.required<any>('navigation');
 
@@ -209,6 +217,9 @@ export class SidebarComponent implements OnInit {
   navItemLinks: NavigationItem[] = [];
   activeKey: null | string = null;
   ngOnInit() {
+    // Load user profile picture
+    this.loadProfilePicture();
+    
     // Check if user is a teacher
     this.isTeacher = this.authService.isUserTeacher();
     
@@ -280,5 +291,31 @@ export class SidebarComponent implements OnInit {
     } else {
       this.activeKey = null;
     }
+  }
+
+  /**
+   * Load user's profile picture
+   */
+  loadProfilePicture(): void {
+    const userId = this.authService.getUserId();
+    if (userId) {
+      this.profileService.getProfilePicture(userId).subscribe({
+        next: (blob: Blob) => {
+          const objectUrl = URL.createObjectURL(blob);
+          this.profilePictureUrl = this.sanitizer.bypassSecurityTrustUrl(objectUrl);
+        },
+        error: (err) => {
+          console.error('Error loading profile picture in sidebar:', err);
+          this.profilePictureUrl = null;
+        }
+      });
+    }
+  }
+
+  /**
+   * Get profile image source (profilePicture URL or null for fallback)
+   */
+  getProfileImageSrc(): SafeUrl | null {
+    return this.profilePictureUrl;
   }
 }
