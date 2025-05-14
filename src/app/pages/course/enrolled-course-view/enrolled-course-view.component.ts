@@ -122,6 +122,8 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
   attemptInProgress = false;
   quizSubmitted = false;
   quizResult: any = null;
+  // Add previous attempts property
+  previousAttempts: any[] = [];
   // Add Object to component
   protected readonly Object = Object;
 
@@ -515,6 +517,9 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     this.attemptInProgress = false;
     this.quizSubmitted = false;
     this.quizResult = null;
+    
+    // Load previous attempts when a quiz is selected
+    this.loadPreviousAttempts();
   }
 
   startQuizAttempt(): void {
@@ -578,8 +583,23 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
       next: (result) => {
         this.quizSubmitted = true;
         this.quizResult = result;
+        
+        // Properly determine if the quiz was passed based on the score and passing score
+        if (this.quizResult && this.selectedQuiz) {
+          // Calculate percentage score if needed
+          const scoreValue = typeof this.quizResult.score === 'number' 
+            ? this.quizResult.score 
+            : parseFloat(this.quizResult.score);
+            
+          // Set passed status based on meeting or exceeding the passing score
+          this.quizResult.passed = scoreValue >= this.selectedQuiz.passingScore;
+        }
+        
         this.attemptInProgress = false;
         this.showNotification('Quiz submitted successfully');
+        
+        // Refresh the previous attempts list
+        this.loadPreviousAttempts();
       },
       error: (err) => {
         console.error('Failed to submit quiz:', err);
@@ -951,6 +971,32 @@ Please create a quiz with challenging and diverse questions that test understand
       duration: 3000,
       horizontalPosition: 'center',
       verticalPosition: 'bottom',
+    });
+  }
+
+  // Add method to load previous attempts
+  loadPreviousAttempts(): void {
+    if (!this.selectedChapter || !this.selectedQuiz) return;
+    
+    const userId = this.getUserId();
+    if (!userId) {
+      console.error('User ID not found');
+      return;
+    }
+    
+    this.courseService.getQuizAttempts(
+      this.selectedChapter.id,
+      this.selectedQuiz.quizId,
+      userId
+    ).subscribe({
+      next: (attempts) => {
+        console.log('Loaded previous attempts:', attempts);
+        this.previousAttempts = attempts;
+      },
+      error: (err) => {
+        console.error('Failed to load previous attempts:', err);
+        this.showNotification('Failed to load previous attempts');
+      }
     });
   }
 }

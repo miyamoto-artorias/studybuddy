@@ -232,6 +232,27 @@
             <p>Max Attempts: {{ selectedQuiz.maxAttempts }}</p>
           </div>
 
+          <!-- Previous attempts section -->
+          <div *ngIf="previousAttempts && previousAttempts.length > 0" class="previous-attempts">
+            <h4>Previous Attempts</h4>
+            <div class="attempts-table">
+              <div class="attempt-header">
+                <div class="attempt-cell">Attempt #</div>
+                <div class="attempt-cell">Date</div>
+                <div class="attempt-cell">Score</div>
+                <div class="attempt-cell">Status</div>
+              </div>
+              <div *ngFor="let attempt of previousAttempts; let i = index" class="attempt-row">
+                <div class="attempt-cell">{{ i + 1 }}</div>
+                <div class="attempt-cell">{{ attempt.createdAt | date:'short' }}</div>
+                <div class="attempt-cell">{{ attempt.score }}</div>
+                <div class="attempt-cell" [class.passed]="attempt.status === 'PASSED'" [class.failed]="attempt.status === 'FAILED'">
+                  {{ attempt.status }}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Quiz attempt section -->
           <div class="quiz-attempt" *ngIf="!quizSubmitted">
             <button *ngIf="!attemptInProgress" 
@@ -289,7 +310,9 @@
           <div *ngIf="quizSubmitted && quizResult" class="quiz-results">
             <h4>Quiz Results</h4>
             <p>Score: {{ quizResult.score }}</p>
-            <p>Status: {{ quizResult.passed ? 'Passed' : 'Failed' }}</p>
+            <p class="result-status" [class.passed]="quizResult.passed" [class.failed]="!quizResult.passed">
+              Status: {{ quizResult.passed ? 'Passed' : 'Failed' }}
+            </p>
             <button (click)="selectQuiz(selectedQuiz)" class="btn-secondary">
               Try Again
             </button>

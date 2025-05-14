@@ -573,4 +573,16 @@ updateCoursePublicStatus(courseId: number, isPublic: boolean): Observable<any> {
     })
   );
 }
+
+// Add a method to fetch previous quiz attempts for a user
+getQuizAttempts(chapterId: number, quizId: number, userId: number): Observable<any[]> {
+  const url = `http://localhost:8081/api/chapters/${chapterId}/quizzes/${quizId}/attempts/user/${userId}`;
+  return this.http.get<any[]>(url).pipe(
+    tap(attempts => console.log('Fetched quiz attempts:', attempts)),
+    catchError(error => {
+      console.error('Error fetching quiz attempts:', error);
+      throw error;
+    })
+  );
+}
 }
