@@ -61,12 +61,11 @@
                 <mat-error *ngIf="courseForm.get('description')?.hasError('required')">Description is required</mat-error>
               </mat-form-field>
               
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Price ($)</mat-label>
-                <input matInput type="number" formControlName="price" min="0" required>
-                <mat-error *ngIf="courseForm.get('price')?.hasError('required')">Price is required</mat-error>
-                <mat-error *ngIf="courseForm.get('price')?.hasError('min')">Price must be positive</mat-error>
-              </mat-form-field>
+              <div class="price-display">
+                <span class="price-label">Price:</span>
+                <span class="price-value">${{getRequestPrice(openRequestId)}}</span>
+                <span class="price-hint">(automatically set from the request)</span>
+              </div>
               
               <mat-form-field appearance="outline" class="form-field">
                 <mat-label>Categories</mat-label>

@@ -67,7 +67,6 @@ export class TeacherRequestComponent implements OnInit {
     this.courseForm = this.fb.group({
       title: ['', [Validators.required]],
       description: ['', [Validators.required]],
-      price: [0, [Validators.required, Validators.min(0)]],
       categoryIds: [[]],
       tags: [''],
     });
@@ -154,7 +153,6 @@ export class TeacherRequestComponent implements OnInit {
         this.courseForm.patchValue({
           title: request.subject || '',
           description: request.message || '',
-          price: request.price || 0,
           categoryIds: request.categories?.map((cat: any) => cat.id) || []
         });
       }
@@ -175,6 +173,13 @@ export class TeacherRequestComponent implements OnInit {
     }
   }
   
+  // Get price for a request
+  getRequestPrice(requestId: number | null): number {
+    if (!requestId) return 0;
+    const request = this.receivedRequests.find(r => r.id === requestId);
+    return request ? request.price : 0;
+  }
+  
   submitCourseForm(): void {
     if (this.courseForm.invalid) {
       this.snackBar.open('Please fill all required fields correctly', 'Close', { duration: 3000 });
@@ -189,11 +194,18 @@ export class TeacherRequestComponent implements OnInit {
     // Get form values
     const formValues = this.courseForm.value;
     
+    // Get current request to ensure we use the correct price
+    const request = this.receivedRequests.find(r => r.id === this.openRequestId);
+    if (!request) {
+      this.snackBar.open('Request not found', 'Close', { duration: 3000 });
+      return;
+    }
+    
     // Create FormData object for multipart/form-data
     const formData = new FormData();
     formData.append('title', formValues.title);
     formData.append('description', formValues.description);
-    formData.append('price', formValues.price.toString());
+    formData.append('price', request.price.toString()); // Use price from the request
     
     // Add image file if selected
     if (this.selectedFile) {
@@ -233,7 +245,6 @@ export class TeacherRequestComponent implements OnInit {
     this.courseForm.reset({
       title: '',
       description: '',
-      price: 0,
       categoryIds: [],
       tags: ''
     });
