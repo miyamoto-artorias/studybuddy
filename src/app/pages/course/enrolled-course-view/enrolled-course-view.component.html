@@ -45,7 +45,7 @@
       </ul>
       
       <h3 class="sidebar-heading">Quizzes</h3>
-      <div *ngIf="selectedChapter.quizzes && selectedChapter.quizzes.length > 0; else noQuizzes">
+      <div *ngIf="selectedChapter.quizzes && selectedChapter.quizzes.length > 0">
         <ul class="quiz-list">
           @for (quiz of selectedChapter.quizzes || []; track quiz.quizId) {
             <li 
@@ -170,25 +170,7 @@
 
       <!-- Content Display -->
       <ng-container *ngIf="selectedContent && !showAIQuizGenerator && !loading && !error">
-        <div class="content-header">
-          <h2>{{ selectedContent.title }}</h2>
-          <div class="content-status">
-            <span class="status-text" *ngIf="selectedContent.completed">
-              <mat-icon color="primary">check_circle</mat-icon>
-              Completed
-            </span>
-            <span class="status-text" *ngIf="!selectedContent.completed">
-              <mat-icon>radio_button_unchecked</mat-icon>
-              Not completed
-            </span>
-            <button 
-              mat-raised-button
-              [color]="selectedContent.completed ? 'warn' : 'primary'"
-              (click)="toggleContentCompletion(selectedContent, $event)">
-              {{ selectedContent.completed ? 'Mark as Incomplete' : 'Mark as Complete' }}
-            </button>
-          </div>
-        </div>
+
         
         <ng-container [ngSwitch]="selectedContent.type">
           <!-- PDF content -->
