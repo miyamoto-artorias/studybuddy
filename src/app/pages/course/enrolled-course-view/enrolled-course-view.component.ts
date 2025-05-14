@@ -128,7 +128,6 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
   // AI Quiz Generation properties
   showAIQuizGenerator = false;
   generatingAIQuiz = false;
-  aiQuizPrompt: string = '';
   generatedAIQuiz: Quiz | null = null;
   aiQuizUserResponses: {[questionId: number]: string | string[]} = {};
   aiQuizErrorMessage: string = '';
@@ -668,110 +667,141 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
       this.selectedQuiz = null;
       this.revokeBlobUrl();
       this.resetPdfSummary();
-      
-      // Set a default quiz prompt based on course and chapter info
-      if (this.course && this.selectedChapter) {
-        this.aiQuizPrompt = `Generate a quiz about ${this.selectedChapter.title} from the course ${this.course.title}`;
-      }
+    } else {
+      this.resetAIQuiz();
     }
   }
 
   resetAIQuiz(): void {
-    this.showAIQuizGenerator = false;
     this.generatedAIQuiz = null;
-    this.aiQuizPrompt = '';
     this.aiQuizUserResponses = {};
     this.aiQuizErrorMessage = '';
   }
 
   generateAIQuiz(): void {
-    if (!this.aiQuizPrompt.trim()) {
-      this.aiQuizErrorMessage = 'Please enter a topic for the quiz';
+    if (!this.selectedChapter) {
+      this.aiQuizErrorMessage = 'No chapter selected';
       return;
     }
 
     this.generatingAIQuiz = true;
     this.aiQuizErrorMessage = '';
-    this.generatedAIQuiz = null;
     this.aiQuizUserResponses = {};
 
+    // Extract context from current course and chapter
     const courseTitle = this.course?.title || '';
     const courseDescription = this.course?.description || '';
     const chapterTitle = this.selectedChapter?.title || '';
     const chapterDescription = this.selectedChapter?.description || '';
     
-    const prompt = this.createQuizPrompt(this.aiQuizPrompt, courseTitle, courseDescription, chapterTitle, chapterDescription);
+    // Get content titles from the chapter to provide more context
+    const contentTitles = this.selectedChapter?.contents?.map((content: any) => content.title).join(', ') || '';
     
-    this.aiService.generateText(prompt).then(response => {
-      console.log('Raw AI response:', response);
-      
-      try {
-        // Extract the JSON from the response
-        const jsonResponse = this.extractJsonFromResponse(response);
+    // Generate quiz based on current chapter
+    const prompt = this.createQuizPrompt(chapterTitle, courseTitle, courseDescription, chapterDescription, contentTitles);
+    
+    // Use pro model for better diversity and more creative responses
+    this.aiService.generateText(prompt, true)
+      .then(response => {
+        console.log('Raw AI response:', response);
         
-        if (jsonResponse) {
-          this.generatedAIQuiz = jsonResponse;
+        try {
+          // Extract the JSON from the response
+          const jsonResponse = this.extractJsonFromResponse(response);
           
-          // Fix for generatedAIQuiz.questions null checks (around line 653-656)
-          if (this.generatedAIQuiz && this.generatedAIQuiz.questions) {
-            this.generatedAIQuiz.questions.forEach((question: any, index: number) => {
-              question.questionId = index + 1;
-            });
+          if (jsonResponse) {
+            // Clear previous quiz and responses
+            this.generatedAIQuiz = null;
+            this.aiQuizUserResponses = {};
+            
+            // Set the new quiz
+            this.generatedAIQuiz = jsonResponse;
+            
+            // Assign IDs to questions
+            if (this.generatedAIQuiz?.questions) {
+              this.generatedAIQuiz.questions.forEach((question, index) => {
+                question.questionId = index + 1;
+              });
+            }
+            
+            this.showNotification('Quiz generated successfully');
+          } else {
+            throw new Error('Failed to parse AI response as JSON');
           }
-          
-          this.showNotification('Quiz generated successfully');
-        } else {
-          throw new Error('Failed to parse AI response as JSON');
+        } catch (error) {
+          console.error('Error generating quiz:', error);
+          this.aiQuizErrorMessage = 'Failed to generate quiz. Please try again.';
+        } finally {
+          this.generatingAIQuiz = false;
         }
-      } catch (error) {
-        console.error('Error generating quiz:', error);
+      })
+      .catch(error => {
+        console.error('Error calling AI service:', error);
         this.aiQuizErrorMessage = 'Failed to generate quiz. Please try again.';
         this.generatingAIQuiz = false;
-        this.showNotification('Failed to generate quiz');
-      }
-    }).catch(error => {
-      console.error('Error calling AI service:', error);
-      this.aiQuizErrorMessage = 'Failed to generate quiz. Please try again.';
-      this.generatingAIQuiz = false;
-      this.showNotification('Failed to generate quiz');
-    });
+      });
   }
 
-  private createQuizPrompt(topic: string, courseTitle: string, courseDescription: string, chapterTitle: string, chapterDescription: string): string {
-    return `Generate a quiz about "${topic}" related to the course "${courseTitle}" (${courseDescription}) and specifically for the chapter "${chapterTitle}" (${chapterDescription}). Create 3 questions.
+  private createQuizPrompt(chapterTitle: string, courseTitle: string, courseDescription: string, chapterDescription: string, contentTitles: string): string {
+    // Add randomization factor to encourage diversity in generated quizzes
+    const randomSeed = Math.floor(Math.random() * 1000);
+    const difficultyLevels = ['basic', 'intermediate', 'advanced'];
+    const randomDifficulty = difficultyLevels[Math.floor(Math.random() * difficultyLevels.length)];
+    const questionTypes = [
+      'conceptual', 'application-based', 'problem-solving', 'analytical', 
+      'comparative', 'scenario-based', 'definition-based', 'example-based'
+    ];
+    const focusArea = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+    
+    return `Generate a unique and diverse ${randomDifficulty} level quiz about "${chapterTitle}" from the course "${courseTitle}". 
+Random seed: ${randomSeed} (use this to ensure uniqueness)
+Focus on ${focusArea} questions.
+
+Course description: ${courseDescription}
+Chapter description: ${chapterDescription}
+Chapter content includes: ${contentTitles}
 
 Your response should be valid JSON that follows this structure:
 {
-  "title": "A concise title related to ${chapterTitle}",
-  "description": "A brief description of the quiz related to ${topic}",
-  "timeLimit": 10,
-  "passingScore": 2,
-  "maxAttempts": 3,
+  "title": "Quiz on ${chapterTitle} - ${randomDifficulty.charAt(0).toUpperCase() + randomDifficulty.slice(1)} Level",
+  "description": "Test your ${randomDifficulty} knowledge of ${chapterTitle} from ${courseTitle} with a focus on ${focusArea} questions",
+  "timeLimit": ${5 + Math.floor(Math.random() * 10)},
+  "passingScore": ${1 + Math.floor(Math.random() * 3)},
+  "maxAttempts": ${2 + Math.floor(Math.random() * 3)},
   "questions": [
-    // Include exactly 3 questions from the types below
+    // Include exactly 3-5 questions (mix of single-choice and multiple-choice)
+    // IMPORTANT: Make sure each question is UNIQUE and different from previous quizzes
   ]
 }
 
 The questions should be formatted like this:
 1. For multiple choice single answer:
 {
-  "questionText": "A clear question about ${topic}",
+  "questionText": "A unique ${randomDifficulty} question about ${chapterTitle} focusing on ${focusArea} aspects",
   "questionType": "MULTIPLE_CHOICE_SINGLE",
-  "points": 1,
+  "points": ${1 + Math.floor(Math.random() * 2)},
   "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
   "correctAnswer": "The correct option text"
 }
 
 2. For multiple choice multiple answers:
 {
-  "questionText": "A clear question about ${topic}",
+  "questionText": "A unique ${randomDifficulty} question about ${chapterTitle} focusing on ${focusArea} aspects",
   "questionType": "MULTIPLE_CHOICE_MULTIPLE",
-  "points": 2,
+  "points": ${2 + Math.floor(Math.random() * 2)},
   "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
   "correctAnswers": ["Correct option 1", "Correct option 2"]
 }
 
-Please create a balanced quiz with interesting questions related to the topic. Return ONLY the JSON with no additional text.`;
+IMPORTANT INSTRUCTIONS FOR DIVERSITY:
+1. Create questions that test different aspects of the material
+2. Vary the complexity and wording of each question
+3. Use different formats of questions (scenario-based, direct knowledge, application, etc.)
+4. Avoid repetitive patterns in question structures
+5. Make sure options are plausible but clearly distinguishable
+6. Use this random seed ${randomSeed} to make this quiz unique from previous ones
+
+Please create a quiz with challenging and diverse questions that test understanding of the material. Return ONLY the JSON with no additional text.`;
   }
 
   private extractJsonFromResponse(response: string): any {
@@ -827,34 +857,62 @@ Please create a balanced quiz with interesting questions related to the topic. R
     
     let correctCount = 0;
     let totalPoints = 0;
+    let maxPoints = 0;
+    let feedback = '';
     
-    this.generatedAIQuiz.questions.forEach((question: any) => {
-      const userAnswer = this.aiQuizUserResponses[question.questionId];
+    this.generatedAIQuiz.questions.forEach((question) => {
+      maxPoints += question.points;
+      const userAnswer = this.aiQuizUserResponses[question.questionId!];
+      let isCorrect = false;
       
       if (question.questionType === 'MULTIPLE_CHOICE_SINGLE') {
-        if (userAnswer === question.correctAnswer) {
+        isCorrect = userAnswer === question.correctAnswer;
+        
+        if (isCorrect) {
           correctCount++;
           totalPoints += question.points;
+          feedback += `✅ Question ${question.questionId}: Correct! (+${question.points} points)\n`;
+        } else {
+          feedback += `❌ Question ${question.questionId}: Incorrect. The correct answer is "${question.correctAnswer}".\n`;
         }
-      } else if (question.questionType === 'MULTIPLE_CHOICE_MULTIPLE') {
+      } 
+      else if (question.questionType === 'MULTIPLE_CHOICE_MULTIPLE') {
         if (Array.isArray(userAnswer) && question.correctAnswers) {
-          // Fix for type casting in array comparison (around line 783-785)
+          // Check if arrays have the same elements (order doesn't matter)
           const correctSet = new Set(question.correctAnswers);
           const userSet = new Set(userAnswer);
           
-          if (correctSet.size === userSet.size && 
-              [...correctSet].every((value) => userSet.has(value as string))) {
+          isCorrect = correctSet.size === userSet.size && 
+                      [...correctSet].every((value) => userSet.has(value));
+          
+          if (isCorrect) {
             correctCount++;
             totalPoints += question.points;
+            feedback += `✅ Question ${question.questionId}: Correct! (+${question.points} points)\n`;
+          } else {
+            feedback += `❌ Question ${question.questionId}: Incorrect. The correct answers are: ${question.correctAnswers.join(', ')}.\n`;
           }
+        } else {
+          feedback += `❌ Question ${question.questionId}: Incorrect. No answer provided.\n`;
         }
       }
     });
     
     const totalQuestions = this.generatedAIQuiz.questions.length;
-    const maxPoints = this.generatedAIQuiz.questions.reduce((sum: number, q: any) => sum + q.points, 0);
+    const passed = totalPoints >= this.generatedAIQuiz.passingScore;
     
-    this.showNotification(`You got ${correctCount} out of ${totalQuestions} questions correct (${totalPoints}/${maxPoints} points).`);
+    const resultMessage = `You got ${correctCount} out of ${totalQuestions} questions correct.\n` +
+                          `Score: ${totalPoints}/${maxPoints} points.\n` + 
+                          `Result: ${passed ? 'PASSED' : 'FAILED'}\n\n` +
+                          `Feedback:\n${feedback}`;
+    
+    // Use MatDialog or MatSnackBar for better display
+    this.showDetailedNotification(resultMessage, passed ? 'Quiz Result: PASSED' : 'Quiz Result: FAILED');
+  }
+
+  showDetailedNotification(message: string, title: string): void {
+    // For now, we'll use alert, but this could be replaced with a proper dialog
+    alert(`${title}\n\n${message}`);
   }
 
   isYoutubeLink(url: string): boolean {

@@ -93,16 +93,11 @@
           <div *ngIf="!generatedAIQuiz" class="quiz-form">
             <mat-card>
               <mat-card-content>
-                <p class="description">Enter a topic and the AI will generate a quiz based on this chapter's content.</p>
-                
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Quiz Topic</mat-label>
-                  <input matInput [(ngModel)]="aiQuizPrompt" placeholder="e.g., HTML Basics, CSS Selectors, JavaScript Functions">
-                </mat-form-field>
+                <p class="description">Generate a quiz based on the content of chapter: <strong>{{ selectedChapter.title }}</strong></p>
                 
                 <div class="error-message" *ngIf="aiQuizErrorMessage">{{ aiQuizErrorMessage }}</div>
                 
-                <button mat-raised-button color="primary" (click)="generateAIQuiz()" [disabled]="generatingAIQuiz">
+                <button mat-raised-button color="primary" (click)="generateAIQuiz()" [disabled]="generatingAIQuiz" class="gen-quiz-btn">
                   <mat-spinner *ngIf="generatingAIQuiz" diameter="20"></mat-spinner>
                   <span *ngIf="!generatingAIQuiz">Generate Quiz</span>
                 </button>
@@ -117,6 +112,13 @@
                 <mat-card-title>{{ generatedAIQuiz.title }}</mat-card-title>
                 <mat-card-subtitle>{{ generatedAIQuiz.description }}</mat-card-subtitle>
               </mat-card-header>
+              
+              <div class="new-quiz-button-container">
+                <button mat-raised-button color="primary" (click)="generateAIQuiz()" [disabled]="generatingAIQuiz" class="gen-quiz-btn">
+                  <mat-spinner *ngIf="generatingAIQuiz" diameter="20"></mat-spinner>
+                  <span *ngIf="!generatingAIQuiz">Generate New Quiz</span>
+                </button>
+              </div>
               
               <mat-card-content>
                 <div class="quiz-info">
@@ -136,7 +138,7 @@
                     <!-- Multiple Choice Single -->
                     <div *ngIf="question.questionType === 'MULTIPLE_CHOICE_SINGLE'" class="options-container">
                       <mat-radio-group aria-label="Select an option" class="radio-group"
-                                    (change)="updateAISingleChoiceResponse(question.questionId!, $event.value)">
+                                     (change)="updateAISingleChoiceResponse(question.questionId!, $event.value)">
                         <mat-radio-button *ngFor="let option of question.options" [value]="option">
                           {{ option }}
                         </mat-radio-button>
@@ -159,7 +161,7 @@
               
               <mat-card-actions align="end">
                 <button mat-raised-button color="accent" (click)="checkAIQuizAnswers()">Check Answers</button>
-                <button mat-button (click)="resetAIQuiz()">New Quiz</button>
+                <button mat-button (click)="resetAIQuiz()">Reset Quiz</button>
               </mat-card-actions>
             </mat-card>
           </div>
