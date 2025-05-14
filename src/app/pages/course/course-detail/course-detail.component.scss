@@ -449,3 +449,17 @@
     }
   }
 }
+
+.teacher-message {
+  background-color: #f3e5f5;
+  border: 1px solid #9c27b0;
+  color: #9c27b0;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-weight: 500;
+  
+  p {
+    margin: 0;
+  }
+}

@@ -50,6 +50,9 @@
         <div class="enrollment-status" *ngIf="course.id && isEnrolled(course.id)">
           <span class="enrolled-badge">Enrolled</span>
         </div>
+        <div class="enrollment-status" *ngIf="isUserTeacher(course)">
+          <span class="teacher-badge">Your Course</span>
+        </div>
       </div>
     </div>
   </div>

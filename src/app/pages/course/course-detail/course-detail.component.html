@@ -50,7 +50,11 @@
         <p>You are already enrolled in this course.</p>
       </div>
 
-      <div *ngIf="!isEnrolled">
+      <div *ngIf="isTeacher" class="teacher-message">
+        <p>You are the teacher of this course.</p>
+      </div>
+
+      <div *ngIf="!isEnrolled && !isTeacher">
         <div *ngIf="!hasCard" class="no-card-message">
           <p>You need to add a payment card to purchase this course.</p>
           <a routerLink="/payment" class="btn-primary">Add Payment Card</a>

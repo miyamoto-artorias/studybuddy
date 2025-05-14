@@ -20,6 +20,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
   userCard: any = null;
   isEnrolled = false;
   hasCard = false;
+  isTeacher = false;
   private routeSubscription: Subscription;
 
   constructor(
@@ -61,6 +62,9 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
       next: (course) => {
         console.log('Course loaded:', course);
         this.course = course;
+        const currentUserId = this.authService.getUserId();
+        this.isTeacher = currentUserId === this.course?.teacher?.id;
+        console.log('Is user the teacher?', this.isTeacher, 'User:', currentUserId, 'Teacher:', this.course?.teacher?.id);
         this.loading = false;
       },
       error: (err) => {

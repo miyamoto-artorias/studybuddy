@@ -215,6 +215,16 @@
   }
 }
 
+.teacher-badge {
+  background-color: #9c27b0;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1100px) {
   .course-list-container {

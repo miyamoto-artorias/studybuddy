@@ -206,6 +206,12 @@ export class CourseListComponent implements OnInit {
     return this.enrolledCourses.some(course => course.id === courseId);
   }
 
+  isUserTeacher(course: any): boolean {
+    if (!course || !course.teacher) return false;
+    const currentUserId = this.authService.getUserId();
+    return currentUserId === course.teacher.id;
+  }
+
   isSearchMode(): boolean {
     return this.route.snapshot.queryParams['search'] !== undefined;
   }
