@@ -63,13 +63,14 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this._themeManager.setColorScheme(this._themeManager.getPreferredColorScheme());
-
-    // if (isPlatformBrowser(this._platformId)) {
-    //   setTimeout(() => {
-    //     this.loadingText.set('second loading...');
-    //   }, 1500);
-    // }
+    // Set initial color scheme to light mode
+    this._themeManager.changeColorScheme('light');
+    
+    // If user has a stored preference, use that instead
+    const storedPreference = this._themeManager.getPreferredColorScheme();
+    if (storedPreference) {
+      this._themeManager.setColorScheme(storedPreference);
+    }
 
     this._seoService.trackCanonicalChanges(this._envService.getValue('siteUrl'));
   }

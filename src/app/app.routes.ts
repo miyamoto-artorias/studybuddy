@@ -8,7 +8,7 @@ import { RegisterComponent } from './auth/register/register.component';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'pages/dashboard/playground',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
   {

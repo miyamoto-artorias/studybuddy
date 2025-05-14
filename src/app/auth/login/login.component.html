@@ -1,18 +1,24 @@
 <div class="login-container">
     <div class="login-card">
-      <h2>Login</h2>
+      <div class="login-header">
+        <h2>Welcome Back</h2>
+        <p class="subtitle">Login to access your courses and continue learning</p>
+      </div>
       
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
           <label for="username">Username</label>
-          <input 
-            type="text" 
-            id="username" 
-            formControlName="username" 
-            class="form-control"
-            placeholder="Enter your username"
-            [class.is-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
-          >
+          <div class="input-wrapper">
+            <i class="fas fa-user"></i>
+            <input 
+              type="text" 
+              id="username" 
+              formControlName="username" 
+              class="form-control"
+              placeholder="Enter your username"
+              [class.is-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
+            >
+          </div>
           <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" 
                class="invalid-feedback">
             Username is required
@@ -21,39 +27,39 @@
   
         <div class="form-group">
           <label for="password">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            formControlName="password" 
-            class="form-control"
-            placeholder="Enter your password"
-            [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-          >
+          <div class="input-wrapper">
+            <i class="fas fa-lock"></i>
+            <input 
+              type="password" 
+              id="password" 
+              formControlName="password" 
+              class="form-control"
+              placeholder="Enter your password"
+              [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+            >
+          </div>
           <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" 
                class="invalid-feedback">
             Password is required
           </div>
         </div>
-<!--   
+
         <div *ngIf="errorMessage" class="alert alert-danger">
-          {{ errorMessage }}
-        </div> -->
+          <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+        </div>
   
         <button 
           type="submit" 
-          class="btn btn-primary"
+          class="btn-login"
           [disabled]="isLoading || loginForm.invalid"
         >
           <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
           {{ isLoading ? 'Logging in...' : 'Login' }}
         </button>
-        <button 
-          type="button" 
-          class="btn btn-secondary" 
-          (click)="logout()"
-        >
-          LOG out
-        </button>
+        
+        <div class="register-link">
+          Don't have an account? <a routerLink="/register">Create Account</a>
+        </div>
       </form>
     </div>
   </div>

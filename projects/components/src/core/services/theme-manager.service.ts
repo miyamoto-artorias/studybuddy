@@ -71,10 +71,7 @@ export class ThemeManagerService {
       return storedTheme;
     }
 
-    if (this._window !== null && this._window.matchMedia) {
-      return this._window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-
+    // Always default to light theme instead of checking system preferences
     return 'light';
   };
 
