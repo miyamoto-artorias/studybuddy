@@ -104,16 +104,22 @@ export class AddcourseComponent implements OnInit {  course = {
       formData.append('tags', tag);
     });
 
-    console.log('Submitting course data with image');    this.courseService.createCourseWithImage(this.teacherId, formData).subscribe({
+    console.log('Submitting course data with image');    
+    this.courseService.createCourseWithImage(this.teacherId, formData).subscribe({
       next: (response: any) => {
         this.isLoading = false;
         this.successMessage = 'Course created successfully!';
         console.log('Course created by teacher ID:', this.teacherId, response);
         
+        // Reset all form fields
+        this.resetForm(form);
+        
+        // Show success message briefly before navigating
         setTimeout(() => {
           this.successMessage = '';
-          this.router.navigate(['/courses']);
-        }, 5000);
+          // Navigate to teacher courses list
+          this.router.navigate(['/pages/teacher/teacher-courses-list']);
+        }, 1500);
       },
       error: (error: any) => {
         this.isLoading = false;
@@ -121,6 +127,28 @@ export class AddcourseComponent implements OnInit {  course = {
         console.error('Course creation failed:', error);
       }
     });
+  }
+
+  // Add resetForm method to completely clear the form
+  resetForm(form: NgForm): void {
+    // Reset Angular form
+    form.resetForm();
+    
+    // Reset our course object
+    this.course = {
+      title: '',
+      description: '',
+      price: 0,
+      categoryIds: [],
+      tags: []
+    };
+    
+    // Reset file and preview
+    this.pictureFile = null;
+    this.imagePreview = null;
+    
+    // Reset tag input
+    this.newTag = '';
   }
 
   newTag: string = '';
