@@ -387,6 +387,8 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     this.revokeBlobUrl();
     this.selectedContent = { ...content };
     this.selectedQuiz = null;
+    // Always turn off the AI quiz generator when selecting content
+    this.showAIQuizGenerator = false;
     this.resetAIQuiz();
     this.resetPdfSummary();
 
@@ -502,6 +504,8 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
     console.log('Quiz selected:', quiz);
     this.selectedQuiz = quiz;
     this.selectedContent = null;
+    // Always turn off the AI quiz generator when selecting a regular quiz
+    this.showAIQuizGenerator = false;
     this.revokeBlobUrl();
     this.resetAIQuiz();
     this.resetPdfSummary();
@@ -663,6 +667,7 @@ export class EnrolledCourseViewComponent implements OnInit, OnDestroy {
   toggleAIQuizGenerator(): void {
     this.showAIQuizGenerator = !this.showAIQuizGenerator;
     if (this.showAIQuizGenerator) {
+      // Clear selected content and quiz when showing AI quiz generator
       this.selectedContent = null;
       this.selectedQuiz = null;
       this.revokeBlobUrl();

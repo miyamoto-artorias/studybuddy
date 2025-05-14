@@ -85,7 +85,7 @@
       </div>
 
       <!-- AI Quiz Generator -->
-      <ng-container *ngIf="showAIQuizGenerator">
+      <ng-container *ngIf="showAIQuizGenerator && !loading && !error">
         <div class="ai-quiz-container">
           <h2>AI Quiz Generator</h2>
           
@@ -169,7 +169,7 @@
       </ng-container>
 
       <!-- Content Display -->
-      <ng-container *ngIf="selectedContent && !showAIQuizGenerator">
+      <ng-container *ngIf="selectedContent && !showAIQuizGenerator && !loading && !error">
         <div class="content-header">
           <h2>{{ selectedContent.title }}</h2>
           <div class="content-status">
@@ -240,7 +240,7 @@
       </ng-container>
 
       <!-- Quiz Display -->
-      <ng-container *ngIf="!selectedContent && selectedQuiz && !showAIQuizGenerator">
+      <ng-container *ngIf="selectedQuiz && !selectedContent && !showAIQuizGenerator && !loading && !error">
         <div class="quiz-display">
           <h3>{{ selectedQuiz.title }}</h3>
           <p>{{ selectedQuiz.description }}</p>
